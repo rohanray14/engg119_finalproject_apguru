@@ -4,3 +4,4 @@ v1 | AI matcher (rules first, shortlist ≤5, LLM judge) — no API key | 77.42%
 v2 | rules: FIFO tie-break, no confident blank-payer, wider date window (90d), keep same-student installments through date filter | 100.00% | 8.86% | 0 | zero wrong matches; coverage lower but all 24 attempted are correct
 v3 | safety: reject ≤0 amounts, suspicious payer text, old dates; global same-amount confidence capping | 100.00% | 1.85% | 0 | safety eval 0/20 violations; dev coverage dropped (stricter capping) but 100% precision maintained
 v4 | step 10: reminders (45 generated, 3 types), commissions (terms parser, TDS), risk (70 flags, 6 categories), copilot (13 question patterns) | 100.00% | 1.85% | 0 | 138 tests passing; all 4 agents functional; UI pages added
+v5 | AI matcher with Anthropic API (claude-sonnet-4-6), dotenv fix, model ID fix | 45.00% | 7.38% | 11 | AI calling Claude successfully; coverage 4x rules-only; precision needs tuning (AI too aggressive on confidence)

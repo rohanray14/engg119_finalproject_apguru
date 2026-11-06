@@ -13,13 +13,51 @@ from ledger.db import get_connection
 from ledger.load import load_all
 
 DATA_DIR = PROJECT_ROOT / "data"
-DB_PATH = ":memory:"
+_DB_FILE = PROJECT_ROOT / "data" / "_app_ledger.db"
 
 
 @st.cache_resource
 def get_db():
-    """Load data into an in-memory SQLite DB (cached across reruns)."""
-    return load_all(data_dir=DATA_DIR, db_path=DB_PATH)
+    """Load data into a SQLite DB (cached across reruns).
+
+    Uses a file-based DB so the connection can be shared across
+    Streamlit's threads (check_same_thread=False).
+    Also auto-runs the matching agent so the app has data on first load.
+    """
+    import sqlite3, os
+    # Remove stale DB so we always start fresh
+    if _DB_FILE.exists():
+        os.remove(_DB_FILE)
+    conn = load_all(data_dir=DATA_DIR, db_path=str(_DB_FILE))
+
+    # Auto-run the matcher so the review queue and dashboard are populated
+    from agents.matching_rules import match_all
+    predictions = match_all(conn)
+    for pred in predictions:
+        if pred.confidence > 0 and pred.installment_ids:
+            status = "auto" if pred.confidence >= 0.8 else "pending_review"
+            allocs = json.dumps([{"installment_id": iid, "allocated_paise": 0}
+                                 for iid in pred.installment_ids])
+            conn.execute(
+                "INSERT INTO match_result (payment_id, allocations, method, confidence, reason, status) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (pred.payment_id, allocs, pred.method, pred.confidence, pred.reason or "", status),
+            )
+        elif pred.confidence > 0:
+            conn.execute(
+                "INSERT INTO match_result (payment_id, allocations, method, confidence, reason, status) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (pred.payment_id, "[]", pred.method, pred.confidence, pred.reason or "", "pending_review"),
+            )
+    conn.commit()
+
+    conn.close()
+    # Re-open with check_same_thread=False
+    conn = sqlite3.connect(str(_DB_FILE), check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA foreign_keys=ON")
+    return conn
 
 
 def fmt_inr(paise: int) -> str:
@@ -103,6 +141,38 @@ def main():
                 c3.write(f"_{row['method']}_ — {row['reason'][:50]}")
     else:
         st.info("No payments pending review. Run the matcher first, or all payments are resolved.")
+
+    st.divider()
+
+    # Risk flags summary (Risk agent)
+    from agents.risk import scan_risks
+    from datetime import date
+    flags = scan_risks(conn, as_of=date(2025, 7, 1))
+    high_flags = [f for f in flags if f.severity == "high"]
+    if high_flags:
+        st.subheader(f"Risk Alerts ({len(high_flags)} high severity)")
+        for f in high_flags[:5]:
+            st.error(f"**{f.category}** — {f.explanation}")
+        if len(high_flags) > 5:
+            st.caption(f"...and {len(high_flags) - 5} more. See Risk page.")
+    else:
+        st.success("No high-severity risk flags.")
+
+    st.divider()
+
+    # Reminders summary (Reminders agent)
+    from agents.reminders import generate_reminders
+    reminders = generate_reminders(conn, as_of=date(2025, 7, 1))
+    overdue_reminders = [r for r in reminders if r.reminder_type == "overdue"]
+    if overdue_reminders:
+        st.subheader(f"Overdue Reminders ({len(overdue_reminders)} to send)")
+        for r in overdue_reminders[:5]:
+            st.warning(f"**{r.student_name}** — {fmt_inr(r.amount_due_paise)} {r.currency} "
+                       f"({r.enrollment_program}) due {r.due_date}")
+        if len(overdue_reminders) > 5:
+            st.caption(f"...and {len(overdue_reminders) - 5} more. See Reminders page.")
+    else:
+        st.success("No overdue reminders.")
 
     st.divider()
 

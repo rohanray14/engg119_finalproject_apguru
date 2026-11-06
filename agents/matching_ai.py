@@ -23,6 +23,12 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Optional
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from ledger.load import normalize_name
 from ledger.money import add_gst, remove_gst, gateway_fee_with_gst, fx_convert
 from evals.scoring import MatchPrediction
@@ -47,7 +53,7 @@ CACHE_DIR = LOGS_DIR / "cache"
 # Config
 # ---------------------------------------------------------------------------
 
-MODEL = "claude-sonnet-4-20250514"
+MODEL = "claude-sonnet-4-6"
 MAX_CANDIDATES = 5
 DATE_WINDOW_DAYS = 60
 AMOUNT_TOLERANCE_PCT = 0.20   # ±20% to catch GST/fees/TDS differences
