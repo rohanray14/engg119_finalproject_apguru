@@ -34,7 +34,7 @@ from evals.scoring import MatchPrediction
 # Config
 # ---------------------------------------------------------------------------
 
-DATE_WINDOW_DAYS = 30
+DATE_WINDOW_DAYS = 90
 NAME_THRESHOLD = 70       # fuzzy ratio threshold (0–100)
 HIGH_CONFIDENCE = 0.95
 MEDIUM_CONFIDENCE = 0.85
@@ -82,7 +82,6 @@ def _match_one(
             candidates.append(inst)
 
     if not candidates:
-        # No exact amount match → unsure
         return MatchPrediction(
             payment_id=payment["id"],
             installment_ids=[],
@@ -91,62 +90,104 @@ def _match_one(
             reason="no_amount_match",
         )
 
-    # Step 2: Filter by date window
+    # Step 2: Filter by date window — but keep all installments for students
+    # that have at least one installment in the window (FIFO needs them).
     if pay_date:
-        date_filtered = []
+        in_window_student_ids: set[int] = set()
         for inst in candidates:
             due = _parse_iso_date(inst["due_date"])
             if due is None or abs((pay_date - due).days) <= DATE_WINDOW_DAYS:
-                date_filtered.append(inst)
-        if date_filtered:
-            candidates = date_filtered
+                in_window_student_ids.add(inst["student_id"])
+        if in_window_student_ids:
+            candidates = [
+                inst for inst in candidates
+                if inst["student_id"] in in_window_student_ids
+            ]
 
-    # Step 3: Score by name similarity
+    # Step 3: Score each candidate by name similarity + date proximity
     scored = []
     for inst in candidates:
         student_id = inst["student_id"]
         sinfo = student_names.get(student_id, {})
-        name_score = _name_score(payer_name, sinfo)
-        scored.append((inst, name_score))
+        nscore = _name_score(payer_name, sinfo)
+        dscore = _date_proximity(pay_date, _parse_iso_date(inst["due_date"]))
+        scored.append((inst, nscore, dscore))
 
-    # Sort by name score descending
+    # Sort by name score descending (primary).
+    # Tie-breaking happens in decision logic below (FIFO by due date).
     scored.sort(key=lambda x: x[1], reverse=True)
 
-    # Decision logic
-    if len(scored) == 1:
-        inst, nscore = scored[0]
-        if nscore >= NAME_THRESHOLD:
-            confidence = HIGH_CONFIDENCE
-            reason = f"exact_amount+name_match({nscore})"
-        elif payer_name == "":
-            confidence = MEDIUM_CONFIDENCE
-            reason = "exact_amount+blank_payer+unique_candidate"
-        else:
-            confidence = MEDIUM_CONFIDENCE
-            reason = f"exact_amount+weak_name({nscore})"
-        return MatchPrediction(
-            payment_id=payment["id"],
-            installment_ids=[inst["id"]],
-            confidence=confidence,
-            method="rules",
-            reason=reason,
+    # --- Decision logic ---
+
+    # Blank payer: only match if truly one candidate in the entire dataset
+    # for this amount+currency (not just after date filtering).
+    if payer_name == "":
+        total_same_amount = sum(
+            1 for i in installments
+            if i["amount_due_paise"] == pay_amount and i["currency"] == pay_currency
         )
-
-    if len(scored) > 1:
-        best_inst, best_score = scored[0]
-        second_score = scored[1][1]
-
-        # Clear winner by name
-        if best_score >= NAME_THRESHOLD and (best_score - second_score) >= 20:
+        if total_same_amount == 1:
+            inst = scored[0][0]
             return MatchPrediction(
                 payment_id=payment["id"],
-                installment_ids=[best_inst["id"]],
+                installment_ids=[inst["id"]],
+                confidence=MEDIUM_CONFIDENCE,
+                reason="exact_amount+blank_payer+globally_unique",
+                method="rules",
+            )
+        # Multiple same-amount installments with blank payer → never confident
+        return MatchPrediction(
+            payment_id=payment["id"],
+            installment_ids=[],
+            confidence=0.0,
+            method="rules",
+            reason=f"blank_payer+{total_same_amount}_same_amount",
+        )
+
+    # Single candidate with name
+    if len(scored) == 1:
+        inst, nscore, dscore = scored[0]
+        if nscore >= NAME_THRESHOLD:
+            return MatchPrediction(
+                payment_id=payment["id"],
+                installment_ids=[inst["id"]],
+                confidence=HIGH_CONFIDENCE,
+                method="rules",
+                reason=f"exact_amount+name_match({nscore})",
+            )
+        # Weak name, single candidate — not confident enough
+        return MatchPrediction(
+            payment_id=payment["id"],
+            installment_ids=[],
+            confidence=LOW_CONFIDENCE,
+            method="rules",
+            reason=f"exact_amount+weak_name({nscore})",
+        )
+
+    # Multiple candidates: need a clear name winner
+    if len(scored) > 1:
+        best_inst, best_nscore, best_dscore = scored[0]
+        second_nscore = scored[1][1]
+
+        # Strong name match with clear gap over second-best
+        if best_nscore >= NAME_THRESHOLD and (best_nscore - second_nscore) >= 20:
+            # Among candidates with the same top name score, pick earliest
+            # due date (FIFO — pay what's due first).
+            top_name_cands = [(i, ns, ds) for i, ns, ds in scored if ns == best_nscore]
+            if len(top_name_cands) > 1:
+                top_name_cands.sort(
+                    key=lambda x: _parse_iso_date(x[0]["due_date"]) or date.max,
+                )
+            winner = top_name_cands[0][0]
+            return MatchPrediction(
+                payment_id=payment["id"],
+                installment_ids=[winner["id"]],
                 confidence=MEDIUM_CONFIDENCE,
                 method="rules",
-                reason=f"amount_match+best_name({best_score})_vs_second({second_score})",
+                reason=f"amount+name({best_nscore})_vs_second({second_nscore})+fifo",
             )
 
-        # Multiple candidates, no clear winner
+        # Multiple candidates, all with similar name scores → ambiguous
         return MatchPrediction(
             payment_id=payment["id"],
             installment_ids=[],
@@ -156,6 +197,14 @@ def _match_one(
         )
 
     return None
+
+
+def _date_proximity(pay_date: date | None, due_date: date | None) -> int:
+    """Score 0-100 for how close two dates are. Closer = higher. None = 50."""
+    if pay_date is None or due_date is None:
+        return 50
+    days = abs((pay_date - due_date).days)
+    return max(0, 100 - days)
 
 
 def _name_score(payer_name: str, student_info: dict) -> int:
