@@ -1,0 +1,23 @@
+# Eval: matching_rules (dev)
+
+- **Precision:** 100.00%
+- **Coverage:** 1.85%
+- **Wrong confident:** 0
+- **Threshold:** 0.8
+- **Timestamp:** 2026-11-06T16:21:20.809745+00:00
+
+## Per case type
+
+| Case Type | Total | Tried | Right | Wrong | Precision | Coverage |
+|---|---|---|---|---|---|---|
+| blank_payer | 156 | 0 | 0 | 0 | 0.00% | 0.00% |
+| company_payer | 4 | 0 | 0 | 0 | 0.00% | 0.00% |
+| company_tds | 2 | 0 | 0 | 0 | 0.00% | 0.00% |
+| duplicate_amount | 241 | 2 | 2 | 0 | 100.00% | 0.83% |
+| foreign | 96 | 2 | 2 | 0 | 100.00% | 2.08% |
+| fuzzy_name | 108 | 5 | 5 | 0 | 100.00% | 4.63% |
+| gateway_fees | 225 | 5 | 5 | 0 | 100.00% | 2.22% |
+| hourly_topup | 143 | 0 | 0 | 0 | 0.00% | 0.00% |
+| partial | 9 | 0 | 0 | 0 | 0.00% | 0.00% |
+| siblings | 271 | 5 | 5 | 0 | 100.00% | 1.85% |
+| split_payment | 14 | 0 | 0 | 0 | 0.00% | 0.00% |

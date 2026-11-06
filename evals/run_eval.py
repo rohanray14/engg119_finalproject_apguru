@@ -5,6 +5,7 @@ Usage:
     python evals/run_eval.py --agent matching --split dev
     python evals/run_eval.py --agent matching_ai --split dev --threshold 0.8
     python evals/run_eval.py --agent matching --split test --threshold 0.8
+    python evals/run_eval.py --agent matching --split safety
 
 Loads the specified split's answer key, runs the specified agent, scores
 the results, and saves a report to results/.
@@ -25,6 +26,58 @@ from evals.scoring import score, MatchPrediction
 from ledger.load import load_all
 
 
+def _load_safety_cases(conn, safety_path: Path):
+    """Insert safety-case students, enrollments, installments, and payments
+    into the database so the matcher sees them alongside normal data."""
+    with open(safety_path) as f:
+        cases = json.load(f)
+
+    for s in cases["students"]:
+        conn.execute(
+            "INSERT OR REPLACE INTO student (id, name, aliases, city, country, counselor_ids, payer_aliases) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (s["id"], s["name"], json.dumps(s.get("aliases", [])),
+             s.get("city", ""), s.get("country", ""),
+             json.dumps(s.get("counselor_ids", [])),
+             json.dumps(s.get("payer_aliases", []))),
+        )
+    for e in cases["enrollments"]:
+        conn.execute(
+            "INSERT OR REPLACE INTO enrollment "
+            "(id, student_id, program, fee_model, total_fee_paise, currency, gst_applicable) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (e["id"], e["student_id"], e["program"], e["fee_model"],
+             e["total_fee_paise"], e["currency"],
+             int(e.get("gst_applicable", True))),
+        )
+    for i in cases["installments"]:
+        conn.execute(
+            "INSERT OR REPLACE INTO installment "
+            "(id, enrollment_id, due_date, amount_due_paise, currency, status) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (i["id"], i["enrollment_id"], i.get("due_date"),
+             i["amount_due_paise"], i["currency"], i.get("status", "open")),
+        )
+    for p in cases["payments"]:
+        conn.execute(
+            "INSERT OR REPLACE INTO payment_in "
+            "(id, source, method, payer_name, date, amount_paid_paise, currency, "
+            " gateway_fee_paise, gst_on_fee_paise, fx_diff_paise, tds_paise, "
+            " amount_in_bank_paise, confirmation, case_types) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (p["id"], p["source"], p.get("method"),
+             p.get("payer_name"), p.get("date"),
+             p["amount_paid_paise"], p["currency"],
+             p.get("gateway_fee_paise", 0), p.get("gst_on_fee_paise", 0),
+             p.get("fx_diff_paise", 0), p.get("tds_paise", 0),
+             p.get("amount_in_bank_paise", 0),
+             p.get("confirmation", "screenshot_only"),
+             json.dumps(p.get("case_types", []))),
+        )
+    conn.commit()
+    return cases["answers"]
+
+
 def run_matching_eval(
     split: str = "dev",
     threshold: float = 0.8,
@@ -33,20 +86,24 @@ def run_matching_eval(
     """Run a matcher eval on the given split.
 
     agent='matching' → rules only; agent='matching_ai' → rules + AI.
+    split='safety' → run on hand-crafted safety cases.
     """
     data_dir = PROJECT_ROOT / "data"
-    split_dir = data_dir / split
-    answers_path = split_dir / "answers.json"
+    safety_path = PROJECT_ROOT / "evals" / "safety_cases.json"
 
-    if not answers_path.exists():
-        print(f"Error: {answers_path} not found. Run data/generate.py first.")
-        sys.exit(1)
-
-    with open(answers_path) as f:
-        answers = json.load(f)
-
-    # Load data into an in-memory database
-    conn = load_all(data_dir=data_dir, db_path=":memory:")
+    if split == "safety":
+        # Load normal data + safety data together
+        conn = load_all(data_dir=data_dir, db_path=":memory:")
+        answers = _load_safety_cases(conn, safety_path)
+    else:
+        split_dir = data_dir / split
+        answers_path = split_dir / "answers.json"
+        if not answers_path.exists():
+            print(f"Error: {answers_path} not found. Run data/generate.py first.")
+            sys.exit(1)
+        with open(answers_path) as f:
+            answers = json.load(f)
+        conn = load_all(data_dir=data_dir, db_path=":memory:")
 
     # Run the matcher
     if agent == "matching_ai":
@@ -66,7 +123,29 @@ def run_matching_eval(
     # Score
     result = score(split_predictions, answers, confidence_threshold=threshold)
 
-    return _build_report(result, split, threshold, len(predictions), agent_name)
+    # For safety split, also check expect_confident flag
+    safety_violations = []
+    if split == "safety":
+        pred_map = {p.payment_id: p for p in split_predictions}
+        for ans in answers:
+            pid = ans["payment_id"]
+            expect_confident = ans.get("expect_confident", True)
+            pred = pred_map.get(pid)
+            if not expect_confident and pred and pred.confidence >= threshold and pred.installment_ids:
+                safety_violations.append({
+                    "payment_id": pid,
+                    "case_types": ans["case_types"],
+                    "predicted_ids": pred.installment_ids,
+                    "confidence": pred.confidence,
+                    "reason": pred.reason,
+                    "expected_reason": ans.get("reason", ""),
+                })
+
+    report = _build_report(result, split, threshold, len(predictions), agent_name)
+    if split == "safety":
+        report["safety_violations"] = safety_violations
+        report["safety_violation_count"] = len(safety_violations)
+    return report
 
 
 def _build_report(result, split: str, threshold: float, total_predictions: int, agent_name: str = "matching_rules") -> dict:
@@ -102,12 +181,26 @@ def print_report(report: dict):
 
     ct = report["case_type_table"]
     if ct:
-        print(f"\n{'Case Type':<25} {'Total':>6} {'Tried':>6} {'Right':>6} {'Wrong':>6} {'Prec':>8} {'Cover':>8}")
-        print(f"{'-'*25} {'-'*6} {'-'*6} {'-'*6} {'-'*6} {'-'*8} {'-'*8}")
+        print(f"\n{'Case Type':<40} {'Total':>6} {'Tried':>6} {'Right':>6} {'Wrong':>6} {'Prec':>8} {'Cover':>8}")
+        print(f"{'-'*40} {'-'*6} {'-'*6} {'-'*6} {'-'*6} {'-'*8} {'-'*8}")
         for row in ct:
-            print(f"{row['case_type']:<25} {row['total']:>6} {row['attempted']:>6} "
+            print(f"{row['case_type']:<40} {row['total']:>6} {row['attempted']:>6} "
                   f"{row['correct']:>6} {row['wrong']:>6} "
                   f"{row['precision']:>7.2%} {row['coverage']:>7.2%}")
+
+    # Safety violations
+    violations = report.get("safety_violations", [])
+    if report.get("split") == "safety":
+        n = report.get("safety_violation_count", 0)
+        print(f"\nSafety violations (confident on must-not-be-confident): {n}")
+        if violations:
+            for v in violations:
+                print(f"  Payment {v['payment_id']}: {v['case_types']} "
+                      f"→ predicted {v['predicted_ids']} (conf={v['confidence']:.2f})")
+                print(f"    reason: {v['reason']}")
+                print(f"    expected: {v['expected_reason']}")
+        else:
+            print("  PASS — no safety violations")
     print()
 
 
@@ -159,7 +252,7 @@ def main():
     parser.add_argument("--agent", default="matching",
                        choices=["matching", "matching_ai"],
                        help="Agent to evaluate (matching=rules only, matching_ai=rules+AI)")
-    parser.add_argument("--split", default="dev", choices=["dev", "test"],
+    parser.add_argument("--split", default="dev", choices=["dev", "test", "safety"],
                        help="Data split to evaluate on")
     parser.add_argument("--threshold", type=float, default=0.8,
                        help="Confidence threshold for auto-match")

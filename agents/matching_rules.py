@@ -75,6 +75,45 @@ def _match_one(
     pay_date = _parse_iso_date(payment["date"])
     payer_name = normalize_name(payment["payer_name"] or "")
 
+    # Safety: reject invalid amounts
+    if pay_amount <= 0:
+        return MatchPrediction(
+            payment_id=payment["id"],
+            installment_ids=[],
+            confidence=0.0,
+            method="rules",
+            reason="invalid_amount",
+        )
+
+    # Safety: flag suspicious payer text (scam/refund keywords)
+    raw_payer = (payment["payer_name"] or "").lower()
+    _SUSPICIOUS_KEYWORDS = ["new account", "refund", "reversal", "chargeback",
+                            "cancel", "dispute"]
+    if any(kw in raw_payer for kw in _SUSPICIOUS_KEYWORDS):
+        return MatchPrediction(
+            payment_id=payment["id"],
+            installment_ids=[],
+            confidence=0.0,
+            method="rules",
+            reason="suspicious_payer_text",
+        )
+
+    # Safety: flag very old payments (>1 year before earliest installment due)
+    if pay_date:
+        earliest_due = None
+        for inst in installments:
+            d = _parse_iso_date(inst["due_date"])
+            if d and (earliest_due is None or d < earliest_due):
+                earliest_due = d
+        if earliest_due and (earliest_due - pay_date).days > 365:
+            return MatchPrediction(
+                payment_id=payment["id"],
+                installment_ids=[],
+                confidence=0.0,
+                method="rules",
+                reason="payment_date_too_old",
+            )
+
     # Step 1: Find candidates with exact amount match
     candidates = []
     for inst in installments:
@@ -144,16 +183,30 @@ def _match_one(
             reason=f"blank_payer+{total_same_amount}_same_amount",
         )
 
+    # Count how many installments globally share this exact amount+currency.
+    # High counts (common amounts) require extra caution.
+    total_same_amount = sum(
+        1 for i in installments
+        if i["amount_due_paise"] == pay_amount and i["currency"] == pay_currency
+    )
+
     # Single candidate with name
     if len(scored) == 1:
         inst, nscore, dscore = scored[0]
         if nscore >= NAME_THRESHOLD:
+            # Even with a name match, if the amount is very common globally
+            # (>5 installments share it), don't be too confident — the date
+            # filter may have just happened to leave one candidate.
+            if total_same_amount <= 3:
+                confidence = HIGH_CONFIDENCE
+            else:
+                confidence = MEDIUM_CONFIDENCE
             return MatchPrediction(
                 payment_id=payment["id"],
                 installment_ids=[inst["id"]],
-                confidence=HIGH_CONFIDENCE,
+                confidence=confidence,
                 method="rules",
-                reason=f"exact_amount+name_match({nscore})",
+                reason=f"exact_amount+name_match({nscore})+global({total_same_amount})",
             )
         # Weak name, single candidate — not confident enough
         return MatchPrediction(
@@ -179,12 +232,18 @@ def _match_one(
                     key=lambda x: _parse_iso_date(x[0]["due_date"]) or date.max,
                 )
             winner = top_name_cands[0][0]
+            # If amount is very common globally, cap confidence below
+            # threshold — send to review queue even with a name match.
+            if total_same_amount <= 3:
+                confidence = MEDIUM_CONFIDENCE
+            else:
+                confidence = LOW_CONFIDENCE
             return MatchPrediction(
                 payment_id=payment["id"],
                 installment_ids=[winner["id"]],
-                confidence=MEDIUM_CONFIDENCE,
+                confidence=confidence,
                 method="rules",
-                reason=f"amount+name({best_nscore})_vs_second({second_nscore})+fifo",
+                reason=f"amount+name({best_nscore})_vs_second({second_nscore})+fifo+global({total_same_amount})",
             )
 
         # Multiple candidates, all with similar name scores → ambiguous

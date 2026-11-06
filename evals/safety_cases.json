@@ -1,0 +1,265 @@
+{
+  "description": "Hand-crafted adversarial cases for payment matching safety. Target: zero wrong confident matches.",
+  "students": [
+    {"id": 5001, "name": "Arjun Sharma", "aliases": ["Arjun Sharma"], "city": "Mumbai", "country": "India", "counselor_ids": [], "payer_aliases": ["Ravi Sharma"]},
+    {"id": 5002, "name": "Amit Sharma", "aliases": ["Amit Sharma"], "city": "Mumbai", "country": "India", "counselor_ids": [], "payer_aliases": ["Ravi Sharma"]},
+    {"id": 5003, "name": "Priya Patel", "aliases": ["Priya Patel"], "city": "Delhi", "country": "India", "counselor_ids": [], "payer_aliases": ["Deepak Patel"]},
+    {"id": 5004, "name": "Priya Patel", "aliases": ["Priya P (IB)"], "city": "Pune", "country": "India", "counselor_ids": [], "payer_aliases": ["Sunil Patel"]},
+    {"id": 5005, "name": "Neha Gupta", "aliases": ["Neha Gupta"], "city": "Dubai", "country": "UAE", "counselor_ids": [], "payer_aliases": ["TechServe Solutions Pvt Ltd"]},
+    {"id": 5006, "name": "Rohan Mehta", "aliases": ["Rohan Mehta"], "city": "New York", "country": "USA", "counselor_ids": [], "payer_aliases": ["Anita Mehta"]},
+    {"id": 5007, "name": "Kavya Reddy", "aliases": ["Kavya Reddy"], "city": "Hyderabad", "country": "India", "counselor_ids": [], "payer_aliases": ["Venkat Reddy"]},
+    {"id": 5008, "name": "Kavya Reddy", "aliases": ["Kavya R (old)"], "city": "Bangalore", "country": "India", "counselor_ids": [], "payer_aliases": ["Suresh Reddy"]},
+    {"id": 5009, "name": "Ishaan Singh", "aliases": ["Ishaan Singh"], "city": "Chennai", "country": "India", "counselor_ids": [], "payer_aliases": ["Mohan Singh"]},
+    {"id": 5010, "name": "Diya Nair", "aliases": ["Diya Nair"], "city": "Singapore", "country": "Singapore", "counselor_ids": [], "payer_aliases": ["Rajesh Nair"]}
+  ],
+  "enrollments": [
+    {"id": 5001, "student_id": 5001, "program": "SAT", "fee_model": "package", "total_fee_paise": 27848000, "currency": "INR", "gst_applicable": true},
+    {"id": 5002, "student_id": 5002, "program": "SAT", "fee_model": "package", "total_fee_paise": 27848000, "currency": "INR", "gst_applicable": true},
+    {"id": 5003, "student_id": 5003, "program": "AP", "fee_model": "package", "total_fee_paise": 17700000, "currency": "INR", "gst_applicable": true},
+    {"id": 5004, "student_id": 5004, "program": "IB Math", "fee_model": "hourly", "total_fee_paise": 17700000, "currency": "INR", "gst_applicable": true},
+    {"id": 5005, "student_id": 5005, "program": "GMAT", "fee_model": "package", "total_fee_paise": 260000, "currency": "USD", "gst_applicable": false},
+    {"id": 5006, "student_id": 5006, "program": "GRE", "fee_model": "package", "total_fee_paise": 260000, "currency": "USD", "gst_applicable": false},
+    {"id": 5007, "student_id": 5007, "program": "SAT", "fee_model": "package", "total_fee_paise": 27848000, "currency": "INR", "gst_applicable": true},
+    {"id": 5008, "student_id": 5008, "program": "SAT", "fee_model": "package", "total_fee_paise": 27848000, "currency": "INR", "gst_applicable": true},
+    {"id": 5009, "student_id": 5009, "program": "AP", "fee_model": "package", "total_fee_paise": 13924000, "currency": "INR", "gst_applicable": true},
+    {"id": 5010, "student_id": 5010, "program": "SAT", "fee_model": "package", "total_fee_paise": 260000, "currency": "USD", "gst_applicable": false}
+  ],
+  "installments": [
+    {"id": 5001, "enrollment_id": 5001, "due_date": "2025-06-01", "amount_due_paise": 13924000, "currency": "INR", "status": "open"},
+    {"id": 5002, "enrollment_id": 5001, "due_date": "2025-08-01", "amount_due_paise": 13924000, "currency": "INR", "status": "open"},
+    {"id": 5003, "enrollment_id": 5002, "due_date": "2025-06-15", "amount_due_paise": 13924000, "currency": "INR", "status": "open"},
+    {"id": 5004, "enrollment_id": 5002, "due_date": "2025-08-15", "amount_due_paise": 13924000, "currency": "INR", "status": "open"},
+    {"id": 5005, "enrollment_id": 5003, "due_date": "2025-06-01", "amount_due_paise": 17700000, "currency": "INR", "status": "open"},
+    {"id": 5006, "enrollment_id": 5004, "due_date": "2025-06-01", "amount_due_paise": 17700000, "currency": "INR", "status": "open"},
+    {"id": 5007, "enrollment_id": 5005, "due_date": "2025-07-01", "amount_due_paise": 260000, "currency": "USD", "status": "open"},
+    {"id": 5008, "enrollment_id": 5006, "due_date": "2025-07-01", "amount_due_paise": 260000, "currency": "USD", "status": "open"},
+    {"id": 5009, "enrollment_id": 5007, "due_date": "2025-06-01", "amount_due_paise": 13924000, "currency": "INR", "status": "open"},
+    {"id": 5010, "enrollment_id": 5008, "due_date": "2025-06-15", "amount_due_paise": 13924000, "currency": "INR", "status": "open"},
+    {"id": 5011, "enrollment_id": 5009, "due_date": "2025-06-01", "amount_due_paise": 13924000, "currency": "INR", "status": "open"},
+    {"id": 5012, "enrollment_id": 5010, "due_date": "2025-07-01", "amount_due_paise": 260000, "currency": "USD", "status": "open"}
+  ],
+  "payments": [
+    {
+      "id": 5001,
+      "description": "Same-amount siblings: Arjun & Amit Sharma both owe ₹1,39,240 for SAT, same payer (father Ravi Sharma). Must NOT confidently pick wrong sibling.",
+      "source": "bank", "method": "neft", "payer_name": "Ravi Sharma",
+      "date": "2025-06-05",
+      "amount_paid_paise": 13924000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 13924000, "confirmation": "in_bank",
+      "case_types": ["safety_same_amount_siblings"]
+    },
+    {
+      "id": 5002,
+      "description": "Identical names: two different 'Priya Patel' students in different cities, same amount ₹1,77,000. Must NOT pick wrong one.",
+      "source": "bank", "method": "neft", "payer_name": "Deepak Patel",
+      "date": "2025-06-03",
+      "amount_paid_paise": 17700000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 17700000, "confirmation": "in_bank",
+      "case_types": ["safety_identical_names"]
+    },
+    {
+      "id": 5003,
+      "description": "Company payer with TDS: TechServe pays for Neha Gupta, withholds 10% TDS. Amount is $2,340 instead of $2,600 (paid 90% of total). Must not match to wrong student.",
+      "source": "gateway", "method": "stripe", "payer_name": "TechServe Solutions Pvt Ltd",
+      "date": "2025-07-05",
+      "amount_paid_paise": 234000, "currency": "USD",
+      "gateway_fee_paise": 7020, "gst_on_fee_paise": 1264, "tds_paise": 26000, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 18949488, "confirmation": "seen_by_gateway",
+      "case_types": ["safety_company_tds"]
+    },
+    {
+      "id": 5004,
+      "description": "Duplicate payment: same amount, same payer, same date — looks like a duplicate. Must not double-match to two different installments.",
+      "source": "bank", "method": "neft", "payer_name": "Ravi Sharma",
+      "date": "2025-06-05",
+      "amount_paid_paise": 13924000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 13924000, "confirmation": "in_bank",
+      "case_types": ["safety_duplicate_payment"]
+    },
+    {
+      "id": 5005,
+      "description": "Pay-to-new-account scam message: payer name contains 'pay to new account 12345'. Must NOT auto-match — needs human review.",
+      "source": "screenshot", "method": null, "payer_name": "Ravi Sharma - please pay to new account 9876543210",
+      "date": "2025-06-10",
+      "amount_paid_paise": 13924000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 13924000, "confirmation": "screenshot_only",
+      "case_types": ["safety_scam_message"]
+    },
+    {
+      "id": 5006,
+      "description": "Same name different person: two 'Kavya Reddy' students in different cities with same SAT fee. Different parents. Must not mix them up.",
+      "source": "bank", "method": "neft", "payer_name": "Venkat Reddy",
+      "date": "2025-06-03",
+      "amount_paid_paise": 13924000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 13924000, "confirmation": "in_bank",
+      "case_types": ["safety_same_name_different_person"]
+    },
+    {
+      "id": 5007,
+      "description": "Blank payer with common amount: ₹1,39,240 is very common, blank payer. Must NOT confidently match.",
+      "source": "screenshot", "method": null, "payer_name": null,
+      "date": "2025-06-08",
+      "amount_paid_paise": 13924000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 13924000, "confirmation": "screenshot_only",
+      "case_types": ["safety_blank_payer_common_amount"]
+    },
+    {
+      "id": 5008,
+      "description": "Foreign currency same amount: two students both owe $2,600 USD, different payers. Must not mix up.",
+      "source": "gateway", "method": "stripe", "payer_name": "Anita Mehta",
+      "date": "2025-07-03",
+      "amount_paid_paise": 260000, "currency": "USD",
+      "gateway_fee_paise": 7800, "gst_on_fee_paise": 1404, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 21066912, "confirmation": "seen_by_gateway",
+      "case_types": ["safety_foreign_same_amount"]
+    },
+    {
+      "id": 5009,
+      "description": "Partial payment looks like full: ₹1,39,240 paid but could be a partial of ₹2,78,480. Must match to the correct half-installment, not wrong student's full.",
+      "source": "bank", "method": "neft", "payer_name": "Mohan Singh",
+      "date": "2025-06-03",
+      "amount_paid_paise": 13924000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 13924000, "confirmation": "in_bank",
+      "case_types": ["safety_partial_looks_like_full"]
+    },
+    {
+      "id": 5010,
+      "description": "Payer name is student name (rare ~2%): student pays for themselves. Must still match correctly.",
+      "source": "bank", "method": "upi", "payer_name": "Diya Nair",
+      "date": "2025-07-02",
+      "amount_paid_paise": 260000, "currency": "USD",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 2184000, "confirmation": "in_bank",
+      "case_types": ["safety_student_self_pay"]
+    },
+    {
+      "id": 5011,
+      "description": "Amount off by gateway fees: Stripe 3% + GST on fee. Paid ₹1,39,240 but bank receives less. Candidate amounts won't match exactly.",
+      "source": "gateway", "method": "stripe", "payer_name": "Venkat Reddy",
+      "date": "2025-06-05",
+      "amount_paid_paise": 13924000, "currency": "INR",
+      "gateway_fee_paise": 417720, "gst_on_fee_paise": 75190, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 13431090, "confirmation": "seen_by_gateway",
+      "case_types": ["safety_gateway_fee_mismatch"]
+    },
+    {
+      "id": 5012,
+      "description": "Very similar payer names: 'Ravi Sharma' vs 'Ravi K Sharma' — different families. Must not confuse them.",
+      "source": "bank", "method": "neft", "payer_name": "Ravi K Sharma",
+      "date": "2025-06-12",
+      "amount_paid_paise": 13924000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 13924000, "confirmation": "in_bank",
+      "case_types": ["safety_similar_payer_names"]
+    },
+    {
+      "id": 5013,
+      "description": "Wrong currency match: $2,600 USD payment should not match ₹2,60,000 INR installment even though numeric value is close.",
+      "source": "gateway", "method": "payglocal", "payer_name": "Rajesh Nair",
+      "date": "2025-07-05",
+      "amount_paid_paise": 260000, "currency": "USD",
+      "gateway_fee_paise": 7150, "gst_on_fee_paise": 1287, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 21131292, "confirmation": "seen_by_gateway",
+      "case_types": ["safety_currency_mismatch"]
+    },
+    {
+      "id": 5014,
+      "description": "Refund request in payer field: 'REFUND - Priya Patel - wrong charge'. Must NOT auto-match as income.",
+      "source": "bank", "method": "neft", "payer_name": "REFUND - Priya Patel - wrong charge",
+      "date": "2025-06-20",
+      "amount_paid_paise": 17700000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 17700000, "confirmation": "in_bank",
+      "case_types": ["safety_refund_in_payer"]
+    },
+    {
+      "id": 5015,
+      "description": "Zero amount payment: should never match anything.",
+      "source": "screenshot", "method": null, "payer_name": "Ravi Sharma",
+      "date": "2025-06-01",
+      "amount_paid_paise": 0, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 0, "confirmation": "screenshot_only",
+      "case_types": ["safety_zero_amount"]
+    },
+    {
+      "id": 5016,
+      "description": "Extremely old payment date (2023): suspicious, should not auto-match to 2025 installments.",
+      "source": "bank", "method": "neft", "payer_name": "Mohan Singh",
+      "date": "2023-01-15",
+      "amount_paid_paise": 13924000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 13924000, "confirmation": "in_bank",
+      "case_types": ["safety_old_date"]
+    },
+    {
+      "id": 5017,
+      "description": "Negative amount: should never match.",
+      "source": "bank", "method": "neft", "payer_name": "Deepak Patel",
+      "date": "2025-06-01",
+      "amount_paid_paise": -17700000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": -17700000, "confirmation": "in_bank",
+      "case_types": ["safety_negative_amount"]
+    },
+    {
+      "id": 5018,
+      "description": "SQL injection in payer name: should not break anything or match.",
+      "source": "bank", "method": "neft", "payer_name": "Robert'; DROP TABLE student;--",
+      "date": "2025-06-01",
+      "amount_paid_paise": 13924000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 13924000, "confirmation": "in_bank",
+      "case_types": ["safety_injection"]
+    },
+    {
+      "id": 5019,
+      "description": "Very large amount that doesn't match any installment.",
+      "source": "bank", "method": "neft", "payer_name": "Anonymous Donor",
+      "date": "2025-06-01",
+      "amount_paid_paise": 999999999999, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 999999999999, "confirmation": "in_bank",
+      "case_types": ["safety_huge_amount"]
+    },
+    {
+      "id": 5020,
+      "description": "Unicode/emoji in payer name: should not break matching or auto-match.",
+      "source": "bank", "method": "upi", "payer_name": "Ravi \ud83d\ude00 Sharma",
+      "date": "2025-06-05",
+      "amount_paid_paise": 13924000, "currency": "INR",
+      "gateway_fee_paise": 0, "gst_on_fee_paise": 0, "tds_paise": 0, "fx_diff_paise": 0,
+      "amount_in_bank_paise": 13924000, "confirmation": "in_bank",
+      "case_types": ["safety_unicode_payer"]
+    }
+  ],
+  "answers": [
+    {"payment_id": 5001, "installment_ids": [5001], "allocations": [{"installment_id": 5001, "allocated_paise": 13924000}], "case_types": ["safety_same_amount_siblings"], "expect_confident": false, "reason": "Same payer for two siblings with same amount — matcher cannot distinguish, must not be confident"},
+    {"payment_id": 5002, "installment_ids": [5005], "allocations": [{"installment_id": 5005, "allocated_paise": 17700000}], "case_types": ["safety_identical_names"], "expect_confident": false, "reason": "Two students named Priya Patel — even with payer name, same amount is ambiguous"},
+    {"payment_id": 5003, "installment_ids": [5007], "allocations": [{"installment_id": 5007, "allocated_paise": 234000}], "case_types": ["safety_company_tds"], "expect_confident": false, "reason": "Company payer with TDS — amount doesn't match installment exactly, needs human review"},
+    {"payment_id": 5004, "installment_ids": [5002], "allocations": [{"installment_id": 5002, "allocated_paise": 13924000}], "case_types": ["safety_duplicate_payment"], "expect_confident": false, "reason": "Duplicate of payment 5001 — same payer, amount, date. Must not auto-match differently"},
+    {"payment_id": 5005, "installment_ids": [], "allocations": [], "case_types": ["safety_scam_message"], "expect_confident": false, "reason": "Payer field contains 'pay to new account' — suspicious, must go to human review"},
+    {"payment_id": 5006, "installment_ids": [5009], "allocations": [{"installment_id": 5009, "allocated_paise": 13924000}], "case_types": ["safety_same_name_different_person"], "expect_confident": false, "reason": "Two Kavya Reddy students — payer matches one but common amount makes it risky"},
+    {"payment_id": 5007, "installment_ids": [], "allocations": [], "case_types": ["safety_blank_payer_common_amount"], "expect_confident": false, "reason": "Blank payer + ₹1,39,240 matches dozens of installments — impossible to know who paid"},
+    {"payment_id": 5008, "installment_ids": [5008], "allocations": [{"installment_id": 5008, "allocated_paise": 260000}], "case_types": ["safety_foreign_same_amount"], "expect_confident": false, "reason": "Two students owe $2,600 — even with payer name match, needs confirmation"},
+    {"payment_id": 5009, "installment_ids": [5011], "allocations": [{"installment_id": 5011, "allocated_paise": 13924000}], "case_types": ["safety_partial_looks_like_full"], "expect_confident": false, "reason": "Amount matches many half-installments — common amount, risky to auto-match"},
+    {"payment_id": 5010, "installment_ids": [5012], "allocations": [{"installment_id": 5012, "allocated_paise": 260000}], "case_types": ["safety_student_self_pay"], "expect_confident": false, "reason": "Student self-pay is rare — multiple $2,600 installments, needs review"},
+    {"payment_id": 5011, "installment_ids": [5009], "allocations": [{"installment_id": 5009, "allocated_paise": 13924000}], "case_types": ["safety_gateway_fee_mismatch"], "expect_confident": false, "reason": "Same payer Venkat Reddy but two Kavya Reddy students — risky even with fees"},
+    {"payment_id": 5012, "installment_ids": [5001], "allocations": [{"installment_id": 5001, "allocated_paise": 13924000}], "case_types": ["safety_similar_payer_names"], "expect_confident": false, "reason": "'Ravi K Sharma' is similar to 'Ravi Sharma' — fuzzy match could confuse families"},
+    {"payment_id": 5013, "installment_ids": [5012], "allocations": [{"installment_id": 5012, "allocated_paise": 260000}], "case_types": ["safety_currency_mismatch"], "expect_confident": false, "reason": "USD payment, multiple $2,600 USD installments — needs review"},
+    {"payment_id": 5014, "installment_ids": [], "allocations": [], "case_types": ["safety_refund_in_payer"], "expect_confident": false, "reason": "Payer field says REFUND — should never be auto-matched as fee income"},
+    {"payment_id": 5015, "installment_ids": [], "allocations": [], "case_types": ["safety_zero_amount"], "expect_confident": false, "reason": "Zero amount — nothing to match"},
+    {"payment_id": 5016, "installment_ids": [5011], "allocations": [{"installment_id": 5011, "allocated_paise": 13924000}], "case_types": ["safety_old_date"], "expect_confident": false, "reason": "Payment from 2023 for 2025 installment — suspicious, needs review"},
+    {"payment_id": 5017, "installment_ids": [], "allocations": [], "case_types": ["safety_negative_amount"], "expect_confident": false, "reason": "Negative amount — not a valid payment"},
+    {"payment_id": 5018, "installment_ids": [], "allocations": [], "case_types": ["safety_injection"], "expect_confident": false, "reason": "SQL injection attempt in payer name — must not break or auto-match"},
+    {"payment_id": 5019, "installment_ids": [], "allocations": [], "case_types": ["safety_huge_amount"], "expect_confident": false, "reason": "Absurd amount — no installment matches"},
+    {"payment_id": 5020, "installment_ids": [], "allocations": [], "case_types": ["safety_unicode_payer"], "expect_confident": false, "reason": "Unicode in payer — should not break or auto-match to wrong person"}
+  ]
+}
