@@ -1,201 +1,201 @@
-id,name,city,country,counselor_ids
-1001,Simran Kapoor,Calcutta,IN,[]
-1002,Meera Pillai,Bengaluru,India,[15]
-1003,Pranav Menon,Blore,IN,[]
-1004,Pallavi Das,San Francisco,United States,[18]
-1005,Vikram Chopra,New York,US,[17]
-1006,Tanvi Gupta,Kolkata,India,[]
-1007,Kriti Kapoor,Madras,IN,[]
-1008,Isha Sharma,Mumbai,India,[11]
-1009,Tanvi Desai,Calcutta,India,[14]
-1010,Pranav Kapoor,Delhi,India,[5]
-1011,Bhavya Patel,Ahmedabad,India,[]
-1012,Kavya Thakur,London,United Kingdom,[]
-1013,Utkarsh Kapoor,Hyderabad,India,[17]
-1014,Pranav Singh,New York,United States,[19]
-1015,Yash Chopra,Delhi,IN,[]
-1016,Tanya Joshi,Bengaluru,IN,[]
-1017,Deepak Mehta,Delhi,IN,[]
-1018,Vaishnavi Bansal,Pune,India,[5]
-1019,Charu Gupta,Sharjah,U.A.E,[14]
-1020,Jatin Verma,Ahmedabad,India,[]
-1021,Esha Bhatia,Singapore,SG,[15]
-1022,Aditya Saxena,Mumbai,IN,[9]
-1023,Charu Pillai,New York,USA,[17]
-1024,Zara Thakur,Hyderabad,IN,[14]
-1025,Aditya Kapoor,San Francisco,United States,[10]
-1026,Vidya Iyer,Bengaluru,India,[1]
-1027,Diya Srinivasan,Delhi,India,[]
-1028,Siddharth Chatterjee,Calcutta,IN,[16]
-1029,Tushar Chatterjee,Bangalore,IN,[7]
-1030,Tushar Malhotra,Bombay,IN,[]
-1031,Varun Khanna,Bengaluru,IN,[11]
-1032,Deepak Bansal,Bombay,IN,[11]
-1033,Isha Srinivasan,Mumbai,India,[]
-1034,Ankita Mehta,Sharjah,Dubai,[1]
-1035,Ankita Saxena,Delhi,India,[]
-1036,Aarav Bansal,Kolkata,IN,[]
-1037,Vidya Bhatia,London,United Kingdom,[]
-1038,Farhan Desai,Madras,IN,[9]
-1039,Ankita Desai,Calcutta,India,[13]
-1040,Ishaan Chatterjee,Calcutta,IN,[7]
-1041,Sahil Mehta,San Francisco,USA,[6]
-1042,Vikram Bansal,Abu Dhabi,U.A.E,[11]
-1043,Sakshi Gupta,Mumbai,India,[10]
-1044,Riya Chopra,Singapore,Singapore,[]
-1045,Aarav Shah,Jaipur,IN,[10]
-1046,Gauri Shah,Bengaluru,IN,[2]
-1047,Ankita Chopra,Madras,IN,[14]
-1048,Utkarsh Sharma,San Francisco,USA,[15]
-1049,Neel Iyer,Bengaluru,IN,[13]
-1050,Swati Kulkarni,DXB,United Arab Emirates,[20]
-1051,Lakshmi Rao,London,UK,[]
-1052,Rohan Singh,Bengaluru,IN,[]
-1053,Varun Kulkarni,Sharjah,U.A.E,[]
-1054,Nisha Iyer,Ahmedabad,IN,[7]
-1055,Vaishnavi Bhatia,Bengaluru,India,[19]
-1056,Diya Shah,Sharjah,United Arab Emirates,[]
-1057,Arnav Khanna,DXB,Dubai,[]
-1058,Esha Agarwal,Mumbai,IN,[12]
-1059,Farhan Gupta,Pune,IN,[8]
-1060,Simran Reddy,Hyderabad,IN,[10]
-1061,Lakshmi Agarwal,Pune,India,[]
-1062,Kavya Verma,Sharjah,UAE,[]
-1063,Simran Khanna,San Francisco,US,[]
-1064,Pooja Chatterjee,Pune,IN,[12]
-1065,Aditi Das,Houston,United States,[]
-1066,Sakshi Singh,Ahmedabad,IN,[18]
-1067,Priya Mehta,Hyderabad,IN,[]
-1068,Kiran Nair,London,UK,[]
-1069,Harsh Mukherjee,Bengaluru,India,[]
-1070,Neha Bhatia,Hyderabad,India,[14]
-1071,Shreya Joshi,DXB,U.A.E,[16]
-1072,Varun Kumar,Madras,IN,[15]
-1073,Dhruv Bansal,Kolkata,IN,[]
-1074,Vivek Desai,Delhi,IN,[]
-1075,Nisha Bansal,Pune,IN,[4]
-1076,Omkar Singh,New York,United States,[]
-1077,Kriti Chopra,Houston,USA,[13]
-1078,Priya Rao,Hyderabad,IN,[]
-1079,Kriti Kulkarni,Pune,IN,[]
-1080,Harsh Malhotra,Madras,IN,[14]
-1081,Pranav Bansal,Singapore,SG,[11]
-1082,Vidya Rao,Houston,US,[14]
-1083,Shreya Srinivasan,Ahmedabad,IN,[]
-1084,Tanvi Malhotra,Jaipur,IN,[16]
-1085,Rohan Rao,Hyderabad,India,[]
-1086,Riya Thakur,New York,United States,[2]
-1087,Omkar Menon,Singapore,SG,[11]
-1088,Diya Iyer,Bengaluru,IN,[]
-1089,Neel Saxena,Ahmedabad,IN,[12]
-1090,Aisha Verma,Jaipur,IN,[20]
-1091,Riya Das,Kolkata,India,[]
-1092,Gauri Bhatia,Chennai,IN,[4]
-1093,Diya Saxena,Bengaluru,IN,[2]
-1094,Bhavya Saxena,Houston,USA,[16]
-1095,Kavya Nair,Singapore,SG,[2]
-1096,Aditi Srinivasan,Bengaluru,IN,[12]
-1097,Simran Kulkarni,dubai,Dubai,[]
-1098,Kriti Iyer,Hyderabad,India,[]
-1099,Aisha Chopra,Bengaluru,IN,[13]
-1100,Akash Bansal,Chennai,IN,[]
-1101,Rahul Gupta,Blore,IN,[11]
-1102,Aisha Kapoor,Houston,US,[]
-1103,Aditi Kumar,London,UK,[12]
-1104,Charu Sharma,London,UK,[]
-1105,Ananya Rao,Kolkata,IN,[3]
-1106,Isha Singh,Sharjah,United Arab Emirates,[19]
-1107,Rohan Verma,Blore,India,[]
-1108,Tushar Chopra,San Francisco,United States,[10]
-1109,Vivek Mukherjee,Mumbai,India,[]
-1110,Simran Chopra,Madras,India,[]
-1111,Harsh Iyer,Hyderabad,IN,[12]
-1112,Lakshmi Pillai,Singapore,Singapore,[19]
-1113,Pranav Kulkarni,Bengaluru,IN,[16]
-1114,Omkar Patel,Jaipur,IN,[13]
-1115,Omkar Malhotra,Jaipur,India,[11]
-1116,Esha Pillai,San Francisco,United States,[16]
-1117,Utkarsh Chopra,DXB,Dubai,[]
-1118,Ritika Pillai,Bengaluru,India,[11]
-1119,Arnav Kumar,Ahmedabad,IN,[6]
-1120,Kavya Das,Bengaluru,IN,[]
-1121,Aditya Chatterjee,Pune,India,[3]
-1122,Vivek Chatterjee,Bangalore,India,[17]
-1123,Aarav Chatterjee,Sharjah,United Arab Emirates,[]
-1124,Vivek Patel,Sharjah,Dubai,[]
-1125,Manish Mukherjee,Hyderabad,IN,[16]
-1126,Esha Kapoor,Chennai,India,[10]
-1127,Meera Thakur,Madras,India,[]
-1128,Akash Verma,Chennai,IN,[10]
-1129,Deepak Desai,Jaipur,IN,[16]
-1130,Akash Saxena,Ahmedabad,India,[17]
-1131,Rohan Kumar,Kolkata,IN,[]
-1132,Rahul Menon,Dubai,Dubai,[5]
-1133,Deepak Srinivasan,Abu Dhabi,United Arab Emirates,[8]
-1134,Gauri Thakur,Abu Dhabi,United Arab Emirates,[]
-1135,Swati Patel,Bombay,IN,[2]
-1136,Meera Joshi,Blore,India,[2]
-1137,Akash Menon,Singapore,SG,[13]
-1138,Sneha Shah,Sharjah,Dubai,[3]
-1139,Harsh Desai,Hyderabad,India,[]
-1140,Pranav Thakur,Hyderabad,IN,[12]
-1141,Harsh Menon,Mumbai,India,[19]
-1142,Sakshi Chatterjee,Hyderabad,IN,[]
-1143,Vaishnavi Khanna,Mumbai,India,[]
-1144,Shreya Rao,Jaipur,IN,[18]
-1145,Rajat Agarwal,Bangalore,India,[7]
-1146,Tanvi Joshi,New York,United States,[]
-1147,Yash Bhatia,Delhi,India,[]
-1148,Tanvi Verma,Hyderabad,India,[13]
-1149,Neel Pillai,Sharjah,U.A.E,[8]
-1150,Kiran Bhatia,London,United Kingdom,[]
-1151,Arnav Gupta,Bengaluru,India,[12]
-1152,Arjun Menon,Jaipur,IN,[13]
-1153,Pallavi Reddy,Madras,IN,[14]
-1154,Vikram Desai,Bengaluru,India,[13]
-1155,Rajat Bansal,Jaipur,IN,[]
-1156,Sakshi Mukherjee,Houston,US,[]
-1157,Ananya Saxena,Singapore,Singapore,[9]
-1158,Vivek Thakur,Singapore,SG,[]
-1159,Tanvi Srinivasan,Pune,IN,[9]
-1160,Rohan Malhotra,Ahmedabad,IN,[10]
-1161,Riya Kapoor,Hyderabad,IN,[]
-1162,Farhan Chatterjee,Ahmedabad,IN,[]
-1163,Riya Mukherjee,Mumbai,India,[]
-1164,Charu Mehta,Calcutta,IN,[4]
-1165,Diya Kulkarni,Jaipur,IN,[18]
-1166,Farhan Iyer,dubai,UAE,[]
-1167,Tanvi Sharma,New York,USA,[10]
-1168,Mohit Chatterjee,Houston,United States,[14]
-1169,Ankita Menon,Singapore,Singapore,[7]
-1170,Lakshmi Mukherjee,Ahmedabad,India,[]
-1171,Pranav Desai,Madras,IN,[3]
-1172,Mohit Bansal,London,UK,[7]
-1173,Bhavya Srinivasan,London,UK,[]
-1174,Esha Bansal,San Francisco,United States,[12]
-1175,Arnav Singh,Kolkata,India,[15]
-1176,Ananya Joshi,Delhi,IN,[]
-1177,Esha Rao,Bengaluru,IN,[]
-1178,Rahul Iyer,New York,United States,[20]
-1179,Siddharth Das,Pune,India,[]
-1180,Tanya Sharma,Houston,US,[]
-1181,Aisha Thakur,Pune,IN,[]
-1182,Pooja Kumar,Pune,IN,[8]
-1183,Zara Kapoor,Bangalore,India,[1]
-1184,Tushar Sharma,Pune,India,[]
-1185,Esha Menon,Delhi,India,[2]
-1186,Vivek Bansal,Pune,IN,[11]
-1187,Isha Bhatia,Bombay,India,[10]
-1188,Neha Chopra,New York,US,[]
-1189,Neel Sharma,Singapore,Singapore,[8]
-1190,Arjun Mukherjee,Blore,IN,[2]
-1191,Ananya Nair,Jaipur,India,[15]
-1192,Aditya Chopra,Dubai,Dubai,[12]
-1193,Jatin Singh,Bangalore,India,[]
-1194,Utkarsh Mukherjee,Delhi,India,[]
-1195,Rohan Patel,Jaipur,IN,[14]
-1196,Vidya Das,Madras,IN,[2]
-1197,Neha Sharma,Houston,United States,[19]
-1198,Akash Bhatia,Houston,USA,[8]
-1199,Jatin Mukherjee,Hyderabad,IN,[19]
-1200,Siddharth Desai,Jaipur,India,[]
+id,name,aliases,city,country,counselor_ids,payer_aliases
+1001,Simran Kapoor,"[""Simran Kapoor""]",Calcutta,IN,[],"[""Vivek Kapoor""]"
+1002,Meera Pillai,"[""Meear Pillai""]",Bengaluru,India,[15],"[""Yash Pillai""]"
+1003,Pranav Menon,"[""Pranav Menon""]",Blore,IN,[],"[""Arjun Menon""]"
+1004,Pallavi Das,"[""Pallavi Das""]",San Francisco,United States,[18],"[""Dhruv Das""]"
+1005,Vikram Chopra,"[""Vikram Chopra""]",New York,US,[17],"[""Kriti Chopra""]"
+1006,Tanvi Gupta,"[""Tanvi Gupta""]",Kolkata,India,[],"[""Deepak Gupta""]"
+1007,Kriti Kapoor,"[""Kriti Kapoor""]",Madras,IN,[],"[""Riya Kapoor""]"
+1008,Isha Sharma,"[""Isha Sharma (Sat Math)""]",Mumbai,India,[11],"[""Tushar Sharma""]"
+1009,Tanvi Desai,"[""Tanvi Desai""]",Calcutta,India,[14],"[""Bhavya Desai""]"
+1010,Pranav Kapoor,"[""Pranav Kapoor""]",Delhi,India,[5],"[""Gauri Kapoor""]"
+1011,Bhavya Patel,"[""Bhavya Patel""]",Ahmedabad,India,[],"[""Vivek Patel""]"
+1012,Kavya Thakur,"[""Kavya Thakur""]",London,United Kingdom,[],"[""Ankita Thakur""]"
+1013,Utkarsh Kapoor,"[""Utkarsh Kpaoor""]",Hyderabad,India,[17],"[""Utkarsh Kapoor""]"
+1014,Pranav Singh,"[""Pranav Singh""]",New York,United States,[19],"[""Arjun Singh""]"
+1015,Yash Chopra,"[""Yash Chopra""]",Delhi,IN,[],"[""Vidya Chopra""]"
+1016,Tanya Joshi,"[""Tanya Joshi""]",Bengaluru,IN,[],"[""Vidya Joshi""]"
+1017,Deepak Mehta,"[""Deepak Mehta""]",Delhi,IN,[],"[""Lakshmi Mehta""]"
+1018,Vaishnavi Bansal,"[""Vaishnavi Bansal""]",Pune,India,[5],"[""Aarav Bansal""]"
+1019,Charu Gupta,"[""CharuG upta""]",Sharjah,U.A.E,[14],"[""Utkarsh Gupta""]"
+1020,Jatin Verma,"[""Jatin Verma""]",Ahmedabad,India,[],"[""Vivek Verma""]"
+1021,Esha Bhatia,"[""Esha Bhatia""]",Singapore,SG,[15],"[""Isha Bhatia""]"
+1022,Aditya Saxena,"[""Aditya""]",Mumbai,IN,[9],"[""Farhan Saxena""]"
+1023,Charu Pillai,"[""Charu Pillai""]",New York,USA,[17],"[""Arnav Pillai""]"
+1024,Zara Thakur,"[""Zara Thakur""]",Hyderabad,IN,[14],"[""Shreya Thakur""]"
+1025,Aditya Kapoor,"[""Aditya Kapoor""]",San Francisco,United States,[10],"[""Ritika Kapoor""]"
+1026,Vidya Iyer,"[""Vidya""]",Bengaluru,India,[1],"[""Pooja Iyer""]"
+1027,Diya Srinivasan,"[""Diya Srinivasan""]",Delhi,India,[],"[""Farhan Srinivasan""]"
+1028,Siddharth Chatterjee,"[""Siddharth Chatterjee""]",Calcutta,IN,[16],"[""Tushar Chatterjee""]"
+1029,Tushar Chatterjee,"[""Tushar""]",Bangalore,IN,[7],"[""Ankita Chatterjee""]"
+1030,Tushar Malhotra,"[""Tushar Malhotra""]",Bombay,IN,[],"[""Aarav Malhotra""]"
+1031,Varun Khanna,"[""Varun Khanna""]",Bengaluru,IN,[11],"[""Sakshi Khanna""]"
+1032,Deepak Bansal,"[""Deepak Bansal""]",Bombay,IN,[11],"[""Meera Bansal""]"
+1033,Isha Srinivasan,"[""Isha Srinivasan""]",Mumbai,India,[],"[""Gauri Srinivasan""]"
+1034,Ankita Mehta,"[""Ankita Mehta""]",Sharjah,Dubai,[1],"[""Manish Mehta""]"
+1035,Ankita Saxena,"[""Ankita Saxena""]",Delhi,India,[],"[""Neha Saxena""]"
+1036,Aarav Bansal,"[""Aarav Bansal""]",Kolkata,IN,[],"[""Omkar Bansal""]"
+1037,Vidya Bhatia,"[""Vidya Bhatia""]",London,United Kingdom,[],"[""Rajat Bhatia""]"
+1038,Farhan Desai,"[""Farhan Desai""]",Madras,IN,[9],"[""Tanya Desai""]"
+1039,Ankita Desai,"[""Ankita Desai""]",Calcutta,India,[13],"[""Arjun Desai""]"
+1040,Ishaan Chatterjee,"[""Ishaan Chatterjee""]",Calcutta,IN,[7],"[""Kavya Chatterjee""]"
+1041,Sahil Mehta,"[""Sahil Mehta""]",San Francisco,USA,[6],"[""Lakshmi Mehta""]"
+1042,Vikram Bansal,"[""Vikram Bansal""]",Abu Dhabi,U.A.E,[11],"[""Sahil Bansal""]"
+1043,Sakshi Gupta,"[""Sakshi Gupta (Sat Math)""]",Mumbai,India,[10],"[""Pooja Gupta""]"
+1044,Riya Chopra,"[""Riya Chopra (Sat Math)""]",Singapore,Singapore,[],"[""Vidya Chopra""]"
+1045,Aarav Shah,"[""Aarav Shah""]",Jaipur,IN,[10],"[""Aisha Shah""]"
+1046,Gauri Shah,"[""Gauri Shah""]",Bengaluru,IN,[2],"[""Rajat Shah""]"
+1047,Ankita Chopra,"[""Ankita Chopra""]",Madras,IN,[14],"[""Arjun Chopra""]"
+1048,Utkarsh Sharma,"[""Utkarsh Sharma""]",San Francisco,USA,[15],"[""Sahil Sharma""]"
+1049,Neel Iyer,"[""Neel Iyer""]",Bengaluru,IN,[13],"[""Ankita Iyer""]"
+1050,Swati Kulkarni,"[""Swati Kulkarni""]",DXB,United Arab Emirates,[20],"[""Gauri Kulkarni""]"
+1051,Lakshmi Rao,"[""Lakshmi Rao""]",London,UK,[],"[""Vikram Rao""]"
+1052,Rohan Singh,"[""Rohan Singh""]",Bengaluru,IN,[],"[""Shreya Singh""]"
+1053,Varun Kulkarni,"[""Varun Kulkarni""]",Sharjah,U.A.E,[],"[""Mohit Kulkarni""]"
+1054,Nisha Iyer,"[""Nisha Iyer""]",Ahmedabad,IN,[7],"[""Vivek Iyer""]"
+1055,Vaishnavi Bhatia,"[""Vaishnavi Bhatia""]",Bengaluru,India,[19],"[""Deepak Bhatia""]"
+1056,Diya Shah,"[""Diya Shah""]",Sharjah,United Arab Emirates,[],"[""Neha Shah""]"
+1057,Arnav Khanna,"[""Arnav Khanna""]",DXB,Dubai,[],"[""Aditya Khanna""]"
+1058,Esha Agarwal,"[""Esha Agarwal""]",Mumbai,IN,[12],"[""Neha Agarwal""]"
+1059,Farhan Gupta,"[""Farhan Gupta""]",Pune,IN,[8],"[""Vaishnavi Gupta""]"
+1060,Simran Reddy,"[""Simran Reddy""]",Hyderabad,IN,[10],"[""Ankita Reddy""]"
+1061,Lakshmi Agarwal,"[""Lakshmi Agarwal""]",Pune,India,[],"[""Tanvi Agarwal""]"
+1062,Kavya Verma,"[""Kavya""]",Sharjah,UAE,[],"[""Manish Verma""]"
+1063,Simran Khanna,"[""Simran Khanna""]",San Francisco,US,[],"[""Vaishnavi Khanna""]"
+1064,Pooja Chatterjee,"[""Pooja Chatterjee""]",Pune,IN,[12],"[""Simran Chatterjee""]"
+1065,Aditi Das,"[""Aditi Das""]",Houston,United States,[],"[""Ananya Das""]"
+1066,Sakshi Singh,"[""Sakshi Singh""]",Ahmedabad,IN,[18],"[""Rohan Singh""]"
+1067,Priya Mehta,"[""Priya Mehta""]",Hyderabad,IN,[],"[""Riya Mehta""]"
+1068,Kiran Nair,"[""Kiran Nair""]",London,UK,[],"[""Yash Nair""]"
+1069,Harsh Mukherjee,"[""Harsh""]",Bengaluru,India,[],"[""Neha Mukherjee""]"
+1070,Neha Bhatia,"[""Neha Bhatia""]",Hyderabad,India,[14],"[""Kavya Bhatia""]"
+1071,Shreya Joshi,"[""Shreya Joshi""]",DXB,U.A.E,[16],"[""Aditi Joshi""]"
+1072,Varun Kumar,"[""Varun Kumar""]",Madras,IN,[15],"[""Varun Kumar""]"
+1073,Dhruv Bansal,"[""Dhruv Bansal""]",Kolkata,IN,[],"[""Neel Bansal""]"
+1074,Vivek Desai,"[""Vivek Desai""]",Delhi,IN,[],"[""Bhavya Desai""]"
+1075,Nisha Bansal,"[""Nisha Bansal""]",Pune,IN,[4],"[""Varun Bansal""]"
+1076,Omkar Singh,"[""Omkar Singh""]",New York,United States,[],"[""Mohit Singh""]"
+1077,Kriti Chopra,"[""Kriti""]",Houston,USA,[13],"[""Swati Chopra""]"
+1078,Priya Rao,"[""Priya Rao""]",Hyderabad,IN,[],"[""Mohit Rao""]"
+1079,Kriti Kulkarni,"[""Kriti Kulkarni""]",Pune,IN,[],"[""Aditya Kulkarni""]"
+1080,Harsh Malhotra,"[""Harsh Malhotra""]",Madras,IN,[14],"[""Charu Malhotra""]"
+1081,Pranav Bansal,"[""Pranav Bansal""]",Singapore,SG,[11],"[""Vaishnavi Bansal""]"
+1082,Vidya Rao,"[""Vidya Rao""]",Houston,US,[14],"[""Sanya Rao""]"
+1083,Shreya Srinivasan,"[""Shreya Srinivasan""]",Ahmedabad,IN,[],"[""Nisha Srinivasan""]"
+1084,Tanvi Malhotra,"[""Tanvi Malhotra""]",Jaipur,IN,[16],"[""Diya Malhotra""]"
+1085,Rohan Rao,"[""Rohan Rao""]",Hyderabad,India,[],"[""Yash Rao""]"
+1086,Riya Thakur,"[""Riya Thakur""]",New York,United States,[2],"[""Sahil Thakur""]"
+1087,Omkar Menon,"[""Omkar""]",Singapore,SG,[11],"[""Aditya Menon""]"
+1088,Diya Iyer,"[""Diya Iyer""]",Bengaluru,IN,[],"[""Yash Iyer""]"
+1089,Neel Saxena,"[""Neel Saxena""]",Ahmedabad,IN,[12],"[""Shreya Saxena""]"
+1090,Aisha Verma,"[""Aisha Verma""]",Jaipur,IN,[20],"[""Diya Verma""]"
+1091,Riya Das,"[""Riya Das""]",Kolkata,India,[],"[""Manish Das""]"
+1092,Gauri Bhatia,"[""Gauri Bhatia""]",Chennai,IN,[4],"[""Swati Bhatia""]"
+1093,Diya Saxena,"[""Diya Saxena""]",Bengaluru,IN,[2],"[""Vivek Saxena""]"
+1094,Bhavya Saxena,"[""Bhavya Saxena""]",Houston,USA,[16],"[""Aisha Saxena""]"
+1095,Kavya Nair,"[""Kavya Nair""]",Singapore,SG,[2],"[""Jatin Nair""]"
+1096,Aditi Srinivasan,"[""Aditi Srinivasan""]",Bengaluru,IN,[12],"[""Rahul Srinivasan""]"
+1097,Simran Kulkarni,"[""Simran Kulkarni""]",dubai,Dubai,[],"[""Pallavi Kulkarni""]"
+1098,Kriti Iyer,"[""Kriti Iyer""]",Hyderabad,India,[],"[""Ritika Iyer""]"
+1099,Aisha Chopra,"[""Aisha Chopra""]",Bengaluru,IN,[13],"[""Vivek Chopra""]"
+1100,Akash Bansal,"[""Akash Bansal""]",Chennai,IN,[],"[""Rahul Bansal""]"
+1101,Rahul Gupta,"[""Rahul Gupta""]",Blore,IN,[11],"[""Meera Gupta""]"
+1102,Aisha Kapoor,"[""Aisha Kapoor""]",Houston,US,[],"[""Vikram Kapoor""]"
+1103,Aditi Kumar,"[""Aditi Kumar""]",London,UK,[12],"[""Ananya Kumar""]"
+1104,Charu Sharma,"[""Charu Sharma""]",London,UK,[],"[""Kavya Sharma""]"
+1105,Ananya Rao,"[""Ananya Rao""]",Kolkata,IN,[3],"[""Zara Rao""]"
+1106,Isha Singh,"[""Isha Singh""]",Sharjah,United Arab Emirates,[19],"[""Aditi Singh""]"
+1107,Rohan Verma,"[""Rohan Verma""]",Blore,India,[],"[""Mohit Verma""]"
+1108,Tushar Chopra,"[""Tushar Chopra""]",San Francisco,United States,[10],"[""Sneha Chopra""]"
+1109,Vivek Mukherjee,"[""Vivek Mukherjee""]",Mumbai,India,[],"[""Yash Mukherjee""]"
+1110,Simran Chopra,"[""Simran Chopra""]",Madras,India,[],"[""Pooja Chopra""]"
+1111,Harsh Iyer,"[""Harsh Iyer""]",Hyderabad,IN,[12],"[""Pranav Iyer""]"
+1112,Lakshmi Pillai,"[""Lakshmi Pillai""]",Singapore,Singapore,[19],"[""Rajat Pillai""]"
+1113,Pranav Kulkarni,"[""Pranav Kulkarni""]",Bengaluru,IN,[16],"[""Akash Kulkarni""]"
+1114,Omkar Patel,"[""Omkar Patel""]",Jaipur,IN,[13],"[""Sneha Patel""]"
+1115,Omkar Malhotra,"[""Omkar Malhotra""]",Jaipur,India,[11],"[""Aisha Malhotra""]"
+1116,Esha Pillai,"[""Esha Pillai""]",San Francisco,United States,[16],"[""Ritika Pillai""]"
+1117,Utkarsh Chopra,"[""Utkarsh Chopra""]",DXB,Dubai,[],"[""Yash Chopra""]"
+1118,Ritika Pillai,"[""Ritika Pillai""]",Bengaluru,India,[11],"[""Gauri Pillai""]"
+1119,Arnav Kumar,"[""Arnav Kumar""]",Ahmedabad,IN,[6],"[""Siddharth Kumar""]"
+1120,Kavya Das,"[""Kavya Das""]",Bengaluru,IN,[],"[""Isha Das""]"
+1121,Aditya Chatterjee,"[""Aditya Chatterjee""]",Pune,India,[3],"[""Lakshmi Chatterjee""]"
+1122,Vivek Chatterjee,"[""Vivek Chatterjee""]",Bangalore,India,[17],"[""Jatin Chatterjee""]"
+1123,Aarav Chatterjee,"[""Aarav Chatterjee""]",Sharjah,United Arab Emirates,[],"[""Sahil Chatterjee""]"
+1124,Vivek Patel,"[""Vivek Patel""]",Sharjah,Dubai,[],"[""Vivek Patel""]"
+1125,Manish Mukherjee,"[""Manish Mukherjee""]",Hyderabad,IN,[16],"[""Yash Mukherjee""]"
+1126,Esha Kapoor,"[""Esha Kapoor""]",Chennai,India,[10],"[""Ishaan Kapoor""]"
+1127,Meera Thakur,"[""Meera Thakur""]",Madras,India,[],"[""Riya Thakur""]"
+1128,Akash Verma,"[""Akash Verma""]",Chennai,IN,[10],"[""Aditya Verma""]"
+1129,Deepak Desai,"[""Deepak Desai""]",Jaipur,IN,[16],"[""Ankita Desai""]"
+1130,Akash Saxena,"[""Akash Saxena""]",Ahmedabad,India,[17],"[""Esha Saxena""]"
+1131,Rohan Kumar,"[""Rohan Kumar""]",Kolkata,IN,[],"[""Aditya Kumar""]"
+1132,Rahul Menon,"[""Rahul Menon""]",Dubai,Dubai,[5],"[""Priya Menon""]"
+1133,Deepak Srinivasan,"[""Deepak Srinivasan""]",Abu Dhabi,United Arab Emirates,[8],"[""Siddharth Srinivasan""]"
+1134,Gauri Thakur,"[""Gauri Thakur""]",Abu Dhabi,United Arab Emirates,[],"[""Vidya Thakur""]"
+1135,Swati Patel,"[""SwatiP atel""]",Bombay,IN,[2],"[""Isha Patel""]"
+1136,Meera Joshi,"[""Meera Joshi""]",Blore,India,[2],"[""Priya Joshi""]"
+1137,Akash Menon,"[""Akash Menon""]",Singapore,SG,[13],"[""Priya Menon""]"
+1138,Sneha Shah,"[""Sneha Shah""]",Sharjah,Dubai,[3],"[""Kavya Shah""]"
+1139,Harsh Desai,"[""Harsh Desai""]",Hyderabad,India,[],"[""Harsh Desai""]"
+1140,Pranav Thakur,"[""Pranav Thakur""]",Hyderabad,IN,[12],"[""Rohan Thakur""]"
+1141,Harsh Menon,"[""Harsh Menon""]",Mumbai,India,[19],"[""Aditi Menon""]"
+1142,Sakshi Chatterjee,"[""Sakshi Chatterjee""]",Hyderabad,IN,[],"[""Dhruv Chatterjee""]"
+1143,Vaishnavi Khanna,"[""Vaishnavi Khanna""]",Mumbai,India,[],"[""Rajat Khanna""]"
+1144,Shreya Rao,"[""Shreya Rao""]",Jaipur,IN,[18],"[""Aditi Rao""]"
+1145,Rajat Agarwal,"[""Rajat Agarwal""]",Bangalore,India,[7],"[""Siddharth Agarwal""]"
+1146,Tanvi Joshi,"[""Tanvi Joshi""]",New York,United States,[],"[""Rajat Joshi""]"
+1147,Yash Bhatia,"[""Yash Bhatia""]",Delhi,India,[],"[""Harsh Bhatia""]"
+1148,Tanvi Verma,"[""Tanvi Verma""]",Hyderabad,India,[13],"[""Utkarsh Verma""]"
+1149,Neel Pillai,"[""Neel Pillai""]",Sharjah,U.A.E,[8],"[""Akash Pillai""]"
+1150,Kiran Bhatia,"[""Kiran Bhatia""]",London,United Kingdom,[],"[""Sneha Bhatia""]"
+1151,Arnav Gupta,"[""Arnav Gupta (old)""]",Bengaluru,India,[12],"[""Ishaan Gupta""]"
+1152,Arjun Menon,"[""Arjun Menon""]",Jaipur,IN,[13],"[""Aarav Menon""]"
+1153,Pallavi Reddy,"[""Pallavi Reddy""]",Madras,IN,[14],"[""Diya Reddy""]"
+1154,Vikram Desai,"[""Vikram Desai""]",Bengaluru,India,[13],"[""Deepak Desai""]"
+1155,Rajat Bansal,"[""Rajat Bansal""]",Jaipur,IN,[],"[""Meera Bansal""]"
+1156,Sakshi Mukherjee,"[""Sakshi Mukherjee""]",Houston,US,[],"[""Rajat Mukherjee""]"
+1157,Ananya Saxena,"[""Ananya Saxena""]",Singapore,Singapore,[9],"[""Vikram Saxena""]"
+1158,Vivek Thakur,"[""Vivek Thakur""]",Singapore,SG,[],"[""Ankita Thakur""]"
+1159,Tanvi Srinivasan,"[""Tanvi Srinivasan""]",Pune,IN,[9],"[""Bhavya Srinivasan""]"
+1160,Rohan Malhotra,"[""Rohan Malhotra""]",Ahmedabad,IN,[10],"[""Aditi Malhotra""]"
+1161,Riya Kapoor,"[""Riya Kapoor (IB)""]",Hyderabad,IN,[],"[""Aisha Kapoor""]"
+1162,Farhan Chatterjee,"[""Farhan Chatterjee""]",Ahmedabad,IN,[],"[""Isha Chatterjee""]"
+1163,Riya Mukherjee,"[""Riya Mukherjee""]",Mumbai,India,[],"[""Kiran Mukherjee""]"
+1164,Charu Mehta,"[""Charu Mehta""]",Calcutta,IN,[4],"[""Vidya Mehta""]"
+1165,Diya Kulkarni,"[""Diya Kulkarni""]",Jaipur,IN,[18],"[""Rahul Kulkarni""]"
+1166,Farhan Iyer,"[""Farhan Iyer""]",dubai,UAE,[],"[""Gauri Iyer""]"
+1167,Tanvi Sharma,"[""Tanvi Sharma""]",New York,USA,[10],"[""Kiran Sharma""]"
+1168,Mohit Chatterjee,"[""Mohit Chatterjee (retake)""]",Houston,United States,[14],"[""Riya Chatterjee""]"
+1169,Ankita Menon,"[""Ankita Menon""]",Singapore,Singapore,[7],"[""Neha Menon""]"
+1170,Lakshmi Mukherjee,"[""Lakshmi Mukherjee""]",Ahmedabad,India,[],"[""Kriti Mukherjee""]"
+1171,Pranav Desai,"[""Pranav Desai""]",Madras,IN,[3],"[""Riya Desai""]"
+1172,Mohit Bansal,"[""Mohit Bansal""]",London,UK,[7],"[""Neha Bansal""]"
+1173,Bhavya Srinivasan,"[""Bhavya Srinivasan""]",London,UK,[],"[""Vivek Srinivasan""]"
+1174,Esha Bansal,"[""Esha Bansal""]",San Francisco,United States,[12],"[""Omkar Bansal""]"
+1175,Arnav Singh,"[""Arnav""]",Kolkata,India,[15],"[""Utkarsh Singh""]"
+1176,Ananya Joshi,"[""Anayna Joshi""]",Delhi,IN,[],"[""Omkar Joshi""]"
+1177,Esha Rao,"[""Esha Rao""]",Bengaluru,IN,[],"[""Vidya Rao""]"
+1178,Rahul Iyer,"[""Rahul Iyer""]",New York,United States,[20],"[""Arjun Iyer""]"
+1179,Siddharth Das,"[""Siddharth Das""]",Pune,India,[],"[""Neha Das""]"
+1180,Tanya Sharma,"[""Tanya Sharma""]",Houston,US,[],"[""Swati Sharma""]"
+1181,Aisha Thakur,"[""Aisha Thakur (2nd)""]",Pune,IN,[],"[""Rahul Thakur""]"
+1182,Pooja Kumar,"[""Pooja""]",Pune,IN,[8],"[""Ankita Kumar""]"
+1183,Zara Kapoor,"[""Zara Kapoor""]",Bangalore,India,[1],"[""Arnav Kapoor""]"
+1184,Tushar Sharma,"[""Tushar Sharma""]",Pune,India,[],"[""Kavya Sharma""]"
+1185,Esha Menon,"[""Esha Menon""]",Delhi,India,[2],"[""Ishaan Menon""]"
+1186,Vivek Bansal,"[""Vivek Bansal""]",Pune,IN,[11],"[""Jatin Bansal""]"
+1187,Isha Bhatia,"[""Isha Bhatia""]",Bombay,India,[10],"[""Tanya Bhatia""]"
+1188,Neha Chopra,"[""Neha Chopra""]",New York,US,[],"[""Utkarsh Chopra""]"
+1189,Neel Sharma,"[""Neel Sharma""]",Singapore,Singapore,[8],"[""Harsh Sharma""]"
+1190,Arjun Mukherjee,"[""Arjun Mukherjee""]",Blore,IN,[2],"[""Ananya Mukherjee""]"
+1191,Ananya Nair,"[""Ananya Nair""]",Jaipur,India,[15],"[""Bhavya Nair""]"
+1192,Aditya Chopra,"[""Aditya Chopra""]",Dubai,Dubai,[12],"[""Arnav Chopra""]"
+1193,Jatin Singh,"[""Jatin Singh""]",Bangalore,India,[],"[""Akash Singh""]"
+1194,Utkarsh Mukherjee,"[""Utkarsh Mukherjee""]",Delhi,India,[],"[""Gauri Mukherjee""]"
+1195,Rohan Patel,"[""Rohan Patel""]",Jaipur,IN,[14],"[""Sakshi Patel""]"
+1196,Vidya Das,"[""Vidya Das (sibling)""]",Madras,IN,[2],"[""Tanya Das""]"
+1197,Neha Sharma,"[""Neha Sharma""]",Houston,United States,[19],"[""Neha Sharma""]"
+1198,Akash Bhatia,"[""Akash Bhatia""]",Houston,USA,[8],"[""Bhavya Bhatia""]"
+1199,Jatin Mukherjee,"[""Jatin Mukherjee""]",Hyderabad,IN,[19],"[""Tanvi Mukherjee""]"
+1200,Siddharth Desai,"[""Siddharth Desai""]",Jaipur,India,[],"[""Neel Desai""]"

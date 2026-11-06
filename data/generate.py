@@ -901,7 +901,7 @@ class Generator:
 
         # Students CSV
         self._write_csv(out_dir / "students.csv", self.students, [
-            "id", "name", "city", "country", "counselor_ids",
+            "id", "name", "aliases", "city", "country", "counselor_ids", "payer_aliases",
         ])
 
         # Enrollments CSV
