@@ -117,9 +117,11 @@ def main():
         )
         col_a, col_b, _ = st.columns([1, 1, 3])
         with col_a:
-            st.button(f"Review {pending_review} payments", type="primary")
+            if st.button(f"Review {pending_review} payments", type="primary"):
+                st.switch_page("pages/2_Review_Queue.py")
         with col_b:
-            st.button("Ask a follow-up")
+            if st.button("Ask a follow-up"):
+                st.switch_page("pages/8_Ask.py")
 
     st.write("")
 
@@ -181,7 +183,8 @@ def main():
                 cols[1].markdown(f"**{f.explanation[:80]}**<br>"
                                  f'<span style="color:#636e72; font-size:0.85rem;">{f.category}</span>',
                                  unsafe_allow_html=True)
-                cols[2].button("Check", key=f"risk_{f.entity}")
+                if cols[2].button("Check", key=f"risk_{f.entity}"):
+                    st.switch_page("pages/7_Risk.py")
                 st.markdown("---")
 
             # Match review items
@@ -205,7 +208,8 @@ def main():
                     f"</span>",
                     unsafe_allow_html=True,
                 )
-                cols[2].button("Review", key=f"match_{row['id']}")
+                if cols[2].button("Review", key=f"match_{row['id']}"):
+                    st.switch_page("pages/2_Review_Queue.py")
                 st.markdown("---")
 
             # Overdue reminders
@@ -218,7 +222,8 @@ def main():
                     f"One message per family, with the exact amount.</span>",
                     unsafe_allow_html=True,
                 )
-                cols[2].button("Read drafts", key="overdue_drafts")
+                if cols[2].button("Read drafts", key="overdue_drafts"):
+                    st.switch_page("pages/6_Reminders.py")
 
     with right:
         with st.container(border=True):
@@ -258,11 +263,23 @@ def main():
         )
         if cols[2].button("Ask", type="primary", key="ask_home"):
             if question:
-                from agents.copilot import ask
-                answer = ask(conn, question)
-                st.info(answer.answer)
-                if answer.transactions:
-                    st.dataframe(answer.transactions, use_container_width=True, hide_index=True)
+                st.session_state["home_question"] = question
+                st.rerun()
+
+    if st.session_state.get("home_question"):
+        from agents.copilot import ask as copilot_ask
+        answer = copilot_ask(conn, st.session_state["home_question"])
+        with st.container(border=True):
+            st.markdown(f'**Q: {st.session_state["home_question"]}**')
+            st.write(answer.answer)
+            if answer.transactions:
+                st.dataframe(answer.transactions, use_container_width=True, hide_index=True)
+            if answer.query_used:
+                with st.expander("How this was worked out"):
+                    st.caption(answer.query_used)
+            if st.button("Clear", key="clear_ask"):
+                del st.session_state["home_question"]
+                st.rerun()
 
 
 if __name__ == "__main__":

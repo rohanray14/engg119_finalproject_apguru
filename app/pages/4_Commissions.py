@@ -87,7 +87,11 @@ for c in counselors:
 # ── Approve payout button ──
 header_cols = st.columns([4, 1])
 if total_net > 0:
-    header_cols[1].button(f"Approve payout · {fmt_inr(total_net)}", type="primary")
+    if header_cols[1].button(f"Approve payout · {fmt_inr(total_net)}", type="primary"):
+        from ledger.db import log_audit
+        log_audit(conn, "finance_lead", "approve_commission_payout",
+                  "commissions", None, f"total_net={total_net}")
+        st.toast(f"Payout of {fmt_inr(total_net)} approved and logged!")
 
 st.write("")
 
@@ -145,9 +149,43 @@ with st.container(border=True):
         if c["status"] == "ready":
             cols[5].markdown(badge("Ready", "green"), unsafe_allow_html=True)
         elif c["status"] == "needs_rate":
-            cols[5].button("Set the rate", key=f"rate_{c['id']}")
+            if cols[5].button("Set the rate", key=f"rate_{c['id']}"):
+                st.session_state[f"setting_rate_{c['id']}"] = True
+                st.rerun()
         else:
             cols[5].write("—")
+
+        # Rate-setting panel
+        if st.session_state.get(f"setting_rate_{c['id']}"):
+            with st.container(border=True):
+                st.markdown(f"**Set commission rate for {c['name']}**")
+                st.caption(f'Terms: "{c["terms"]}"')
+                new_rate = st.number_input(
+                    "Rate (%)", min_value=0.0, max_value=50.0, value=10.0,
+                    step=1.0, key=f"rate_input_{c['id']}",
+                )
+                scope = st.selectbox(
+                    "Scope", ["own_referrals", "city"],
+                    key=f"scope_{c['id']}",
+                )
+                rc1, rc2 = st.columns(2)
+                if rc1.button("Save rule", type="primary", key=f"save_rate_{c['id']}"):
+                    import json as _json
+                    rule_json = _json.dumps({"rate": new_rate / 100, "scope": scope})
+                    conn.execute(
+                        "UPDATE counselor SET parsed_rule = ? WHERE id = ?",
+                        (rule_json, c["id"]),
+                    )
+                    conn.commit()
+                    from ledger.db import log_audit
+                    log_audit(conn, "finance_lead", "set_commission_rule",
+                              f"counselor:{c['id']}", None, rule_json)
+                    del st.session_state[f"setting_rate_{c['id']}"]
+                    st.toast(f"Rate set for {c['name']}!")
+                    st.rerun()
+                if rc2.button("Cancel", key=f"cancel_rate_{c['id']}"):
+                    del st.session_state[f"setting_rate_{c['id']}"]
+                    st.rerun()
 
     st.write("")
     st.caption(
@@ -162,4 +200,20 @@ with st.container(border=True):
     cols = st.columns([4, 1])
     cols[0].markdown("### Counselor statements")
     cols[0].caption("Each counselor gets a statement listing every student, the fee received and their share.")
-    cols[1].button("Preview statements", key="preview_statements")
+    if cols[1].button("Preview statements", key="preview_statements"):
+        st.session_state["show_statements"] = True
+        st.rerun()
+
+if st.session_state.get("show_statements"):
+    with st.container(border=True):
+        st.markdown("### Statement Preview")
+        for c in counselor_data:
+            if c["earned"] > 0:
+                st.markdown(f"**{c['name']}**")
+                st.write(f"Commission earned: {fmt_inr(c['earned'])} · "
+                         f"TDS (2%): {fmt_inr(c['tds'])} · "
+                         f"Net payable: **{fmt_inr(c['net'])}**")
+                st.markdown("---")
+        if st.button("Close", key="close_statements"):
+            del st.session_state["show_statements"]
+            st.rerun()

@@ -49,8 +49,10 @@ if not pending:
 # ── Layout: left list + right detail ──
 left, right = st.columns([2, 3])
 
-# Track selection
+# Track selection — clamp to valid range
 if "selected_idx" not in st.session_state:
+    st.session_state.selected_idx = 0
+if st.session_state.selected_idx >= len(pending):
     st.session_state.selected_idx = 0
 
 with left:
@@ -211,29 +213,90 @@ with right:
     st.write("")
     col1, col2, col3 = st.columns(3)
     suggested_name = insts[0]["student_name"] if (allocs and insts) else "this match"
+    match_id = row['match_id']
 
     with col1:
-        if st.button(f"Approve: {suggested_name}", type="primary", key=f"approve_{row['match_id']}"):
-            conn.execute("UPDATE match_result SET status='approved' WHERE id=?", (row['match_id'],))
+        if st.button(f"Approve: {suggested_name}", type="primary", key=f"approve_{match_id}"):
+            conn.execute("UPDATE match_result SET status='approved' WHERE id=?", (match_id,))
             conn.commit()
             log_audit(conn, "finance_lead", "approve_match",
-                      f"match:{row['match_id']}", "pending_review", "approved")
-            st.success(f"Approved!")
+                      f"match:{match_id}", "pending_review", "approved")
+            # Update installment status to paid
+            for a in allocs:
+                conn.execute(
+                    "UPDATE installment SET status='paid' WHERE id=?",
+                    (a["installment_id"],),
+                )
+            conn.commit()
+            st.session_state.selected_idx = 0
+            st.toast(f"Approved match for {suggested_name}!")
             st.rerun()
+
     with col2:
-        if st.button("Pick a different student", key=f"pick_{row['match_id']}"):
-            st.info("Manual assignment coming soon.")
+        if st.button("Pick a different student", key=f"pick_{match_id}"):
+            st.session_state[f"picking_{match_id}"] = True
+            st.rerun()
+
     with col3:
-        if st.button("Not a fee payment", key=f"notfee_{row['match_id']}"):
+        if st.button("Not a fee payment", key=f"notfee_{match_id}"):
             conn.execute(
                 "UPDATE match_result SET status='rejected', reason='not_a_fee' WHERE id=?",
-                (row['match_id'],),
+                (match_id,),
             )
             conn.commit()
             log_audit(conn, "finance_lead", "mark_not_fee",
-                      f"match:{row['match_id']}", "pending_review", "rejected:not_a_fee")
-            st.info("Marked as not a fee.")
+                      f"match:{match_id}", "pending_review", "rejected:not_a_fee")
+            st.session_state.selected_idx = 0
+            st.toast("Marked as not a fee.")
             st.rerun()
+
+    # "Pick a different student" panel
+    if st.session_state.get(f"picking_{match_id}"):
+        with st.container(border=True):
+            st.markdown("#### Pick the correct student")
+            # Show all candidates for this amount
+            pick_candidates = conn.execute(
+                "SELECT i.id as inst_id, i.due_date, i.amount_due_paise, i.currency, "
+                "e.program, s.name as student_name, s.id as student_id "
+                "FROM installment i "
+                "JOIN enrollment e ON i.enrollment_id = e.id "
+                "JOIN student s ON e.student_id = s.id "
+                "WHERE i.amount_due_paise = ? AND i.currency = ? AND i.status != 'paid' "
+                "ORDER BY s.name, i.due_date",
+                (row['amount_paid_paise'], row['currency']),
+            ).fetchall()
+
+            if pick_candidates:
+                options = {
+                    f"{c['student_name']} — {c['program']} (due {fmt_date_display(c['due_date'])})": c['inst_id']
+                    for c in pick_candidates
+                }
+                chosen = st.selectbox("Select installment", list(options.keys()), key=f"pick_select_{match_id}")
+                pick_col1, pick_col2 = st.columns(2)
+                if pick_col1.button("Confirm selection", type="primary", key=f"confirm_pick_{match_id}"):
+                    chosen_id = options[chosen]
+                    new_allocs = json.dumps([{"installment_id": chosen_id, "allocated_paise": row['amount_paid_paise']}])
+                    conn.execute(
+                        "UPDATE match_result SET allocations=?, status='approved', "
+                        "method='human', reason='manually_assigned' WHERE id=?",
+                        (new_allocs, match_id),
+                    )
+                    conn.execute("UPDATE installment SET status='paid' WHERE id=?", (chosen_id,))
+                    conn.commit()
+                    log_audit(conn, "finance_lead", "manual_match",
+                              f"match:{match_id}", str(allocs), new_allocs)
+                    del st.session_state[f"picking_{match_id}"]
+                    st.session_state.selected_idx = 0
+                    st.toast("Manually assigned and approved!")
+                    st.rerun()
+                if pick_col2.button("Cancel", key=f"cancel_pick_{match_id}"):
+                    del st.session_state[f"picking_{match_id}"]
+                    st.rerun()
+            else:
+                st.write("No open installments match this amount.")
+                if st.button("Cancel", key=f"cancel_pick2_{match_id}"):
+                    del st.session_state[f"picking_{match_id}"]
+                    st.rerun()
 
     st.caption(
         "Approving records the payment, updates the student's balance, "

@@ -76,9 +76,16 @@ for r in filtered:
         )
         cols[2].caption(f"Send on {fmt_date_display(str(r.scheduled_for))}")
         if r.needs_approval:
-            cols[3].button("Approve", key=f"approve_rem_{r.installment_id}_{r.reminder_type}")
+            if cols[3].button("Approve", key=f"approve_rem_{r.installment_id}_{r.reminder_type}"):
+                from ledger.db import log_audit
+                log_audit(conn, "finance_lead", "approve_reminder",
+                          f"installment:{r.installment_id}", None, r.reminder_type)
+                st.toast(f"Reminder for {r.student_name} approved for sending!")
         else:
             cols[3].markdown(badge("Auto", "green"), unsafe_allow_html=True)
 
         with st.expander("Preview message"):
             st.text(r.message)
+            if st.button("Copy to clipboard", key=f"copy_{r.installment_id}_{r.reminder_type}"):
+                st.code(r.message, language=None)
+                st.toast("Message ready to copy!")
