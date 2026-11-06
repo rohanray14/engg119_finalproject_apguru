@@ -8,18 +8,38 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from datetime import date
 import streamlit as st
-from app.Home import get_db, fmt_inr
+from app.Home import get_db
+from app.style import apply_theme, badge, fmt_inr, fmt_amount, fmt_date_display
 from agents.reminders import generate_reminders
 
-st.set_page_config(page_title="Reminders | Educore", layout="wide")
-st.title("Reminders")
+st.set_page_config(page_title="Reminders | Educore", page_icon="💰", layout="wide")
+apply_theme()
 
 conn = get_db()
 
-as_of = st.date_input("As of date", value=date(2025, 6, 1))
+with st.sidebar:
+    st.markdown("## Educore")
+    st.caption("Finance Desk")
+
+st.title("Reminders")
+st.caption("Auto-drafted messages for upcoming and overdue installments.")
+
+as_of = st.date_input("As of date", value=date(2025, 7, 1))
 reminders = generate_reminders(conn, as_of=as_of)
 
-st.caption(f"{len(reminders)} reminders to send")
+# Summary metrics
+pre_due = [r for r in reminders if r.reminder_type == "pre_due"]
+on_due = [r for r in reminders if r.reminder_type == "on_due"]
+overdue = [r for r in reminders if r.reminder_type == "overdue"]
+needs_approval = [r for r in reminders if r.needs_approval]
+
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("Pre-due", len(pre_due))
+col2.metric("Due today", len(on_due))
+col3.metric("Overdue", len(overdue))
+col4.metric("Needs approval", len(needs_approval))
+
+st.write("")
 
 # Filters
 col1, col2 = st.columns(2)
@@ -39,15 +59,26 @@ elif approval_filter == "Auto-send":
 st.caption(f"Showing {len(filtered)} reminders")
 
 for r in filtered:
-    icon = {"pre_due": "📅", "on_due": "⏰", "overdue": "🚨"}.get(r.reminder_type, "")
-    label = f"{icon} {r.student_name} — {fmt_inr(r.amount_due_paise)} {r.currency} ({r.reminder_type})"
-    if r.needs_approval:
-        label += " [NEEDS APPROVAL]"
+    type_colors = {"pre_due": "blue", "on_due": "teal", "overdue": "red"}
+    type_labels = {"pre_due": "Pre-due", "on_due": "Due today", "overdue": "Overdue"}
+    color = type_colors.get(r.reminder_type, "gray")
+    label = type_labels.get(r.reminder_type, r.reminder_type)
 
-    with st.expander(label):
-        st.write(f"**Student:** {r.student_name} (ID: {r.student_id})")
-        st.write(f"**Program:** {r.enrollment_program}")
-        st.write(f"**Due:** {r.due_date}")
-        st.write(f"**Send on:** {r.scheduled_for}")
-        st.divider()
-        st.text(r.message)
+    with st.container(border=True):
+        cols = st.columns([1, 3, 2, 1])
+        cols[0].markdown(badge(label, color), unsafe_allow_html=True)
+        cols[1].markdown(
+            f"**{r.student_name}** — {r.enrollment_program}<br>"
+            f'<span style="color:#636e72; font-size:0.85rem;">'
+            f'{fmt_amount(r.amount_due_paise, r.currency)} · due {fmt_date_display(str(r.due_date))}'
+            f'</span>',
+            unsafe_allow_html=True,
+        )
+        cols[2].caption(f"Send on {fmt_date_display(str(r.scheduled_for))}")
+        if r.needs_approval:
+            cols[3].button("Approve", key=f"approve_rem_{r.installment_id}_{r.reminder_type}")
+        else:
+            cols[3].markdown(badge("Auto", "green"), unsafe_allow_html=True)
+
+        with st.expander("Preview message"):
+            st.text(r.message)

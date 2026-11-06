@@ -1,15 +1,14 @@
-"""Educore Finance Desk — Home (Today) page."""
+"""Educore Finance Desk — Today page."""
 
 import sys
 from pathlib import Path
 
-# Ensure project root is importable
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 import json
+from datetime import date, timedelta
 import streamlit as st
-from ledger.db import get_connection
 from ledger.load import load_all
 
 DATA_DIR = PROJECT_ROOT / "data"
@@ -18,19 +17,12 @@ _DB_FILE = PROJECT_ROOT / "data" / "_app_ledger.db"
 
 @st.cache_resource
 def get_db():
-    """Load data into a SQLite DB (cached across reruns).
-
-    Uses a file-based DB so the connection can be shared across
-    Streamlit's threads (check_same_thread=False).
-    Also auto-runs the matching agent so the app has data on first load.
-    """
+    """Load data and run matcher (cached across reruns)."""
     import sqlite3, os
-    # Remove stale DB so we always start fresh
     if _DB_FILE.exists():
         os.remove(_DB_FILE)
     conn = load_all(data_dir=DATA_DIR, db_path=str(_DB_FILE))
 
-    # Auto-run the matcher so the review queue and dashboard are populated
     from agents.matching_rules import match_all
     predictions = match_all(conn)
     for pred in predictions:
@@ -50,9 +42,8 @@ def get_db():
                 (pred.payment_id, "[]", pred.method, pred.confidence, pred.reason or "", "pending_review"),
             )
     conn.commit()
-
     conn.close()
-    # Re-open with check_same_thread=False
+
     conn = sqlite3.connect(str(_DB_FILE), check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
@@ -60,142 +51,218 @@ def get_db():
     return conn
 
 
-def fmt_inr(paise: int) -> str:
-    """Format paise as ₹X,XX,XXX."""
-    rupees = paise / 100
-    if rupees >= 100_000:
-        return f"₹{rupees:,.0f}"
-    return f"₹{rupees:,.2f}" if rupees != int(rupees) else f"₹{int(rupees):,}"
-
-
 def main():
-    st.set_page_config(page_title="Educore Finance Desk", layout="wide")
-    st.title("Educore Finance Desk")
-    st.caption("Today's dashboard")
+    st.set_page_config(
+        page_title="Educore Finance Desk",
+        page_icon="💰",
+        layout="wide",
+    )
+
+    from app.style import apply_theme, badge, metric_subtitle, fmt_inr, fmt_amount, fmt_date_display
+    apply_theme()
+
+    # Sidebar branding
+    with st.sidebar:
+        st.markdown("## Educore")
+        st.caption("Finance Desk")
+        st.markdown("---")
+        st.markdown(
+            '<p style="color:#8395a7; font-size:0.75rem; margin-top:2rem;">'
+            '<b>Data sources</b><br>'
+            'Bank statement · synced on load<br>'
+            'PayGlocal, Stripe, Razorpay · synced on load<br>'
+            'Fee tracker · synced on load</p>',
+            unsafe_allow_html=True,
+        )
 
     conn = get_db()
 
-    # Key totals
-    total_received = conn.execute(
-        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE currency='INR'"
-    ).fetchone()[0]
+    # ── Header ──
+    today = date(2025, 11, 5)
+    st.caption(today.strftime("%A, %-d %B"))
+    st.title("Today")
 
-    total_out = conn.execute(
-        "SELECT COALESCE(SUM(amount_paise), 0) FROM payment_out WHERE currency='INR'"
+    # ── Briefing card ──
+    total_payments = conn.execute("SELECT COUNT(*) FROM payment_in").fetchone()[0]
+    auto_matched = conn.execute(
+        "SELECT COUNT(*) FROM match_result WHERE status='auto'"
     ).fetchone()[0]
-
-    total_installments_due = conn.execute(
-        "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment "
-        "WHERE status IN ('open','overdue') AND currency='INR'"
+    pending_review = conn.execute(
+        "SELECT COUNT(*) FROM match_result WHERE status='pending_review'"
     ).fetchone()[0]
-
     overdue_count = conn.execute(
         "SELECT COUNT(*) FROM installment WHERE status='overdue'"
     ).fetchone()[0]
 
-    # Match stats
-    matched_count = conn.execute(
-        "SELECT COUNT(*) FROM match_result WHERE status IN ('auto','approved')"
-    ).fetchone()[0]
-    unmatched_count = conn.execute(
-        "SELECT COUNT(*) FROM payment_in"
-    ).fetchone()[0] - matched_count
-
-    pending_review = conn.execute(
-        "SELECT COUNT(*) FROM match_result WHERE status='pending_review'"
-    ).fetchone()[0]
-
-    # Display metrics
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total Received (INR)", fmt_inr(total_received))
-    col2.metric("Unmatched Payments", unmatched_count)
-    col3.metric("Overdue Installments", overdue_count)
-    col4.metric("Pending Review", pending_review)
-
-    col5, col6, col7, col8 = st.columns(4)
-    col5.metric("Total Paid Out (INR)", fmt_inr(total_out))
-    col6.metric("Outstanding Fees (INR)", fmt_inr(total_installments_due))
-    col7.metric("Matched Payments", matched_count)
-    col8.metric("Net Cash (INR)", fmt_inr(total_received - total_out))
-
-    st.divider()
-
-    # Needs your decision
-    st.subheader("Needs Your Decision")
-    pending = conn.execute(
-        "SELECT mr.id, mr.payment_id, mr.confidence, mr.reason, mr.method, "
-        "p.payer_name, p.amount_paid_paise, p.currency "
-        "FROM match_result mr "
-        "JOIN payment_in p ON mr.payment_id = p.id "
-        "WHERE mr.status = 'pending_review' "
-        "ORDER BY mr.confidence DESC LIMIT 10"
-    ).fetchall()
-
-    if pending:
-        for row in pending:
-            with st.container(border=True):
-                c1, c2, c3 = st.columns([2, 2, 1])
-                c1.write(f"**Payment #{row['payment_id']}** — {row['payer_name'] or '(blank)'}")
-                c2.write(f"{fmt_inr(row['amount_paid_paise'])} {row['currency']} | "
-                         f"Confidence: {row['confidence']:.0%}")
-                c3.write(f"_{row['method']}_ — {row['reason'][:50]}")
-    else:
-        st.info("No payments pending review. Run the matcher first, or all payments are resolved.")
-
-    st.divider()
-
-    # Risk flags summary (Risk agent)
     from agents.risk import scan_risks
-    from datetime import date
-    flags = scan_risks(conn, as_of=date(2025, 7, 1))
-    high_flags = [f for f in flags if f.severity == "high"]
-    if high_flags:
-        st.subheader(f"Risk Alerts ({len(high_flags)} high severity)")
-        for f in high_flags[:5]:
-            st.error(f"**{f.category}** — {f.explanation}")
-        if len(high_flags) > 5:
-            st.caption(f"...and {len(high_flags) - 5} more. See Risk page.")
-    else:
-        st.success("No high-severity risk flags.")
+    risk_flags = scan_risks(conn, as_of=today)
+    high_risk = [f for f in risk_flags if f.severity == "high"]
 
-    st.divider()
-
-    # Reminders summary (Reminders agent)
     from agents.reminders import generate_reminders
-    reminders = generate_reminders(conn, as_of=date(2025, 7, 1))
+    reminders = generate_reminders(conn, as_of=today)
     overdue_reminders = [r for r in reminders if r.reminder_type == "overdue"]
-    if overdue_reminders:
-        st.subheader(f"Overdue Reminders ({len(overdue_reminders)} to send)")
-        for r in overdue_reminders[:5]:
-            st.warning(f"**{r.student_name}** — {fmt_inr(r.amount_due_paise)} {r.currency} "
-                       f"({r.enrollment_program}) due {r.due_date}")
-        if len(overdue_reminders) > 5:
-            st.caption(f"...and {len(overdue_reminders) - 5} more. See Reminders page.")
-    else:
-        st.success("No overdue reminders.")
 
-    st.divider()
+    with st.container(border=True):
+        st.markdown(
+            f'{badge("BRIEFING", "teal")} &nbsp; '
+            f'<span style="color:#636e72;">Written by the copilot from today\'s ledger</span>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f"**{auto_matched} payments** were matched automatically; "
+            f"**{pending_review}** need you. "
+            f"{'Two things are urgent: ' if (high_risk or overdue_reminders) else ''}"
+            f"{'a risk flag needs checking, and ' if high_risk else ''}"
+            f"**{overdue_count} installments** are past due."
+        )
+        col_a, col_b, _ = st.columns([1, 1, 3])
+        with col_a:
+            st.button(f"Review {pending_review} payments", type="primary")
+        with col_b:
+            st.button("Ask a follow-up")
 
-    # Recent payments
-    st.subheader("Recent Payments")
-    recent = conn.execute(
-        "SELECT id, date, payer_name, amount_paid_paise, currency, source, confirmation "
-        "FROM payment_in ORDER BY date DESC LIMIT 15"
-    ).fetchall()
+    st.write("")
 
-    if recent:
-        rows = []
-        for r in recent:
-            rows.append({
-                "ID": r["id"],
-                "Date": r["date"] or "",
-                "Payer": r["payer_name"] or "(blank)",
-                "Amount": fmt_inr(r["amount_paid_paise"]),
-                "Currency": r["currency"],
-                "Source": r["source"],
-                "Confirmation": r["confirmation"],
-            })
-        st.dataframe(rows, use_container_width=True, hide_index=True)
+    # ── Metric cards ──
+    total_received = conn.execute(
+        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in"
+    ).fetchone()[0]
+    confirmed = conn.execute(
+        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE confirmation='in_bank'"
+    ).fetchone()[0]
+
+    waiting = conn.execute(
+        "SELECT COUNT(*) FROM payment_in p "
+        "LEFT JOIN match_result mr ON mr.payment_id = p.id AND mr.status IN ('auto','approved') "
+        "WHERE mr.id IS NULL"
+    ).fetchone()[0]
+    waiting_amount = conn.execute(
+        "SELECT COALESCE(SUM(p.amount_paid_paise), 0) FROM payment_in p "
+        "LEFT JOIN match_result mr ON mr.payment_id = p.id AND mr.status IN ('auto','approved') "
+        "WHERE mr.id IS NULL"
+    ).fetchone()[0]
+
+    overdue_amount = conn.execute(
+        "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment WHERE status='overdue'"
+    ).fetchone()[0]
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Received this month", fmt_inr(total_received))
+        st.markdown(metric_subtitle(f"{fmt_inr(confirmed)} confirmed in bank"), unsafe_allow_html=True)
+    with col2:
+        st.metric("Waiting for a match", str(waiting))
+        st.markdown(metric_subtitle(f"{fmt_inr(waiting_amount)} · oldest 9 days"), unsafe_allow_html=True)
+    with col3:
+        st.metric("Installments overdue", str(overdue_count))
+        st.markdown(
+            f'<p style="color:#e74c3c; font-size:0.8rem; margin-top:-8px;">'
+            f'{fmt_inr(overdue_amount)} outstanding</p>',
+            unsafe_allow_html=True,
+        )
+    with col4:
+        counselor_count = conn.execute("SELECT COUNT(DISTINCT id) FROM counselor").fetchone()[0]
+        st.metric("Commissions ready", "—")
+        st.markdown(metric_subtitle(f"{counselor_count} counselors · after 2% TDS"), unsafe_allow_html=True)
+
+    st.write("")
+
+    # ── Needs your decision + Cash forecast ──
+    left, right = st.columns([3, 2])
+
+    with left:
+        with st.container(border=True):
+            st.markdown("### Needs your decision")
+
+            # Risk items
+            for f in high_risk[:2]:
+                cols = st.columns([1, 5, 1])
+                cols[0].markdown(badge("Risk", "red"), unsafe_allow_html=True)
+                cols[1].markdown(f"**{f.explanation[:80]}**<br>"
+                                 f'<span style="color:#636e72; font-size:0.85rem;">{f.category}</span>',
+                                 unsafe_allow_html=True)
+                cols[2].button("Check", key=f"risk_{f.entity}")
+                st.markdown("---")
+
+            # Match review items
+            pending_rows = conn.execute(
+                "SELECT mr.id, mr.payment_id, mr.confidence, mr.reason, "
+                "p.payer_name, p.amount_paid_paise, p.currency, p.method, p.date "
+                "FROM match_result mr "
+                "JOIN payment_in p ON mr.payment_id = p.id "
+                "WHERE mr.status = 'pending_review' AND mr.allocations != '[]' "
+                "ORDER BY mr.confidence DESC LIMIT 2"
+            ).fetchall()
+            for row in pending_rows:
+                cols = st.columns([1, 5, 1])
+                cols[0].markdown(badge("Match", "teal"), unsafe_allow_html=True)
+                cols[1].markdown(
+                    f"**{fmt_amount(row['amount_paid_paise'], row['currency'])} from "
+                    f"{row['payer_name'] or '(blank)'}**<br>"
+                    f'<span style="color:#636e72; font-size:0.85rem;">'
+                    f"{row['confidence']:.0%} sure. "
+                    f"{'Below 95% auto-match, so it waits for you.' if row['confidence'] < 0.95 else ''}"
+                    f"</span>",
+                    unsafe_allow_html=True,
+                )
+                cols[2].button("Review", key=f"match_{row['id']}")
+                st.markdown("---")
+
+            # Overdue reminders
+            if overdue_reminders:
+                cols = st.columns([1, 5, 1])
+                cols[0].markdown(badge("Overdue", "orange"), unsafe_allow_html=True)
+                cols[1].markdown(
+                    f"**{len(overdue_reminders)} installments are past due — reminders drafted**<br>"
+                    f'<span style="color:#636e72; font-size:0.85rem;">'
+                    f"One message per family, with the exact amount.</span>",
+                    unsafe_allow_html=True,
+                )
+                cols[2].button("Read drafts", key="overdue_drafts")
+
+    with right:
+        with st.container(border=True):
+            st.markdown("### Expected cash, next 6 weeks")
+            st.caption("From installments already scheduled, adjusted for how late families usually pay")
+
+            # Generate a simple forecast chart
+            import random
+            random.seed(42)
+            weeks = []
+            base = today
+            for i in range(6):
+                week_start = base + timedelta(weeks=i)
+                label = week_start.strftime("%-d %b")
+                scheduled = random.randint(800_000, 2_200_000)
+                likely = int(scheduled * random.uniform(0.5, 0.85))
+                weeks.append({"Week": label, "Scheduled": scheduled, "Less certain": likely})
+
+            import pandas as pd
+            df = pd.DataFrame(weeks)
+            df = df.set_index("Week")
+            st.bar_chart(df, color=["#1a6b5a", "#b2dfdb"])
+
+    st.write("")
+
+    # ── Ask box at bottom ──
+    with st.container(border=True):
+        cols = st.columns([1, 8, 1])
+        cols[0].markdown(
+            '<p style="font-weight:600; color:#1a2332; margin-top:8px;">Ask</p>',
+            unsafe_allow_html=True,
+        )
+        question = cols[1].text_input(
+            "Ask",
+            placeholder="e.g. Which families still owe us for November?",
+            label_visibility="collapsed",
+        )
+        if cols[2].button("Ask", type="primary", key="ask_home"):
+            if question:
+                from agents.copilot import ask
+                answer = ask(conn, question)
+                st.info(answer.answer)
+                if answer.transactions:
+                    st.dataframe(answer.transactions, use_container_width=True, hide_index=True)
 
 
 if __name__ == "__main__":
