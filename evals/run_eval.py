@@ -3,6 +3,7 @@
 
 Usage:
     python evals/run_eval.py --agent matching --split dev
+    python evals/run_eval.py --agent matching_ai --split dev --threshold 0.8
     python evals/run_eval.py --agent matching --split test --threshold 0.8
 
 Loads the specified split's answer key, runs the specified agent, scores
@@ -27,8 +28,12 @@ from ledger.load import load_all
 def run_matching_eval(
     split: str = "dev",
     threshold: float = 0.8,
+    agent: str = "matching",
 ) -> dict:
-    """Run the rules-based matcher eval on the given split."""
+    """Run a matcher eval on the given split.
+
+    agent='matching' → rules only; agent='matching_ai' → rules + AI.
+    """
     data_dir = PROJECT_ROOT / "data"
     split_dir = data_dir / split
     answers_path = split_dir / "answers.json"
@@ -44,8 +49,14 @@ def run_matching_eval(
     conn = load_all(data_dir=data_dir, db_path=":memory:")
 
     # Run the matcher
-    from agents.matching_rules import match_all
-    predictions = match_all(conn)
+    if agent == "matching_ai":
+        from agents.matching_ai import match_all
+        predictions = match_all(conn, threshold=threshold)
+        agent_name = "matching_ai"
+    else:
+        from agents.matching_rules import match_all
+        predictions = match_all(conn)
+        agent_name = "matching_rules"
     conn.close()
 
     # Filter predictions to only those in this split's answer set
@@ -55,17 +66,17 @@ def run_matching_eval(
     # Score
     result = score(split_predictions, answers, confidence_threshold=threshold)
 
-    return _build_report(result, split, threshold, len(predictions))
+    return _build_report(result, split, threshold, len(predictions), agent_name)
 
 
-def _build_report(result, split: str, threshold: float, total_predictions: int) -> dict:
+def _build_report(result, split: str, threshold: float, total_predictions: int, agent_name: str = "matching_rules") -> dict:
     """Build the eval report dict."""
     summary = result.summary_dict()
     case_table = result.case_type_table()
 
     report = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "agent": "matching_rules",
+        "agent": agent_name,
         "split": split,
         "threshold": threshold,
         "total_predictions": total_predictions,
@@ -145,16 +156,18 @@ def save_report(report: dict):
 
 def main():
     parser = argparse.ArgumentParser(description="Run payment-matching eval")
-    parser.add_argument("--agent", default="matching", choices=["matching"],
-                       help="Agent to evaluate")
+    parser.add_argument("--agent", default="matching",
+                       choices=["matching", "matching_ai"],
+                       help="Agent to evaluate (matching=rules only, matching_ai=rules+AI)")
     parser.add_argument("--split", default="dev", choices=["dev", "test"],
                        help="Data split to evaluate on")
     parser.add_argument("--threshold", type=float, default=0.8,
                        help="Confidence threshold for auto-match")
     args = parser.parse_args()
 
-    if args.agent == "matching":
-        report = run_matching_eval(split=args.split, threshold=args.threshold)
+    report = run_matching_eval(
+        split=args.split, threshold=args.threshold, agent=args.agent,
+    )
 
     print_report(report)
     save_report(report)

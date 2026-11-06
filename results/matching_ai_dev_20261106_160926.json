@@ -1,0 +1,117 @@
+{
+  "timestamp": "2026-11-06T16:09:26.441226+00:00",
+  "agent": "matching_ai",
+  "split": "dev",
+  "threshold": 0.8,
+  "total_predictions": 400,
+  "summary": {
+    "total": 271,
+    "attempted": 31,
+    "correct": 24,
+    "wrong_confident": 7,
+    "skipped": 240,
+    "precision": 0.7742,
+    "coverage": 0.1144
+  },
+  "case_type_table": [
+    {
+      "case_type": "blank_payer",
+      "total": 156,
+      "attempted": 3,
+      "correct": 0,
+      "wrong": 3,
+      "precision": 0.0,
+      "coverage": 0.0192
+    },
+    {
+      "case_type": "company_payer",
+      "total": 4,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "company_tds",
+      "total": 2,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "duplicate_amount",
+      "total": 241,
+      "attempted": 22,
+      "correct": 18,
+      "wrong": 4,
+      "precision": 0.8182,
+      "coverage": 0.0913
+    },
+    {
+      "case_type": "foreign",
+      "total": 96,
+      "attempted": 14,
+      "correct": 10,
+      "wrong": 4,
+      "precision": 0.7143,
+      "coverage": 0.1458
+    },
+    {
+      "case_type": "fuzzy_name",
+      "total": 108,
+      "attempted": 27,
+      "correct": 23,
+      "wrong": 4,
+      "precision": 0.8519,
+      "coverage": 0.25
+    },
+    {
+      "case_type": "gateway_fees",
+      "total": 225,
+      "attempted": 28,
+      "correct": 21,
+      "wrong": 7,
+      "precision": 0.75,
+      "coverage": 0.1244
+    },
+    {
+      "case_type": "hourly_topup",
+      "total": 143,
+      "attempted": 12,
+      "correct": 9,
+      "wrong": 3,
+      "precision": 0.75,
+      "coverage": 0.0839
+    },
+    {
+      "case_type": "partial",
+      "total": 9,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "siblings",
+      "total": 271,
+      "attempted": 31,
+      "correct": 24,
+      "wrong": 7,
+      "precision": 0.7742,
+      "coverage": 0.1144
+    },
+    {
+      "case_type": "split_payment",
+      "total": 14,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    }
+  ]
+}
