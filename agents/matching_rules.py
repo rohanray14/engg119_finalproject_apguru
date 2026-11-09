@@ -192,14 +192,23 @@ def _match_one(
         if i["amount_due_paise"] == pay_amount and i["currency"] == pay_currency
     )
 
+    # Count how many *distinct students* globally match the payer name
+    # (not just among amount-matched installments — to catch name collisions)
+    students_with_name_match = set()
+    for sid, sinfo in student_names.items():
+        ns = _name_score(payer_name, sinfo)
+        if ns >= NAME_THRESHOLD:
+            students_with_name_match.add(sid)
+
     # Single candidate with name
     if len(scored) == 1:
         inst, nscore, dscore = scored[0]
         if nscore >= NAME_THRESHOLD:
-            # Even with a name match, if the amount is very common globally
-            # (>5 installments share it), don't be too confident — the date
-            # filter may have just happened to leave one candidate.
-            if total_same_amount <= 3:
+            # Strong name match (>=90) + exact amount = very likely correct
+            # even with common amounts, as long as name uniquely identifies student
+            if nscore >= 90 and len(students_with_name_match) == 1:
+                confidence = HIGH_CONFIDENCE
+            elif total_same_amount <= 3:
                 confidence = HIGH_CONFIDENCE
             else:
                 confidence = MEDIUM_CONFIDENCE
@@ -234,9 +243,11 @@ def _match_one(
                     key=lambda x: _parse_iso_date(x[0]["due_date"]) or date.max,
                 )
             winner = top_name_cands[0][0]
-            # If amount is very common globally, cap confidence below
-            # threshold — send to review queue even with a name match.
-            if total_same_amount <= 3:
+
+            # Strong name (>=90) that uniquely identifies one student → high confidence
+            if best_nscore >= 90 and len(students_with_name_match) == 1:
+                confidence = HIGH_CONFIDENCE
+            elif total_same_amount <= 3:
                 confidence = MEDIUM_CONFIDENCE
             else:
                 confidence = LOW_CONFIDENCE
