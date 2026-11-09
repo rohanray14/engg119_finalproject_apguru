@@ -1,4 +1,9 @@
-"""SQLite ledger database — schema creation and basic CRUD helpers.
+"""Ledger database — schema creation and basic CRUD helpers.
+
+Runs on SQLite (tests, local dev, the Streamlit prototype) or Postgres
+(production, e.g. Neon).  The backend is picked by the connection target:
+a ``postgres://`` / ``postgresql://`` URL gives Postgres, anything else is a
+SQLite file path (or ``:memory:``).
 
 Tables mirror the Pydantic models in schemas.py, with an additional
 audit_log table.  All money columns store integer paise.
@@ -13,9 +18,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-DB_PATH = Path(os.environ.get("DATABASE_URL", str(
-    Path(__file__).resolve().parent.parent / "data" / "ledger.db"
-)))
+from ledger import pg
+
+_DEFAULT_SQLITE = str(Path(__file__).resolve().parent.parent / "data" / "ledger.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", _DEFAULT_SQLITE)
+DB_PATH = DATABASE_URL if pg.is_postgres_url(DATABASE_URL) else Path(DATABASE_URL)
 
 # ---------------------------------------------------------------------------
 # Schema DDL
@@ -135,9 +142,15 @@ CREATE TABLE IF NOT EXISTS audit_log (
 # Database helpers
 # ---------------------------------------------------------------------------
 
-def get_connection(db_path: Path | str | None = None) -> sqlite3.Connection:
-    """Return a connection to the ledger database, creating tables if needed."""
+def get_connection(db_path: Path | str | None = None):
+    """Return a connection to the ledger database, creating tables if needed.
+
+    Returns a ``sqlite3.Connection`` for SQLite targets and a
+    ``ledger.pg.PgConnection`` (same calling conventions) for Postgres URLs.
+    """
     path = str(db_path or DB_PATH)
+    if pg.is_postgres_url(path):
+        return pg.connect(path, SCHEMA_SQL)
     conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
@@ -146,32 +159,56 @@ def get_connection(db_path: Path | str | None = None) -> sqlite3.Connection:
     return conn
 
 
+def table_exists(conn, name: str) -> bool:
+    """True if a table called ``name`` exists (works on SQLite and Postgres)."""
+    if isinstance(conn, pg.PgConnection):
+        row = conn.execute(
+            "SELECT 1 FROM information_schema.tables "
+            "WHERE table_schema = current_schema() AND table_name = ?",
+            (name,),
+        ).fetchone()
+    else:
+        row = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)
+        ).fetchone()
+    return row is not None
+
+
 def log_audit(
-    conn: sqlite3.Connection,
+    conn,
     actor: str,
     action: str,
     entity: str,
     old_value: Optional[str] = None,
     new_value: Optional[str] = None,
+    commit: bool = True,
 ) -> None:
     """Insert a row into the audit_log table.
 
     The audit log is append-only: rows are never updated or deleted.
+    Pass ``commit=False`` to write the audit row inside the caller's
+    transaction, so the change and its audit entry succeed or fail together.
     """
     conn.execute(
         "INSERT INTO audit_log (timestamp, actor, action, entity, old_value, new_value) "
         "VALUES (?, ?, ?, ?, ?, ?)",
         (datetime.now(timezone.utc).isoformat(), actor, action, entity, old_value, new_value),
     )
-    conn.commit()
+    if commit:
+        conn.commit()
 
 
-def verify_audit_integrity(conn: sqlite3.Connection) -> bool:
+def verify_audit_integrity(conn) -> bool:
     """Verify the audit log has not been tampered with.
 
-    Checks that IDs are sequential with no gaps (append-only invariant).
+    SQLite: checks that IDs are sequential with no gaps (append-only invariant).
+    Postgres: sequences legitimately skip IDs after a rolled-back transaction,
+    so instead the database itself enforces append-only with a trigger that
+    rejects UPDATE and DELETE; this checks that trigger is installed.
     Returns True if integrity holds.
     """
+    if isinstance(conn, pg.PgConnection):
+        return pg.audit_guard_installed(conn)
     rows = conn.execute(
         "SELECT id FROM audit_log ORDER BY id"
     ).fetchall()

@@ -1,6 +1,8 @@
 """Tests for production engineering features."""
 
 import os
+
+import pytest
 from ledger.db import get_connection, log_audit, verify_audit_integrity
 
 
@@ -39,6 +41,10 @@ class TestAuditIntegrity:
         assert verify_audit_integrity(conn) is True
         conn.close()
 
+    @pytest.mark.skipif(
+        bool(os.environ.get("TEST_POSTGRES_URL")),
+        reason="On Postgres the DELETE itself is blocked; see test_postgres_rejects_delete",
+    )
     def test_gap_detection(self):
         conn = get_connection(":memory:")
         log_audit(conn, "test", "create", "payment:1")
@@ -48,6 +54,21 @@ class TestAuditIntegrity:
         conn.execute("DELETE FROM audit_log WHERE id = 2")
         conn.commit()
         assert verify_audit_integrity(conn) is False
+        conn.close()
+
+    @pytest.mark.skipif(
+        not os.environ.get("TEST_POSTGRES_URL"), reason="Postgres-only guard"
+    )
+    def test_postgres_rejects_delete_and_update(self):
+        conn = get_connection(":memory:")
+        log_audit(conn, "test", "create", "payment:1")
+        assert verify_audit_integrity(conn) is True
+        for stmt in ("DELETE FROM audit_log WHERE id = 1",
+                     "UPDATE audit_log SET actor = 'x' WHERE id = 1"):
+            with pytest.raises(Exception, match="append-only"):
+                conn.execute(stmt)
+            conn.rollback()
+        assert conn.execute("SELECT actor FROM audit_log WHERE id = 1").fetchone()[0] == "test"
         conn.close()
 
     def test_audit_fields(self):

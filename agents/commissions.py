@@ -163,23 +163,47 @@ def _get_counselors(conn: sqlite3.Connection) -> list[dict]:
 
 
 def _get_matched_payments(conn: sqlite3.Connection) -> list[dict]:
-    """Get payments that have been matched to installments."""
-    rows = conn.execute(
-        "SELECT mr.payment_id, mr.allocations, p.amount_paid_paise, p.currency, "
-        "e.student_id "
+    """Get payments that have been matched to installments.
+
+    One row per (matched payment, student it was allocated to).  The JSON
+    allocations are unpacked in Python rather than with SQLite's json_each,
+    so this runs on SQLite and Postgres alike.
+    """
+    matches = conn.execute(
+        "SELECT mr.id, mr.payment_id, mr.allocations, p.amount_paid_paise, p.currency "
         "FROM match_result mr "
         "JOIN payment_in p ON mr.payment_id = p.id "
-        "JOIN ("
-        "  SELECT DISTINCT mr2.payment_id, e2.student_id "
-        "  FROM match_result mr2, "
-        "  json_each(mr2.allocations) je "
-        "  JOIN installment i2 ON i2.id = CAST(json_extract(je.value, '$.installment_id') AS INTEGER) "
-        "  JOIN enrollment e2 ON i2.enrollment_id = e2.id "
-        "  WHERE mr2.status IN ('auto', 'approved')"
-        ") e ON e.payment_id = mr.payment_id "
-        "WHERE mr.status IN ('auto', 'approved')"
+        "WHERE mr.status IN ('auto', 'approved') "
+        "ORDER BY mr.id"
     ).fetchall()
-    return [dict(r) for r in rows]
+    inst_to_student = {
+        r["id"]: r["student_id"]
+        for r in conn.execute(
+            "SELECT i.id, e.student_id FROM installment i "
+            "JOIN enrollment e ON i.enrollment_id = e.id"
+        ).fetchall()
+    }
+
+    # Distinct students per payment, across all its auto/approved matches
+    students_by_payment: dict[int, list[int]] = {}
+    for m in matches:
+        seen = students_by_payment.setdefault(m["payment_id"], [])
+        for alloc in json.loads(m["allocations"] or "[]"):
+            sid = inst_to_student.get(int(alloc["installment_id"]))
+            if sid is not None and sid not in seen:
+                seen.append(sid)
+
+    rows = []
+    for m in matches:
+        for sid in students_by_payment.get(m["payment_id"], []):
+            rows.append({
+                "payment_id": m["payment_id"],
+                "allocations": m["allocations"],
+                "amount_paid_paise": m["amount_paid_paise"],
+                "currency": m["currency"],
+                "student_id": sid,
+            })
+    return rows
 
 
 def _get_student_counselors(conn: sqlite3.Connection) -> dict[int, list[int]]:

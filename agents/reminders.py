@@ -167,11 +167,9 @@ def _get_open_installments(conn: sqlite3.Connection) -> list[dict]:
 
 def _get_existing_reminders(conn: sqlite3.Connection) -> dict[int, int]:
     """Return {installment_id: count} of already-sent reminders."""
-    # Check if reminder table exists
-    table_check = conn.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='reminder'"
-    ).fetchone()
-    if not table_check:
+    from ledger.db import table_exists
+
+    if not table_exists(conn, "reminder"):
         return {}
     rows = conn.execute(
         "SELECT installment_id, COUNT(*) as cnt FROM reminder GROUP BY installment_id"

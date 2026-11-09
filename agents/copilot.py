@@ -133,7 +133,8 @@ def _who_owes(conn: sqlite3.Connection, question: str, m) -> CopilotAnswer:
         "JOIN enrollment e ON i.enrollment_id = e.id "
         "JOIN student s ON e.student_id = s.id "
         "WHERE i.status IN ('open', 'overdue') "
-        "GROUP BY s.id ORDER BY owed DESC LIMIT 20"
+        # Group per currency too: never add rupees to dollars (CLAUDE.md rule 8).
+        "GROUP BY s.id, s.name, i.currency ORDER BY owed DESC LIMIT 20"
     ).fetchall()
     lines = []
     for r in rows:

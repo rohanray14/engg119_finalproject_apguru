@@ -7,3 +7,7 @@ __pycache__/
 *.pyc
 .DS_Store
 _app_ledger.db
+_app_ledger.db-*
+*.db-wal
+*.db-shm
+ledger.db
