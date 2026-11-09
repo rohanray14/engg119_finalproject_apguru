@@ -10,6 +10,10 @@ anything that matters.
 Full spec: `docs/SPEC.md`. Build order and prompts: `docs/PROMPTS.md`. Read SPEC.md before
 any non-trivial task.
 
+**Production rebuild in progress:** read `docs/HANDOFF.md` first. It has the current
+status, decisions already made, open questions for the owner, and the brief for the
+next step (Next.js front end).
+
 ## Rules (never break these)
 
 1. **Code does all money math.** GST, gateway fees, FX conversion, TDS, balances and
