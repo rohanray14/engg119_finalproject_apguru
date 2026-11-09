@@ -2,12 +2,12 @@
 
 ## Phase 0: Make the evals honest
 - [x] Sibling tag on 100% — model families explicitly (100% → 10.75%)
-- [ ] Label leakage — remove case_types from operational table
-- [ ] Identifiability ceiling — oracle analysis
-- [ ] Threshold mismatch — single config value
-- [ ] Missing results — re-run evals
-- [ ] Eval harness upgrades — git SHA, cost, compare mode
-- [ ] Freeze: write evals/FROZEN.sha256
+- [x] Label leakage — removed case_types from DB, installments start open
+- [x] Identifiability ceiling — oracle: 43.9% identifiable on dev
+- [x] Threshold mismatch — config.py with 0.95 threshold everywhere
+- [x] Missing results — re-run evals with new data (v6 in experiments.md)
+- [x] Eval harness upgrades — git SHA, data hash, latency, compare mode
+- [x] Freeze: evals/FROZEN.sha256 written
 
 ## Phase 1: Matching engine to production quality
 - [ ] Global assignment (no double-claiming installments)

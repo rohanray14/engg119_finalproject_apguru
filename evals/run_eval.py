@@ -14,8 +14,11 @@ the results, and saves a report to results/.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -105,6 +108,7 @@ def run_matching_eval(
         conn = load_all(data_dir=data_dir, db_path=":memory:")
 
     # Run the matcher
+    start_time = time.time()
     if agent == "matching_ai":
         from agents.matching_ai import match_all
         predictions = match_all(conn, threshold=threshold)
@@ -113,6 +117,7 @@ def run_matching_eval(
         from agents.matching_rules import match_all
         predictions = match_all(conn)
         agent_name = "matching_rules"
+    latency_ms = int((time.time() - start_time) * 1000)
     conn.close()
 
     # Filter predictions to only those in this split's answer set
@@ -140,24 +145,54 @@ def run_matching_eval(
                     "expected_reason": ans.get("reason", ""),
                 })
 
-    report = _build_report(result, split, threshold, len(predictions), agent_name)
+    report = _build_report(result, split, threshold, len(predictions), agent_name, latency_ms=latency_ms)
     if split == "safety":
         report["safety_violations"] = safety_violations
         report["safety_violation_count"] = len(safety_violations)
     return report
 
 
-def _build_report(result, split: str, threshold: float, total_predictions: int, agent_name: str = "matching_rules") -> dict:
+def _get_git_sha() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=str(PROJECT_ROOT), stderr=subprocess.DEVNULL,
+        ).decode().strip()
+    except Exception:
+        return "unknown"
+
+
+def _get_data_hash() -> str:
+    """SHA256 of all data files used for eval."""
+    h = hashlib.sha256()
+    for f in sorted((PROJECT_ROOT / "data").glob("*.csv")):
+        h.update(f.read_bytes())
+    for f in sorted((PROJECT_ROOT / "data").glob("*.json")):
+        h.update(f.read_bytes())
+    return h.hexdigest()[:16]
+
+
+def _build_report(
+    result, split: str, threshold: float, total_predictions: int,
+    agent_name: str = "matching_rules",
+    latency_ms: int = 0, cost_estimate: float = 0.0,
+) -> dict:
     """Build the eval report dict."""
     summary = result.summary_dict()
     case_table = result.case_type_table()
 
+    from config import CONFIG
     report = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
+        "git_sha": _get_git_sha(),
         "agent": agent_name,
+        "model": CONFIG.model if agent_name == "matching_ai" else "n/a",
         "split": split,
         "threshold": threshold,
+        "data_hash": _get_data_hash(),
         "total_predictions": total_predictions,
+        "latency_ms": latency_ms,
+        "cost_estimate_usd": round(cost_estimate, 4),
         "summary": summary,
         "case_type_table": case_table,
     }
@@ -246,6 +281,27 @@ def save_report(report: dict):
         f.write("\n".join(lines))
 
 
+def compare_runs(path_a: str, path_b: str):
+    """Print a diff table comparing two eval runs."""
+    with open(path_a) as f:
+        a = json.load(f)
+    with open(path_b) as f:
+        b = json.load(f)
+
+    sa, sb = a["summary"], b["summary"]
+    print(f"\n{'Metric':<25} {'Run A':>12} {'Run B':>12} {'Delta':>12}")
+    print(f"{'-'*25} {'-'*12} {'-'*12} {'-'*12}")
+    for key in ["total", "attempted", "correct", "wrong_confident", "skipped"]:
+        va, vb = sa[key], sb[key]
+        print(f"{key:<25} {va:>12} {vb:>12} {vb - va:>+12}")
+    for key in ["precision", "coverage"]:
+        va, vb = sa[key], sb[key]
+        print(f"{key:<25} {va:>11.2%} {vb:>11.2%} {vb - va:>+11.2%}")
+    print(f"\nA: {a.get('agent', '?')} ({a.get('git_sha', '?')}) @ {a.get('threshold', '?')}")
+    print(f"B: {b.get('agent', '?')} ({b.get('git_sha', '?')}) @ {b.get('threshold', '?')}")
+    print()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Run payment-matching eval")
     parser.add_argument("--agent", default="matching",
@@ -255,7 +311,13 @@ def main():
                        help="Data split to evaluate on")
     parser.add_argument("--threshold", type=float, default=None,
                        help="Confidence threshold for auto-match (default: from config.py)")
+    parser.add_argument("--compare", nargs=2, metavar=("RUN_A", "RUN_B"),
+                       help="Compare two eval result JSON files")
     args = parser.parse_args()
+
+    if args.compare:
+        compare_runs(args.compare[0], args.compare[1])
+        return
 
     from config import CONFIG
     threshold = args.threshold if args.threshold is not None else CONFIG.matching.auto_match_threshold
