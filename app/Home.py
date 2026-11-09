@@ -15,161 +15,193 @@ DATA_DIR = PROJECT_ROOT / "data"
 _DB_FILE = PROJECT_ROOT / "data" / "_app_ledger.db"
 
 
+def _month_range(d: date):
+    """Return (first_day, last_day) of the month containing d."""
+    first = d.replace(day=1)
+    if first.month == 12:
+        last = first.replace(year=first.year + 1, month=1, day=1) - timedelta(days=1)
+    else:
+        last = first.replace(month=first.month + 1, day=1) - timedelta(days=1)
+    return first, last
+
+
+def _prev_month(d: date):
+    """Return the first day of the previous month."""
+    first = d.replace(day=1)
+    return (first - timedelta(days=1)).replace(day=1)
+
+
 def compute_dashboard_stats(conn, as_of: date) -> dict:
     """Compute all dashboard numbers from one source of truth."""
     as_of_iso = as_of.isoformat()
 
-    total_payments = conn.execute("SELECT COUNT(*) FROM payment_in").fetchone()[0]
-    total_received = conn.execute(
-        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in"
+    # ── This month vs last month ──
+    this_start, this_end = _month_range(as_of)
+    prev_start, prev_end = _month_range(_prev_month(as_of))
+
+    received_this_month = conn.execute(
+        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE date BETWEEN ? AND ?",
+        (this_start.isoformat(), this_end.isoformat()),
     ).fetchone()[0]
+    received_last_month = conn.execute(
+        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE date BETWEEN ? AND ?",
+        (prev_start.isoformat(), prev_end.isoformat()),
+    ).fetchone()[0]
+    expected_this_month = conn.execute(
+        "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment WHERE due_date BETWEEN ? AND ?",
+        (this_start.isoformat(), this_end.isoformat()),
+    ).fetchone()[0]
+    spent_this_month = conn.execute(
+        "SELECT COALESCE(SUM(amount_paise), 0) FROM payment_out WHERE date BETWEEN ? AND ?",
+        (this_start.isoformat(), this_end.isoformat()),
+    ).fetchone()[0]
+
+    collection_rate_this = (received_this_month / expected_this_month * 100) if expected_this_month > 0 else 0
+
+    # ── All-time totals (for reference) ──
+    total_received = conn.execute("SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in").fetchone()[0]
+    total_out = conn.execute("SELECT COALESCE(SUM(amount_paise), 0) FROM payment_out").fetchone()[0]
     confirmed = conn.execute(
         "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE confirmation='in_bank'"
     ).fetchone()[0]
+    confirm_rate = (confirmed / total_received * 100) if total_received > 0 else 0
 
-    # Total expected (all installments)
-    total_expected = conn.execute(
-        "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment"
-    ).fetchone()[0]
-
-    # Overdue: open installments whose due_date is before as_of
+    # ── Overdue ──
     overdue_count = conn.execute(
         "SELECT COUNT(*) FROM installment WHERE status='open' AND due_date < ?",
         (as_of_iso,),
     ).fetchone()[0]
     overdue_amount = conn.execute(
-        "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment "
-        "WHERE status='open' AND due_date < ?",
+        "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment WHERE status='open' AND due_date < ?",
         (as_of_iso,),
     ).fetchone()[0]
-
-    # Oldest overdue installment
     oldest_overdue_row = conn.execute(
         "SELECT MIN(due_date) FROM installment WHERE status='open' AND due_date < ?",
         (as_of_iso,),
     ).fetchone()
     oldest_overdue_date = oldest_overdue_row[0] if oldest_overdue_row else None
-    if oldest_overdue_date:
-        oldest_overdue_days = (as_of - date.fromisoformat(oldest_overdue_date)).days
-    else:
-        oldest_overdue_days = 0
+    oldest_overdue_days = (as_of - date.fromisoformat(oldest_overdue_date)).days if oldest_overdue_date else 0
 
-    # Payment match states
-    unmatched_count = conn.execute(
-        "SELECT COUNT(*) FROM payment_in p "
-        "LEFT JOIN match_result mr ON mr.payment_id = p.id "
-        "WHERE mr.id IS NULL"
-    ).fetchone()[0]
-    unmatched_amount = conn.execute(
-        "SELECT COALESCE(SUM(p.amount_paid_paise), 0) FROM payment_in p "
-        "LEFT JOIN match_result mr ON mr.payment_id = p.id "
-        "WHERE mr.id IS NULL"
-    ).fetchone()[0]
-    suggested_count = conn.execute(
-        "SELECT COUNT(*) FROM match_result "
-        "WHERE status='pending_review' AND allocations != '[]'"
-    ).fetchone()[0]
-    needs_review_count = conn.execute(
-        "SELECT COUNT(*) FROM match_result "
-        "WHERE status='pending_review' AND allocations = '[]'"
-    ).fetchone()[0]
+    # ── Match states ──
     matched_count = conn.execute(
         "SELECT COUNT(*) FROM match_result WHERE status IN ('auto','approved')"
     ).fetchone()[0]
+    suggested_count = conn.execute(
+        "SELECT COUNT(*) FROM match_result WHERE status='pending_review' AND allocations != '[]'"
+    ).fetchone()[0]
+    needs_review_count = conn.execute(
+        "SELECT COUNT(*) FROM match_result WHERE status='pending_review' AND allocations = '[]'"
+    ).fetchone()[0]
 
-    # Confirmation breakdown
+    # ── Confirmation breakdown ──
     confirmation_counts = {}
     for r in conn.execute("SELECT confirmation, COUNT(*) FROM payment_in GROUP BY confirmation"):
         confirmation_counts[r[0]] = r[1]
 
-    # Money out
-    total_out = conn.execute(
-        "SELECT COALESCE(SUM(amount_paise), 0) FROM payment_out"
-    ).fetchone()[0]
-
-    # Collections vs Expected by month (last 12 months from as_of)
+    # ── Collections vs Expected by month (only months with data) ──
     months_data = []
-    for i in range(12):
-        # Go backwards from as_of
-        month_offset = 11 - i
-        m_start = date(as_of.year, as_of.month, 1) - timedelta(days=30 * month_offset)
-        m_start = m_start.replace(day=1)
-        if m_start.month == 12:
-            m_end = m_start.replace(year=m_start.year + 1, month=1, day=1) - timedelta(days=1)
-        else:
-            m_end = m_start.replace(month=m_start.month + 1, day=1) - timedelta(days=1)
+    # Find the actual data range
+    min_month = conn.execute(
+        "SELECT MIN(d) FROM (SELECT MIN(date) AS d FROM payment_in UNION SELECT MIN(due_date) FROM installment WHERE due_date IS NOT NULL)"
+    ).fetchone()[0]
+    max_month = conn.execute(
+        "SELECT MAX(d) FROM (SELECT MAX(date) AS d FROM payment_in UNION SELECT MAX(due_date) FROM installment WHERE due_date IS NOT NULL)"
+    ).fetchone()[0]
+    if min_month and max_month:
+        cursor = date.fromisoformat(min_month).replace(day=1)
+        end = date.fromisoformat(max_month).replace(day=1)
+        while cursor <= end:
+            m_start, m_end = _month_range(cursor)
+            expected = conn.execute(
+                "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment WHERE due_date BETWEEN ? AND ?",
+                (m_start.isoformat(), m_end.isoformat()),
+            ).fetchone()[0]
+            collected = conn.execute(
+                "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE date BETWEEN ? AND ?",
+                (m_start.isoformat(), m_end.isoformat()),
+            ).fetchone()[0]
+            if expected > 0 or collected > 0:
+                months_data.append({
+                    "Month": m_start.strftime("%b %y"),
+                    "Expected": expected / 100,
+                    "Collected": collected / 100,
+                })
+            if cursor.month == 12:
+                cursor = cursor.replace(year=cursor.year + 1, month=1)
+            else:
+                cursor = cursor.replace(month=cursor.month + 1)
 
-        expected = conn.execute(
-            "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment "
-            "WHERE due_date BETWEEN ? AND ?",
-            (m_start.isoformat(), m_end.isoformat()),
-        ).fetchone()[0]
-
-        collected = conn.execute(
-            "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in "
-            "WHERE date BETWEEN ? AND ?",
-            (m_start.isoformat(), m_end.isoformat()),
-        ).fetchone()[0]
-
-        months_data.append({
-            "Month": m_start.strftime("%b %y"),
-            "Expected": expected / 100,
-            "Collected": collected / 100,
-        })
-
-    # Cash forecast: upcoming installments in the next 6 weeks
+    # ── Cash forecast: next 6 weeks ──
     forecast_weeks = []
     for i in range(6):
         week_start = as_of + timedelta(weeks=i)
         week_end = week_start + timedelta(days=6)
-        label = week_start.strftime("%-d %b")
         scheduled = conn.execute(
             "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment "
             "WHERE status IN ('open','partial') AND due_date BETWEEN ? AND ?",
             (week_start.isoformat(), week_end.isoformat()),
         ).fetchone()[0]
-        likely = int(scheduled * 0.7)
         forecast_weeks.append({
-            "Week": label,
+            "Week": week_start.strftime("%-d %b"),
             "Scheduled": scheduled / 100,
-            "Likely (70%)": likely / 100,
+            "Likely (70%)": int(scheduled * 0.7) / 100,
         })
 
-    # Commission totals
-    total_commission = conn.execute(
-        "SELECT COALESCE(SUM(commission_paise), 0) FROM commission_line"
-    ).fetchone()[0]
-    total_tds = conn.execute(
-        "SELECT COALESCE(SUM(tds_paise), 0) FROM commission_line"
-    ).fetchone()[0]
-    total_commission_net = conn.execute(
-        "SELECT COALESCE(SUM(net_paise), 0) FROM commission_line"
-    ).fetchone()[0]
+    # ── Commissions ──
+    total_commission = conn.execute("SELECT COALESCE(SUM(commission_paise), 0) FROM commission_line").fetchone()[0]
+    total_tds = conn.execute("SELECT COALESCE(SUM(tds_paise), 0) FROM commission_line").fetchone()[0]
+    total_commission_net = conn.execute("SELECT COALESCE(SUM(net_paise), 0) FROM commission_line").fetchone()[0]
     counselors_with_commission = conn.execute(
         "SELECT COUNT(DISTINCT counselor_id) FROM commission_line WHERE net_paise > 0"
     ).fetchone()[0]
 
+    # ── Top families owing ──
+    top_owing = conn.execute(
+        "SELECT s.name, s.id, "
+        "SUM(i.amount_due_paise) as total_owed, "
+        "MIN(i.due_date) as earliest_due "
+        "FROM installment i "
+        "JOIN enrollment e ON i.enrollment_id = e.id "
+        "JOIN student s ON e.student_id = s.id "
+        "WHERE i.status = 'open' AND i.due_date < ? "
+        "GROUP BY s.id "
+        "ORDER BY total_owed DESC LIMIT 5",
+        (as_of_iso,),
+    ).fetchall()
+
+    # ── Largest unmatched payments ──
+    largest_unmatched = conn.execute(
+        "SELECT p.id, p.payer_name, p.amount_paid_paise, p.currency, p.date, p.method "
+        "FROM payment_in p "
+        "LEFT JOIN match_result mr ON mr.payment_id = p.id "
+        "WHERE mr.id IS NULL "
+        "ORDER BY p.amount_paid_paise DESC LIMIT 5"
+    ).fetchall()
+
     return {
-        "total_payments": total_payments,
+        "received_this_month": received_this_month,
+        "received_last_month": received_last_month,
+        "expected_this_month": expected_this_month,
+        "spent_this_month": spent_this_month,
+        "collection_rate_this": collection_rate_this,
         "total_received": total_received,
-        "total_expected": total_expected,
-        "confirmed": confirmed,
+        "total_out": total_out,
+        "confirm_rate": confirm_rate,
         "overdue_count": overdue_count,
         "overdue_amount": overdue_amount,
         "oldest_overdue_days": oldest_overdue_days,
-        "unmatched_count": unmatched_count,
-        "unmatched_amount": unmatched_amount,
+        "matched_count": matched_count,
         "suggested_count": suggested_count,
         "needs_review_count": needs_review_count,
-        "matched_count": matched_count,
         "confirmation_counts": confirmation_counts,
-        "total_out": total_out,
         "months_data": months_data,
         "forecast_weeks": forecast_weeks,
         "total_commission": total_commission,
         "total_tds": total_tds,
         "total_commission_net": total_commission_net,
         "counselors_with_commission": counselors_with_commission,
+        "top_owing": top_owing,
+        "largest_unmatched": largest_unmatched,
     }
 
 
@@ -202,7 +234,7 @@ def get_db():
             )
     conn.commit()
 
-    # Compute commissions from matched payments and insert into commission_line
+    # Compute commissions from matched payments
     from agents.commissions import compute_commissions
     calcs = compute_commissions(conn)
     for c in calcs:
@@ -215,7 +247,6 @@ def get_db():
              c.commission_paise, c.refund_deduction_paise, c.tds_paise, c.net_paise),
         )
     conn.commit()
-
     conn.close()
 
     conn = sqlite3.connect(str(_DB_FILE), check_same_thread=False)
@@ -241,12 +272,11 @@ def main():
 
     conn = get_db()
 
-    # ── Sidebar: as-of date ──
+    # ── Sidebar ──
     min_date_row = conn.execute("SELECT MIN(due_date) FROM installment WHERE due_date IS NOT NULL").fetchone()
     max_date_row = conn.execute("SELECT MAX(due_date) FROM installment WHERE due_date IS NOT NULL").fetchone()
     min_date = date.fromisoformat(min_date_row[0]) if min_date_row and min_date_row[0] else date(2025, 4, 1)
     max_date = date.fromisoformat(max_date_row[0]) if max_date_row and max_date_row[0] else date(2026, 9, 30)
-    # Default to midpoint of the data range for a useful view
     default_as_of = min_date + (max_date - min_date) // 2
 
     with st.sidebar:
@@ -270,15 +300,14 @@ def main():
             unsafe_allow_html=True,
         )
 
-    # ── Compute all stats ──
     stats = compute_dashboard_stats(conn, as_of)
 
     # ── Header ──
+    month_label = as_of.strftime("%B %Y")
     st.caption(as_of.strftime("%A, %-d %B %Y"))
     st.title("Today")
 
-    # ── Briefing card ──
-    auto_matched = stats["matched_count"]
+    # ── Briefing ──
     pending_review = stats["suggested_count"] + stats["needs_review_count"]
     overdue_count = stats["overdue_count"]
 
@@ -290,23 +319,24 @@ def main():
     reminders = generate_reminders(conn, as_of=as_of)
     overdue_reminders = [r for r in reminders if r.reminder_type == "overdue"]
 
-    collection_rate = (stats["total_received"] / stats["total_expected"] * 100) if stats["total_expected"] > 0 else 0
-    confirm_rate = (stats["confirmed"] / stats["total_received"] * 100) if stats["total_received"] > 0 else 0
-
     with st.container(border=True):
         st.markdown(
             f'{badge("BRIEFING", "teal")} &nbsp; '
-            f'<span style="color:#636e72;">Written by the copilot from today\'s ledger</span>',
+            f'<span style="color:#636e72;">Generated from the ledger</span>',
             unsafe_allow_html=True,
         )
-        oldest_note = f" (oldest: {stats['oldest_overdue_days']} days)" if stats['oldest_overdue_days'] > 0 else ""
-        risk_note = f" {len(high_risk)} high-severity risk flag(s)." if high_risk else ""
-        st.markdown(
-            f"**{auto_matched} payments** matched automatically; "
-            f"**{pending_review}** need review. "
-            f"Collection rate is **{collection_rate:.0f}%** of expected fees. "
-            f"**{overdue_count} installments** are past due{oldest_note}.{risk_note}"
-        )
+        # Build a concise briefing
+        parts = []
+        parts.append(f"**{stats['matched_count']}** payments matched; **{pending_review}** need review.")
+        if stats["expected_this_month"] > 0:
+            parts.append(f"This month: collected {fmt_inr(stats['received_this_month'])} of {fmt_inr(stats['expected_this_month'])} expected (**{stats['collection_rate_this']:.0f}%**).")
+        if overdue_count > 0:
+            oldest_note = f", oldest {stats['oldest_overdue_days']} days" if stats['oldest_overdue_days'] > 0 else ""
+            parts.append(f"**{overdue_count}** installments overdue ({fmt_inr(stats['overdue_amount'])}{oldest_note}).")
+        if high_risk:
+            parts.append(f"**{len(high_risk)}** high-severity risk flag(s).")
+        st.markdown(" ".join(parts))
+
         col_a, col_b, _ = st.columns([1, 1, 3])
         with col_a:
             if st.button(f"Review {pending_review} payments", type="primary"):
@@ -317,38 +347,46 @@ def main():
 
     st.write("")
 
-    # ── Row 1: Key metrics ──
+    # ── Row 1: This month snapshot ──
     col1, col2, col3, col4 = st.columns(4)
-    net_position = stats["total_received"] - stats["total_out"]
+
+    # Delta vs last month
+    if stats["received_last_month"] > 0:
+        delta_pct = (stats["received_this_month"] - stats["received_last_month"]) / stats["received_last_month"] * 100
+        delta_str = f"{delta_pct:+.0f}% vs last month"
+    else:
+        delta_str = None
+
     with col1:
-        st.metric("Money in", fmt_inr(stats["total_received"]))
-        st.markdown(metric_subtitle(f"{stats['total_payments']} payments · {confirm_rate:.0f}% confirmed"), unsafe_allow_html=True)
+        st.metric(f"Received ({month_label})", fmt_inr(stats["received_this_month"]),
+                  delta=delta_str)
     with col2:
-        st.metric("Money out", fmt_inr(stats["total_out"]))
-        st.markdown(metric_subtitle("Faculty, rent, refunds, tax, etc."), unsafe_allow_html=True)
+        st.metric(f"Expected ({month_label})", fmt_inr(stats["expected_this_month"]))
+        if stats["expected_this_month"] > 0:
+            st.markdown(metric_subtitle(f"Collection rate: {stats['collection_rate_this']:.0f}%"), unsafe_allow_html=True)
     with col3:
-        st.metric("Net position", fmt_inr(net_position))
-        st.markdown(
-            metric_subtitle(f"Collection rate: {collection_rate:.0f}%"),
-            unsafe_allow_html=True,
-        )
+        st.metric(f"Spent ({month_label})", fmt_inr(stats["spent_this_month"]))
+        net_this = stats["received_this_month"] - stats["spent_this_month"]
+        color = "#27ae60" if net_this >= 0 else "#e74c3c"
+        st.markdown(f'<p style="color:{color}; font-size:0.8rem; margin-top:-8px;">Net: {fmt_inr(net_this)}</p>', unsafe_allow_html=True)
     with col4:
-        st.metric("Overdue", f"{overdue_count} ({fmt_inr(stats['overdue_amount'])})")
-        if stats['oldest_overdue_days'] > 0:
+        st.metric("Overdue", f"{overdue_count}")
+        if overdue_count > 0:
             st.markdown(
                 f'<p style="color:#e74c3c; font-size:0.8rem; margin-top:-8px;">'
-                f'Oldest: {stats["oldest_overdue_days"]} days past due</p>',
+                f'{fmt_inr(stats["overdue_amount"])} · oldest {stats["oldest_overdue_days"]}d</p>',
                 unsafe_allow_html=True,
             )
 
     st.write("")
 
-    # ── Row 2: Confirmation + Commissions + Match states ──
-    col1, col2, col3 = st.columns(3)
+    # ── Row 2: Confirmation + Commissions (2 cards, more space) ──
+    col1, col2 = st.columns(2)
 
     with col1:
         with st.container(border=True):
             st.markdown("### Confirmation status")
+            st.caption(f"{stats['confirm_rate']:.0f}% of all-time payments confirmed in bank")
             cc = stats["confirmation_counts"]
             in_bank = cc.get("in_bank", 0)
             by_gateway = cc.get("seen_by_gateway", 0)
@@ -356,59 +394,81 @@ def main():
             total = in_bank + by_gateway + screenshot
             if total > 0:
                 st.markdown(
-                    f'<div style="display:flex; height:24px; border-radius:6px; overflow:hidden; margin:8px 0;">'
-                    f'<div style="background:#27ae60; width:{in_bank/total*100:.0f}%;"></div>'
-                    f'<div style="background:#f39c12; width:{by_gateway/total*100:.0f}%;"></div>'
-                    f'<div style="background:#e74c3c; width:{screenshot/total*100:.0f}%;"></div>'
+                    f'<div style="display:flex; height:28px; border-radius:6px; overflow:hidden; margin:12px 0;">'
+                    f'<div style="background:#27ae60; width:{in_bank/total*100:.0f}%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.75rem; font-weight:600;">{in_bank/total*100:.0f}%</div>'
+                    f'<div style="background:#f39c12; width:{by_gateway/total*100:.0f}%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.75rem; font-weight:600;">{by_gateway/total*100:.0f}%</div>'
+                    f'<div style="background:#e74c3c; width:{screenshot/total*100:.0f}%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.75rem; font-weight:600;">{screenshot/total*100:.0f}%</div>'
                     f'</div>',
                     unsafe_allow_html=True,
                 )
-                st.markdown(
-                    f'{badge(f"In bank: {in_bank}", "green")} &nbsp; '
-                    f'{badge(f"Gateway: {by_gateway}", "orange")} &nbsp; '
-                    f'{badge(f"Screenshot: {screenshot}", "red")}',
-                    unsafe_allow_html=True,
-                )
+                c1, c2, c3 = st.columns(3)
+                c1.markdown(f'{badge(f"In bank: {in_bank}", "green")}', unsafe_allow_html=True)
+                c2.markdown(f'{badge(f"Gateway: {by_gateway}", "orange")}', unsafe_allow_html=True)
+                c3.markdown(f'{badge(f"Screenshot: {screenshot}", "red")}', unsafe_allow_html=True)
 
     with col2:
         with st.container(border=True):
             st.markdown("### Commissions")
             if stats["total_commission"] > 0:
-                st.metric("Earned", fmt_inr(stats["total_commission"]))
-                st.markdown(
-                    f"TDS withheld: {fmt_inr(stats['total_tds'])} · "
-                    f"**Net payable: {fmt_inr(stats['total_commission_net'])}**"
-                )
-                st.caption(f"{stats['counselors_with_commission']} counselors with earned commissions")
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Earned", fmt_inr(stats["total_commission"]))
+                c2.metric("TDS (2%)", fmt_inr(stats["total_tds"]))
+                c3.metric("Net payable", fmt_inr(stats["total_commission_net"]))
+                st.caption(f"{stats['counselors_with_commission']} counselors with earned commissions · computed from {stats['matched_count']} matched payments")
             else:
                 st.caption("No commissions computed yet — match more payments first.")
 
-    with col3:
+    st.write("")
+
+    # ── Row 3: Top owing families + Largest unmatched payments ──
+    col1, col2 = st.columns(2)
+
+    with col1:
         with st.container(border=True):
-            st.markdown("### Match states")
-            s1, s2 = st.columns(2)
-            s1.metric("Matched", stats["matched_count"])
-            s1.caption("Auto or approved")
-            s2.metric("Pending", stats["suggested_count"] + stats["needs_review_count"])
-            s2.caption("Needs review")
-            s1b, s2b = st.columns(2)
-            s1b.metric("Unmatched", stats["unmatched_count"])
-            s1b.caption("No match attempted")
-            s2b.metric("Suggested", stats["suggested_count"])
-            s2b.caption("Has allocations")
+            st.markdown("### Top families owing")
+            if stats["top_owing"]:
+                for rank, row in enumerate(stats["top_owing"], 1):
+                    days_overdue = (as_of - date.fromisoformat(row["earliest_due"])).days if row["earliest_due"] else 0
+                    cols = st.columns([0.5, 3, 2, 1.5])
+                    cols[0].markdown(f"**{rank}.**")
+                    cols[1].markdown(f"**{row['name']}**")
+                    cols[2].markdown(f"{fmt_inr(row['total_owed'])}")
+                    cols[3].markdown(
+                        f'{badge(f"{days_overdue}d", "red" if days_overdue > 90 else "orange")}',
+                        unsafe_allow_html=True,
+                    )
+            else:
+                st.success("No overdue families.")
+
+    with col2:
+        with st.container(border=True):
+            st.markdown("### Largest unmatched payments")
+            if stats["largest_unmatched"]:
+                for rank, row in enumerate(stats["largest_unmatched"], 1):
+                    cols = st.columns([0.5, 3, 2, 1.5])
+                    cols[0].markdown(f"**{rank}.**")
+                    cols[1].markdown(f"**{row['payer_name'] or '(blank)'}**")
+                    cols[2].markdown(fmt_amount(row['amount_paid_paise'], row['currency']))
+                    cols[3].markdown(
+                        f'<span style="color:#636e72; font-size:0.8rem;">{fmt_date_display(row["date"])}</span>',
+                        unsafe_allow_html=True,
+                    )
+                st.caption(f"These payments have no match — review or assign them manually.")
+            else:
+                st.success("All payments matched.")
 
     st.write("")
 
-    # ── Row 3: Collections vs Expected + Cash forecast ──
+    # ── Row 4: Collections chart + Cash forecast ──
     left, right = st.columns([3, 2])
 
     with left:
         with st.container(border=True):
-            st.markdown("### Collections vs expected by month")
-            st.caption("Expected = installments due that month. Collected = payments received.")
+            st.markdown("### Collections vs expected")
+            st.caption("Monthly: installments due vs payments received")
             import pandas as pd
             df = pd.DataFrame(stats["months_data"])
-            if not df.empty and df[["Expected", "Collected"]].sum().sum() > 0:
+            if not df.empty:
                 df = df.set_index("Month")
                 st.bar_chart(df, color=["#dfe6e9", "#1a6b5a"])
             else:
@@ -416,53 +476,56 @@ def main():
 
     with right:
         with st.container(border=True):
-            st.markdown("### Expected cash, next 6 weeks")
-            st.caption("Open installments due in the coming weeks")
+            st.markdown("### Cash due, next 6 weeks")
+            st.caption("Open installments coming due")
             import pandas as pd
             df_fc = pd.DataFrame(stats["forecast_weeks"])
             if not df_fc.empty and df_fc["Scheduled"].sum() > 0:
                 df_fc = df_fc.set_index("Week")
                 st.bar_chart(df_fc, color=["#1a6b5a", "#b2dfdb"])
             else:
-                st.caption("No installments due in the next 6 weeks from the selected date.")
+                st.caption("No installments due in the next 6 weeks.")
 
     st.write("")
 
-    # ── Row 4: Needs your decision ──
+    # ── Row 5: Needs your decision ──
     with st.container(border=True):
         st.markdown("### Needs your decision")
 
         items_shown = 0
 
-        # Risk items
+        # Risk items (highest urgency)
         for f in high_risk[:2]:
             cols = st.columns([1, 5, 1])
             cols[0].markdown(badge("Risk", "red"), unsafe_allow_html=True)
-            cols[1].markdown(f"**{f.explanation[:80]}**<br>"
-                             f'<span style="color:#636e72; font-size:0.85rem;">{f.category}</span>',
-                             unsafe_allow_html=True)
+            cols[1].markdown(
+                f"**{f.explanation[:80]}**<br>"
+                f'<span style="color:#636e72; font-size:0.85rem;">{f.category}'
+                f'{" · " + fmt_inr(f.amount_paise) if f.amount_paise else ""}</span>',
+                unsafe_allow_html=True,
+            )
             if cols[2].button("Check", key=f"risk_{f.entity}"):
                 st.switch_page("pages/7_Risk.py")
             st.markdown("---")
             items_shown += 1
 
-        # Match review items
+        # Match review items (show amount at stake)
         pending_rows = conn.execute(
             "SELECT mr.id, mr.payment_id, mr.confidence, mr.reason, "
             "p.payer_name, p.amount_paid_paise, p.currency, p.method, p.date "
             "FROM match_result mr "
             "JOIN payment_in p ON mr.payment_id = p.id "
             "WHERE mr.status = 'pending_review' AND mr.allocations != '[]' "
-            "ORDER BY mr.confidence DESC LIMIT 3"
+            "ORDER BY p.amount_paid_paise DESC LIMIT 3"
         ).fetchall()
         for row in pending_rows:
             cols = st.columns([1, 5, 1])
             cols[0].markdown(badge("Match", "teal"), unsafe_allow_html=True)
             cols[1].markdown(
-                f"**{fmt_amount(row['amount_paid_paise'], row['currency'])} from "
-                f"{row['payer_name'] or '(blank)'}**<br>"
+                f"**{fmt_amount(row['amount_paid_paise'], row['currency'])}** from "
+                f"{row['payer_name'] or '(blank)'}<br>"
                 f'<span style="color:#636e72; font-size:0.85rem;">'
-                f"{row['confidence']:.0%} confident"
+                f"{row['confidence']:.0%} confident · {fmt_date_display(row['date'])}"
                 f"</span>",
                 unsafe_allow_html=True,
             )
@@ -476,9 +539,9 @@ def main():
             cols = st.columns([1, 5, 1])
             cols[0].markdown(badge("Overdue", "orange"), unsafe_allow_html=True)
             cols[1].markdown(
-                f"**{len(overdue_reminders)} installments past due — reminders drafted**<br>"
+                f"**{len(overdue_reminders)} overdue** — reminders drafted<br>"
                 f'<span style="color:#636e72; font-size:0.85rem;">'
-                f"Total overdue: {fmt_inr(stats['overdue_amount'])}</span>",
+                f"Total: {fmt_inr(stats['overdue_amount'])}</span>",
                 unsafe_allow_html=True,
             )
             if cols[2].button("Read drafts", key="overdue_drafts"):
@@ -490,7 +553,7 @@ def main():
 
     st.write("")
 
-    # ── Ask box at bottom ──
+    # ── Ask box ──
     with st.container(border=True):
         cols = st.columns([1, 8, 1])
         cols[0].markdown(
