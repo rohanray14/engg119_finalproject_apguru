@@ -10,13 +10,17 @@
 - [x] Freeze: evals/FROZEN.sha256 written
 
 ## Phase 1: Matching engine to production quality
-- [ ] Global assignment (no double-claiming installments)
-- [ ] Split and partial payments
-- [ ] Calibrated confidence
-- [ ] Amount explanation (deduction stories)
-- [ ] LLM call hygiene (structured output, Pydantic)
-- [ ] Error analysis loop (5+ iterations)
-- [ ] Expand safety cases
+- [x] Global assignment (no double-claiming installments) — sort by confidence desc, claim/downgrade conflicts
+- [x] Amount explanation (deduction stories) — exact, TDS-10%, partial 50/60/75% in ledger/money.py
+- [x] Expand safety cases — 25 cases (was 20), +5 edge cases
+- [x] Error analysis loop (6 iterations: v5–v10) — identified coverage ceiling
+  - Practical auto-match ceiling: ~2.1% (6/280) due to data characteristics
+  - 57% blank payer, 33% multi-installment ambiguity, 7.5% safety-blocked
+  - v9 rules: 100% precision, 1.79% coverage, 0 wrong, 0/25 safety violations
+  - v10 AI: same at 0.95 threshold (multi-installment cap blocks AI gains)
+- [x] LLM call hygiene — improved prompts, confidence calibration, safety checks, caching
+- [x] Calibrated confidence — same_student(1) guard, MAX_STUDENTS_FOR_HIGH=5, multi-inst cap at MEDIUM
+- [ ] Split and partial payments (deferred — explain_amount handles detection, full allocation needs global optimizer)
 
 ## Phase 2: Reconciliation
 - [ ] Gateway settlement breakdown
@@ -41,12 +45,12 @@
 - [ ] Property-based tests (hypothesis)
 
 ## Phase 5: UI fixes
-- [ ] Home page contradictions (consistent numbers)
-- [ ] Hard-coded date (configurable "as of")
-- [ ] State labels (unmatched/suggested/needs review/matched)
-- [ ] Cash forecast x-axis sort
-- [ ] Review queue debug strings (plain English)
-- [ ] Keyboard-driven review + bulk approve
+- [x] Home page contradictions (consistent numbers) — compute_dashboard_stats() single source of truth
+- [x] Hard-coded date (configurable "as of") — sidebar date_input with data range
+- [x] State labels (unmatched/suggested/needs review/matched) — clear 4-state display
+- [x] Cash forecast x-axis sort — weeks generated in order from as_of date
+- [x] Review queue debug strings (plain English) — format_match_reason() parser
+- [x] Keyboard-driven review + bulk approve — bulk approve >=90%, keyboard hints
 
 ## Phase 6: Final report
 - [ ] Run test split
