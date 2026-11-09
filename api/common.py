@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import json
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
 
@@ -21,12 +22,20 @@ def data_date_range(conn) -> tuple[Optional[date], Optional[date]]:
     return lo, hi
 
 
+BUSINESS_TZ = ZoneInfo("Asia/Kolkata")
+
+
+def today_in_india() -> date:
+    """Cloud Run runs in UTC; the business day is Indian time."""
+    return datetime.now(BUSINESS_TZ).date()
+
+
 def resolve_as_of(conn, as_of: Optional[date]) -> date:
     """Explicit date wins; otherwise today, unless today falls outside the
     data (demo data), in which case the middle of the data range."""
     if as_of:
         return as_of
-    today = date.today()
+    today = today_in_india()
     lo, hi = data_date_range(conn)
     if lo and hi and not (lo <= today <= hi):
         return lo + (hi - lo) // 2

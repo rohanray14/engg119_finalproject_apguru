@@ -64,11 +64,17 @@ class TestAuditIntegrity:
         log_audit(conn, "test", "create", "payment:1")
         assert verify_audit_integrity(conn) is True
         for stmt in ("DELETE FROM audit_log WHERE id = 1",
-                     "UPDATE audit_log SET actor = 'x' WHERE id = 1"):
+                     "UPDATE audit_log SET actor = 'x' WHERE id = 1",
+                     "TRUNCATE audit_log"):
             with pytest.raises(Exception, match="append-only"):
                 conn.execute(stmt)
             conn.rollback()
         assert conn.execute("SELECT actor FROM audit_log WHERE id = 1").fetchone()[0] == "test"
+        # A disabled guard is reported as broken
+        conn.execute("ALTER TABLE audit_log DISABLE TRIGGER audit_log_no_change")
+        assert verify_audit_integrity(conn) is False
+        conn.rollback()
+        assert verify_audit_integrity(conn) is True
         conn.close()
 
     def test_audit_fields(self):

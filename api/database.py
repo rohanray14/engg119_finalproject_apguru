@@ -10,28 +10,39 @@ rolled back automatically if anything raises.
 
 from __future__ import annotations
 
+import threading
 from typing import Iterator
 
 from api.settings import get_settings
 from ledger import pg
-from ledger.db import SCHEMA_SQL
+from ledger.db import SCHEMA_SQL, set_meta
 
 _pool = None
+_pool_lock = threading.Lock()
 
 
 def _get_pool():
     global _pool
-    if _pool is None:
+    if _pool is not None:
+        return _pool
+    with _pool_lock:  # concurrent first requests must not each build a pool
+        if _pool is not None:
+            return _pool
         from psycopg_pool import ConnectionPool
 
         url = get_settings().database_url
         # Create tables / audit trigger once per process.
         boot = pg.connect(url, SCHEMA_SQL)
+        if get_settings().is_production:
+            # Stamp the database so seed/--reset refuse to touch it.
+            set_meta(boot, "environment", "production")
+            boot.commit()
         boot.close()
         _pool = ConnectionPool(
             url,
             min_size=0,
-            max_size=5,
+            max_size=10,
+            timeout=10,
             check=ConnectionPool.check_connection,
             open=True,
         )

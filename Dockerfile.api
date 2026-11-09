@@ -18,6 +18,8 @@ COPY config.py ./
 COPY ledger/ ledger/
 COPY agents/ agents/
 COPY api/ api/
+# agents/matching_rules.py imports evals.scoring (MatchPrediction)
+COPY evals/__init__.py evals/scoring.py evals/
 # Fake demo CSVs, used only if someone runs `python -m api.seed` on purpose.
 COPY data/*.csv data/
 

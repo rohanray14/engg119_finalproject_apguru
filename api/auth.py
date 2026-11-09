@@ -12,8 +12,9 @@ Roles come from a custom session-token claim.  In the Clerk dashboard
 and set ``public_metadata.role`` on each user to ``finance_lead`` or ``staff``.
 Users without one of those roles are refused, so a stray sign-up sees nothing.
 
-Local development only: ``AUTH_DEV_BYPASS=1`` skips Clerk and acts as a fixed
-dev user.  Settings refuse to start in production with the bypass on.
+Local development only: ``AUTH_DEV_BYPASS=1`` with ``ENV=development`` (or
+``test``) skips Clerk and acts as a fixed dev user.  Any other ENV, including
+unset, ignores the bypass, and production refuses to start with it set.
 """
 
 from __future__ import annotations
@@ -85,7 +86,7 @@ def verify_token(token: str) -> dict:
 
 def current_user(request: Request) -> User:
     s = get_settings()
-    if s.auth_dev_bypass and not s.is_production:
+    if s.dev_bypass_active:
         return User(id="dev-user", email="dev@localhost", role=s.dev_role)
 
     header = request.headers.get("authorization", "")

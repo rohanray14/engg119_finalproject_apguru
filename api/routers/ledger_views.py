@@ -8,6 +8,7 @@ from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, Query
 
+from api.allocation import remaining_by_installment
 from api.auth import User, current_user
 from api.common import not_found, parse_allocations, resolve_as_of
 from api.database import get_conn
@@ -92,15 +93,21 @@ def list_students(
     enrollments: dict[int, int] = {i: 0 for i in ids}
     if ids:
         marks = ",".join("?" * len(ids))
+        remaining = remaining_by_installment(conn)
+        sums: dict[tuple, int] = {}
         for r in conn.execute(
-            "SELECT e.student_id, i.currency, SUM(i.amount_due_paise) AS owed_paise, MIN(i.due_date) AS next_due "
-            "FROM installment i JOIN enrollment e ON i.enrollment_id = e.id "
-            f"WHERE e.student_id IN ({marks}) AND i.status IN ('open','overdue','partial') "
-            "GROUP BY e.student_id, i.currency", ids).fetchall():
-            owed[r["student_id"]].append({"currency": r["currency"], "amount_paise": r["owed_paise"]})
+            "SELECT i.id, e.student_id, i.currency, i.due_date FROM installment i "
+            "JOIN enrollment e ON i.enrollment_id = e.id "
+            f"WHERE e.student_id IN ({marks}) AND i.status IN ('open','overdue','partial')", ids).fetchall():
+            left = remaining.get(r["id"], 0)
+            if left <= 0:
+                continue
+            sums[(r["student_id"], r["currency"])] = sums.get((r["student_id"], r["currency"]), 0) + left
             nd = next_due[r["student_id"]]
-            if r["next_due"] and (nd is None or r["next_due"] < nd):
-                next_due[r["student_id"]] = r["next_due"]
+            if r["due_date"] and (nd is None or r["due_date"] < nd):
+                next_due[r["student_id"]] = r["due_date"]
+        for (sid, cur), amt in sorted(sums.items()):
+            owed[sid].append({"currency": cur, "amount_paise": amt})
         for r in conn.execute(
             f"SELECT student_id, COUNT(*) AS n FROM enrollment WHERE student_id IN ({marks}) GROUP BY student_id",
             ids).fetchall():
@@ -127,12 +134,15 @@ def get_student(student_id: int, conn=Depends(get_conn), user: User = Depends(cu
         except ValueError:
             return []
 
+    remaining = remaining_by_installment(conn)
     enrollments = []
     inst_ids = set()
     for e in conn.execute("SELECT * FROM enrollment WHERE student_id = ? ORDER BY id", (student_id,)).fetchall():
         insts = [dict(i) for i in conn.execute(
             "SELECT id, due_date, amount_due_paise, currency, status FROM installment "
             "WHERE enrollment_id = ? ORDER BY due_date, id", (e["id"],)).fetchall()]
+        for i in insts:
+            i["remaining_paise"] = remaining.get(i["id"], i["amount_due_paise"])
         inst_ids.update(i["id"] for i in insts)
         enrollments.append({**dict(e), "gst_applicable": bool(e["gst_applicable"]), "installments": insts})
 

@@ -16,9 +16,12 @@ def _list(name: str) -> list[str]:
     return [v.strip().rstrip("/") for v in os.environ.get(name, "").split(",") if v.strip()]
 
 
+KNOWN_ENVS = ("development", "test", "production")
+
+
 @dataclass(frozen=True)
 class Settings:
-    env: str = "development"
+    env: str = "production"
     database_url: str = ""
     clerk_issuer: str = ""
     clerk_jwks_url: str = ""
@@ -30,9 +33,16 @@ class Settings:
 
     @property
     def is_production(self) -> bool:
-        return self.env == "production"
+        # Fail closed: anything that isn't explicitly development/test is production.
+        return self.env not in ("development", "test")
+
+    @property
+    def dev_bypass_active(self) -> bool:
+        return self.auth_dev_bypass and self.env in ("development", "test")
 
     def validate(self) -> None:
+        if self.env not in KNOWN_ENVS:
+            raise RuntimeError(f"ENV must be one of {', '.join(KNOWN_ENVS)} (got {self.env!r})")
         if not self.is_production:
             return
         problems = []
@@ -56,7 +66,8 @@ def get_settings() -> Settings:
 
     issuer = os.environ.get("CLERK_ISSUER", "").rstrip("/")
     s = Settings(
-        env=os.environ.get("ENV", "development"),
+        # Unset means production: a forgotten variable must not open the API.
+        env=os.environ.get("ENV", "production").strip().lower(),
         database_url=os.environ.get("DATABASE_URL", DATABASE_URL),
         clerk_issuer=issuer,
         clerk_jwks_url=os.environ.get(

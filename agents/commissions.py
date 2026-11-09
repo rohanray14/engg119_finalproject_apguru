@@ -37,9 +37,23 @@ class CommissionCalc:
     refund_deduction_paise: int
     tds_paise: int           # 2% TDS
     net_paise: int
+    currency: str = "INR"    # commission is owed in the payment's currency
 
 
 TDS_RATE = 0.02  # 2% TDS on commissions
+TDS_BPS = 200    # same rate in basis points, used for the integer math
+
+
+def to_bps(fraction: float) -> int:
+    """0.29 -> 2900. Rates are stored as fractions but all money math is done
+    in integer basis points, so 29% of 12,390,000 paise is exactly 3,593,100
+    (float math gives 3,593,099)."""
+    return round(fraction * 10_000)
+
+
+def apply_bps(amount_paise: int, bps: int) -> int:
+    """amount x bps / 10000, truncated toward zero (same rule as before)."""
+    return amount_paise * bps // 10_000
 
 
 def parse_terms(terms_text: str) -> ParsedRule:
@@ -139,12 +153,12 @@ def compute_commissions(
                 continue
 
             base_paise = mp["amount_paid_paise"]
-            commission_paise = int(base_paise * rule.rate)
+            commission_paise = apply_bps(base_paise, to_bps(rule.rate))
 
             if rule.split:
-                commission_paise = int(commission_paise * rule.split)
+                commission_paise = apply_bps(commission_paise, to_bps(rule.split))
 
-            tds_paise = int(commission_paise * TDS_RATE)
+            tds_paise = apply_bps(commission_paise, TDS_BPS)
             net_paise = commission_paise - tds_paise
 
             results.append(CommissionCalc(
@@ -158,6 +172,7 @@ def compute_commissions(
                 refund_deduction_paise=0,
                 tds_paise=tds_paise,
                 net_paise=net_paise,
+                currency=mp["currency"],
             ))
 
     if commit:

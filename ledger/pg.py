@@ -17,6 +17,11 @@ from typing import Any, Iterable, Optional, Sequence
 
 PG_PREFIXES = ("postgres://", "postgresql://")
 
+DECISION_LOCK_KEY = 7_204_311  # arbitrary constant for pg_advisory_xact_lock
+
+# Blocks UPDATE, DELETE and TRUNCATE.  For full protection the API should also
+# connect as a role that does not own audit_log (see docs/DEPLOY.md), so it
+# cannot disable these triggers.
 AUDIT_GUARD_SQL = """
 CREATE OR REPLACE FUNCTION audit_log_append_only() RETURNS trigger AS $$
 BEGIN
@@ -24,11 +29,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS audit_log_no_change ON audit_log;
-CREATE TRIGGER audit_log_no_change
+CREATE OR REPLACE TRIGGER audit_log_no_change
     BEFORE UPDATE OR DELETE ON audit_log
     FOR EACH ROW EXECUTE FUNCTION audit_log_append_only();
+
+CREATE OR REPLACE TRIGGER audit_log_no_truncate
+    BEFORE TRUNCATE ON audit_log
+    FOR EACH STATEMENT EXECUTE FUNCTION audit_log_append_only();
 """
+
+# Columns added after first release (CREATE TABLE IF NOT EXISTS won't add them).
+MIGRATIONS_SQL = """
+ALTER TABLE commission_line ADD COLUMN IF NOT EXISTS currency TEXT NOT NULL DEFAULT 'INR';
+"""
+
+# Conflict target for INSERT OR REPLACE, per table (default: id).
+_PRIMARY_KEYS = {"app_meta": "key"}
 
 _schema_ready: set[str] = set()
 
@@ -55,9 +71,58 @@ def translate_schema(sqlite_ddl: str) -> str:
 # ---------------------------------------------------------------------------
 
 _INSERT_OR_RE = re.compile(
-    r"^\s*INSERT\s+OR\s+(REPLACE|IGNORE)\s+INTO\s+(\w+)\s*\(([^)]*)\)(.*)$",
+    r"^\s*INSERT\s+OR\s+(REPLACE|IGNORE)\s+INTO\s+(\w+)\s*\(([^)]*)\)(.*?)\s*;?\s*$",
     re.IGNORECASE | re.DOTALL,
 )
+
+
+class UntranslatableSQL(ValueError):
+    """Raised for SQLite constructs this adapter can't translate safely."""
+
+
+def _tokens(sql: str):
+    """Split SQL into (kind, text) chunks: 'code', 'string' ('...' or "..."),
+    'comment' (-- or /* */).  Quotes inside comments and comment markers
+    inside strings are handled, so later passes only touch real code."""
+    i, n = 0, len(sql)
+    code_start = 0
+    while i < n:
+        ch = sql[i]
+        two = sql[i:i + 2]
+        if ch in ("'", '"'):
+            if code_start < i:
+                yield "code", sql[code_start:i]
+            j = i + 1
+            while j < n:
+                if sql[j] == ch:
+                    if j + 1 < n and sql[j + 1] == ch:  # doubled quote escape
+                        j += 2
+                        continue
+                    break
+                j += 1
+            yield "string", sql[i:j + 1]
+            i = code_start = j + 1
+        elif two == "--":
+            if code_start < i:
+                yield "code", sql[code_start:i]
+            j = sql.find("\n", i)
+            j = n if j == -1 else j
+            yield "comment", sql[i:j]
+            i = code_start = j
+        elif two == "/*":
+            if code_start < i:
+                yield "code", sql[code_start:i]
+            j = sql.find("*/", i + 2)
+            j = n if j == -1 else j + 2
+            yield "comment", sql[i:j]
+            i = code_start = j
+        else:
+            i += 1
+    if code_start < n:
+        yield "code", sql[code_start:]
+
+
+_LIKE_RE = re.compile(r"\blike\b", re.IGNORECASE)
 
 
 def translate_sql(sql: str, has_params: bool) -> str:
@@ -65,33 +130,30 @@ def translate_sql(sql: str, has_params: bool) -> str:
     m = _INSERT_OR_RE.match(sql)
     if m:
         mode, table, cols, rest = m.groups()
+        if re.search(r"\bRETURNING\b|\bON\s+CONFLICT\b", rest, re.IGNORECASE):
+            raise UntranslatableSQL("INSERT OR ... with RETURNING/ON CONFLICT is not supported")
         col_list = [c.strip() for c in cols.split(",")]
+        pk = _PRIMARY_KEYS.get(table.lower(), "id")
         if mode.upper() == "IGNORE":
             sql = f"INSERT INTO {table} ({cols}){rest} ON CONFLICT DO NOTHING"
         else:
-            updates = ", ".join(f"{c} = EXCLUDED.{c}" for c in col_list if c != "id")
-            sql = f"INSERT INTO {table} ({cols}){rest} ON CONFLICT (id) DO UPDATE SET {updates}"
-    # SQLite LIKE is case-insensitive for ASCII; keep that behaviour.
-    sql = re.sub(r"\bLIKE\b", "ILIKE", sql)
-    if has_params:
-        sql = _convert_placeholders(sql)
-    return sql
+            if pk not in col_list:
+                raise UntranslatableSQL(f"INSERT OR REPLACE into {table} must include its key column {pk}")
+            updates = ", ".join(f"{c} = EXCLUDED.{c}" for c in col_list if c != pk)
+            sql = f"INSERT INTO {table} ({cols}){rest} ON CONFLICT ({pk}) DO UPDATE SET {updates}"
 
-
-def _convert_placeholders(sql: str) -> str:
-    """``?`` -> ``%s`` and literal ``%`` -> ``%%``, skipping quoted strings."""
     out = []
-    in_quote = False
-    for ch in sql:
-        if ch == "'":
-            in_quote = not in_quote
-            out.append(ch)
-        elif ch == "%":
-            out.append("%%")
-        elif ch == "?" and not in_quote:
-            out.append("%s")
-        else:
-            out.append(ch)
+    for kind, text in _tokens(sql):
+        if kind == "code":
+            # SQLite LIKE is case-insensitive for ASCII; keep that behaviour.
+            text = _LIKE_RE.sub("ILIKE", text)
+            if has_params:
+                text = text.replace("%", "%%").replace("?", "%s")
+        elif kind == "string" and has_params:
+            text = text.replace("%", "%%")
+        elif kind == "comment":
+            text = ""  # comments can't carry placeholders or quotes into psycopg
+        out.append(text)
     return "".join(out)
 
 
@@ -203,6 +265,7 @@ class PgConnection:
 
 def ensure_schema(conn: PgConnection, sqlite_ddl: str) -> None:
     conn.executescript(translate_schema(sqlite_ddl))
+    conn.executescript(MIGRATIONS_SQL)
     conn.executescript(AUDIT_GUARD_SQL)
     conn.commit()
 
@@ -229,7 +292,12 @@ def reset_schema(url: str, sqlite_ddl: str) -> PgConnection:
 
 
 def audit_guard_installed(conn: PgConnection) -> bool:
-    row = conn.execute(
-        "SELECT 1 FROM pg_trigger WHERE tgname = 'audit_log_no_change' AND NOT tgisinternal"
-    ).fetchone()
-    return row is not None
+    """Both guard triggers exist on audit_log and are enabled."""
+    rows = conn.execute(
+        "SELECT t.tgname, t.tgenabled FROM pg_trigger t "
+        "JOIN pg_class c ON c.oid = t.tgrelid "
+        "WHERE c.relname = 'audit_log' AND c.relnamespace = current_schema()::regnamespace "
+        "AND NOT t.tgisinternal"
+    ).fetchall()
+    enabled = {r[0] for r in rows if r[1] != "D"}
+    return {"audit_log_no_change", "audit_log_no_truncate"} <= enabled

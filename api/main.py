@@ -31,7 +31,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    get_settings()  # fail fast on unsafe production config
+    s = get_settings()  # fail fast on unsafe production config
+    if s.is_production:
+        from api.database import _get_pool
+
+        _get_pool()  # connect, create schema, stamp the database as production
     yield
     close_pool()
 

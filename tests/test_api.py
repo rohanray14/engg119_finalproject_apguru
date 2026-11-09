@@ -49,7 +49,7 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("CLERK_AUTHORIZED_PARTIES", FRONTEND)
     monkeypatch.setenv("CORS_ORIGINS", FRONTEND)
     monkeypatch.delenv("AUTH_DEV_BYPASS", raising=False)
-    monkeypatch.delenv("ENV", raising=False)
+    monkeypatch.setenv("ENV", "test")
 
     from api import auth as auth_mod
     from api import database, settings
@@ -279,28 +279,204 @@ class TestDecisions:
         assert body["approved"] == high[:2]
         assert [s["match_id"] for s in body["skipped"]] == low
 
-    def test_payout_requires_the_total_shown(self, client):
-        total = client.get("/api/commissions", headers=auth()).json()["totals"]["net_paise"]
-        assert total > 0
-        r = client.post("/api/commissions/payout/approve", headers=auth(), json={"expected_net_paise": total + 1})
-        assert r.status_code == 409
-        r = client.post("/api/commissions/payout/approve", headers=auth(), json={"expected_net_paise": total})
-        assert r.status_code == 200 and r.json()["approved_net_paise"] == total
+    def test_payout_requires_the_total_shown_and_only_once(self, client):
+        totals = client.get("/api/commissions", headers=auth()).json()["totals"]
+        inr = next(t for t in totals if t["currency"] == "INR")
+        body = {"currency": "INR", "expected_net_paise": inr["net_paise"] + 1}
+        assert client.post("/api/commissions/payout/approve", headers=auth(), json=body).status_code == 409
+        body["expected_net_paise"] = inr["net_paise"]
+        r = client.post("/api/commissions/payout/approve", headers=auth(), json=body)
+        assert r.status_code == 200 and r.json()["approved_net_paise"] == inr["net_paise"]
+        # Same lines, same total: a second approval would mean paying twice.
+        assert client.post("/api/commissions/payout/approve", headers=auth(), json=body).status_code == 409
+
+    def test_commissions_never_mix_currencies(self, client):
+        d = client.get("/api/commissions", headers=auth()).json()
+        currencies = [t["currency"] for t in d["totals"]]
+        assert len(currencies) == len(set(currencies))
+        assert len(currencies) > 1, "demo data has commissions in more than one currency"
+        for c in d["counselors"]:
+            assert all({"currency", "net_paise"} <= set(a) for a in c["amounts"])
+        dash = client.get("/api/dashboard", headers=auth()).json()
+        assert sorted(x["currency"] for x in dash["commissions"]) == sorted(currencies)
 
     def test_hand_set_rule_is_used_in_the_math(self, client):
         before = client.get("/api/commissions", headers=auth()).json()
-        c = next(c for c in before["counselors"] if c["net_paise"] > 0)
-        new_pct = 1.0 if c["rule"]["rate"] > 0.01 else 2.0
-        r = client.post(f"/api/commissions/counselors/{c['id']}/rule", headers=auth(), json={"rate_pct": new_pct})
+        c = next(c for c in before["counselors"] if any(a["net_paise"] > 0 for a in c["amounts"]))
+        new_bps = 100 if c["rule"]["rate_bps"] > 100 else 200
+        r = client.post(f"/api/commissions/counselors/{c['id']}/rule", headers=auth(), json={"rate_bps": new_bps})
         assert r.status_code == 200
-        after = next(x for x in client.get("/api/commissions", headers=auth()).json()["counselors"] if x["id"] == c["id"])
+        after = next(x for x in client.get("/api/commissions", headers=auth()).json()["counselors"]
+                     if x["id"] == c["id"])
         assert after["rule"]["source"] == "finance_lead"
-        assert after["rule"]["rate"] == pytest.approx(new_pct / 100)
-        assert after["net_paise"] != c["net_paise"]
+        assert after["rule"]["rate_bps"] == new_bps
+        assert after["amounts"] != c["amounts"]
         assert "set_commission_rule" in _audit_actions(client)
+        assert "rebuild_commissions" in _audit_actions(client)
+
+    def test_unsupported_rule_scope_is_refused(self, client):
+        cid = client.get("/api/commissions", headers=auth()).json()["counselors"][0]["id"]
+        r = client.post(f"/api/commissions/counselors/{cid}/rule", headers=auth(),
+                        json={"rate_bps": 1000, "scope": "city"})
+        assert r.status_code == 422
 
     def test_reminder_approval_once(self, client):
         rem = client.get("/api/reminders", headers=auth()).json()["items"][0]
         body = {"installment_id": rem["installment_id"], "reminder_type": rem["reminder_type"]}
         assert client.post("/api/reminders/approve", headers=auth(), json=body).status_code == 200
         assert client.post("/api/reminders/approve", headers=auth(), json=body).status_code == 409
+
+
+# ---------------------------------------------------------------------------
+# Partial payments, bulk approve, concurrency
+# ---------------------------------------------------------------------------
+
+def _db(client):
+    from api.settings import get_settings
+    from ledger.db import get_connection
+
+    return get_connection(get_settings().database_url)
+
+
+def _insert_pending(conn, amount_paise, installment_id, confidence):
+    """Add a fake payment + pending suggestion (test fixture, not answer-key data)."""
+    cur_row = conn.execute("SELECT currency FROM installment WHERE id = ?", (installment_id,)).fetchone()
+    pid = conn.execute("SELECT COALESCE(MAX(id), 0) + 1000 FROM payment_in").fetchone()[0]
+    conn.execute(
+        "INSERT INTO payment_in (id, source, method, payer_name, date, amount_paid_paise, currency, confirmation) "
+        "VALUES (?, 'bank', 'neft', 'Test Payer', '2025-12-01', ?, ?, 'in_bank')",
+        (pid, amount_paise, cur_row[0]))
+    conn.execute(
+        "INSERT INTO match_result (payment_id, allocations, method, confidence, reason, status) "
+        "VALUES (?, ?, 'rules', ?, 'test_fixture', 'pending_review')",
+        (pid, '[{"installment_id": %d, "allocated_paise": 0}]' % installment_id, confidence))
+    mid = conn.execute("SELECT MAX(id) FROM match_result").fetchone()[0]
+    conn.commit()
+    return mid
+
+
+def _open_installment(conn, skip=0):
+    return conn.execute(
+        "SELECT id, amount_due_paise FROM installment i WHERE status = 'open' AND NOT EXISTS ("
+        "  SELECT 1 FROM match_result mr WHERE mr.allocations LIKE '%' || i.id || '%') "
+        "ORDER BY id LIMIT 1 OFFSET ?", (skip,)).fetchone()
+
+
+class TestPartialPayments:
+    def test_part_payment_leaves_installment_partial_then_paid(self, client):
+        conn = _db(client)
+        inst = _open_installment(conn)
+        half = inst["amount_due_paise"] // 2
+        m1 = _insert_pending(conn, half, inst["id"], 0.85)
+        conn.close()
+
+        r = client.post(f"/api/review/{m1}/approve", headers=auth())
+        assert r.status_code == 200, r.text
+        assert r.json()["installment_changes"] == [{"installment_id": inst["id"], "from": "open", "to": "partial"}]
+        detail = client.get(f"/api/review/{m1}", headers=auth()).json()
+        assert detail["suggested_installments"][0]["remaining_paise"] == inst["amount_due_paise"] - half
+
+        conn = _db(client)
+        m2 = _insert_pending(conn, inst["amount_due_paise"] - half, inst["id"], 0.85)
+        conn.close()
+        r = client.post(f"/api/review/{m2}/approve", headers=auth())
+        assert r.json()["installment_changes"] == [{"installment_id": inst["id"], "from": "partial", "to": "paid"}]
+
+        actions = client.get("/api/audit?limit=50", headers=auth()).json()["items"]
+        assert any(a["entity"] == f"installment:{inst['id']}" and a["new_value"] == "paid" for a in actions)
+
+    def test_cannot_approve_onto_a_paid_installment(self, client):
+        conn = _db(client)
+        inst = _open_installment(conn)
+        m1 = _insert_pending(conn, inst["amount_due_paise"], inst["id"], 0.85)
+        m2 = _insert_pending(conn, inst["amount_due_paise"], inst["id"], 0.85)
+        conn.close()
+        assert client.post(f"/api/review/{m1}/approve", headers=auth()).status_code == 200
+        r = client.post(f"/api/review/{m2}/approve", headers=auth())
+        assert r.status_code == 409 and "already paid" in r.json()["detail"]
+        assert _match_status(client, m2) == "pending_review"
+
+
+class TestBulkApprove:
+    def test_bulk_approves_listed_high_confidence_items(self, client):
+        conn = _db(client)
+        a, b = _open_installment(conn, 0), _open_installment(conn, 1)
+        m_hi1 = _insert_pending(conn, a["amount_due_paise"], a["id"], 0.93)
+        m_hi2 = _insert_pending(conn, b["amount_due_paise"], b["id"], 0.97)
+        m_lo = _insert_pending(conn, b["amount_due_paise"], b["id"], 0.60)
+        conn.close()
+        r = client.post("/api/review/bulk-approve", headers=auth(), json={"match_ids": [m_hi1, m_hi2, m_lo]})
+        body = r.json()
+        assert body["approved"] == [m_hi1, m_hi2]
+        assert body["skipped"] == [{"match_id": m_lo, "reason": "below bulk-approve confidence"}]
+        assert _match_status(client, m_hi1) == "approved"
+        assert _audit_actions(client).count("bulk_approve_match") == 2
+
+
+@pytest.mark.skipif(not os.environ.get("TEST_POSTGRES_URL"), reason="needs real concurrent transactions")
+class TestConcurrency:
+    def test_overlapping_approvals_do_not_double_commissions(self, client):
+        """Reviewer's repro: two approvals at once used to leave two full sets
+        of commission lines (payout total doubled)."""
+        import threading
+
+        items = [i for i in client.get("/api/review", headers=auth()).json()["items"] if i["has_suggestion"]][:6]
+        barrier = threading.Barrier(len(items))
+        results = []
+
+        def go(mid):
+            barrier.wait()
+            results.append(client.post(f"/api/review/{mid}/approve", headers=auth()).status_code)
+
+        threads = [threading.Thread(target=go, args=(i["match_id"],)) for i in items]
+        [t.start() for t in threads]
+        [t.join() for t in threads]
+        assert results and all(code in (200, 409) for code in results)
+
+        conn = _db(client)
+        lines = conn.execute("SELECT counselor_id, payment_id, COUNT(*) FROM commission_line "
+                             "GROUP BY counselor_id, payment_id HAVING COUNT(*) > 1").fetchall()
+        assert lines == [], "duplicate commission lines after concurrent approvals"
+        from agents.commissions import compute_commissions
+        expected = sum(c.net_paise for c in compute_commissions(conn, commit=False))
+        actual = conn.execute("SELECT COALESCE(SUM(net_paise),0) FROM commission_line").fetchone()[0]
+        conn.rollback()
+        conn.close()
+        assert actual == expected
+
+
+class TestSafetyRails:
+    @pytest.mark.parametrize("env", [None, "prod", "Production ", "staging"])
+    def test_dev_bypass_never_applies_outside_dev(self, monkeypatch, env):
+        from api.settings import get_settings
+
+        if env is None:
+            monkeypatch.delenv("ENV", raising=False)
+        else:
+            monkeypatch.setenv("ENV", env)
+        monkeypatch.setenv("AUTH_DEV_BYPASS", "1")
+        monkeypatch.setenv("DATABASE_URL", "/tmp/x.db")
+        get_settings.cache_clear()
+        with pytest.raises(RuntimeError):
+            get_settings()
+        get_settings.cache_clear()
+
+    def test_seed_refuses_a_production_database(self, tmp_path, monkeypatch):
+        from api.seed import seed
+        from ledger.db import get_connection, set_meta
+
+        url = os.environ.get("TEST_POSTGRES_URL") or str(tmp_path / "prod.db")
+        seed(url, reset=True)
+        conn = get_connection(url)
+        set_meta(conn, "environment", "production")
+        conn.commit()
+        conn.close()
+        try:
+            with pytest.raises(SystemExit, match="PRODUCTION"):
+                seed(url, reset=True)
+        finally:
+            if url.startswith("postgres"):
+                from ledger import pg
+                from ledger.db import SCHEMA_SQL
+
+                pg.reset_schema(url, SCHEMA_SQL).close()  # don't leave a "production" test DB behind

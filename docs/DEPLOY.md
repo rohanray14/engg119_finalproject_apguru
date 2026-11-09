@@ -21,10 +21,31 @@ Pro (about $20/month) before the business relies on it.
    ```
 4. Optional, for a demo environment only: load the fake data with
    `DATABASE_URL=... python -m api.seed`. Never run this on the database that
-   will hold real data.
+   will hold real data. Once the API has started with `ENV=production` against
+   a database, it marks that database as production, and seeding or `--reset`
+   are refused from then on. `--reset` on Postgres also asks you to type the
+   database name.
 
 Neon keeps a short history you can restore from. Before real data goes in, check
 the restore window on your plan, and test a restore once.
+
+### Give the API a role that can't rewrite history
+
+The audit log is protected by database triggers. Whoever **owns** the table can
+switch those off, so the API shouldn't connect as the owner. Create the tables
+with the owner role (step 3 above), then in Neon's SQL editor:
+
+```sql
+CREATE ROLE finance_api LOGIN PASSWORD '<generate a long random password>';
+GRANT USAGE ON SCHEMA public TO finance_api;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO finance_api;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO finance_api;
+-- the audit log and payout approvals: add-only
+REVOKE UPDATE, DELETE, TRUNCATE ON audit_log, payout_approval FROM finance_api;
+```
+
+Put the `finance_api` connection string (not the owner's) in the Cloud Run
+secret. Keep the owner credentials for schema changes only.
 
 ## 2. Sign-in: Clerk
 
@@ -73,6 +94,8 @@ Check it: `curl https://<service-url>/healthz` gives `{"ok":true}`, and
 
 The API **refuses to start** in production if auth is missing, the dev bypass is
 on, or the database isn't Postgres. Check the Cloud Run logs if a deploy won't come up.
+An unset or misspelled `ENV` counts as production, so a forgotten variable can
+never switch logins off.
 
 ## 4. Front end: Vercel
 
@@ -88,13 +111,13 @@ on, or the database isn't Postgres. Check the Cloud Run logs if a deploy won't c
 
 | Variable | Required in production | Meaning |
 |---|---|---|
-| `ENV` | yes (`production`) | turns on the safety checks, hides `/docs` |
+| `ENV` | yes (`production`) | `development`, `test` or `production`; unset = production |
 | `DATABASE_URL` | yes | Neon connection string (as a secret) |
 | `CLERK_ISSUER` | yes | Clerk Frontend API URL |
 | `CLERK_AUTHORIZED_PARTIES` | yes | front-end URL(s), comma separated |
 | `CORS_ORIGINS` | yes | front-end URL(s), comma separated |
 | `ASK_RATE_LIMIT_PER_MINUTE` | no (20) | per-user limit on the Ask box |
-| `AUTH_DEV_BYPASS` | never | local development only |
+| `AUTH_DEV_BYPASS` | never | only honoured with `ENV=development` or `test` |
 
 ## Local development
 

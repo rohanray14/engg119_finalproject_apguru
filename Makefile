@@ -18,7 +18,7 @@ app:
 
 # API for local development: Clerk is bypassed, SQLite file in data/.
 api:
-	AUTH_DEV_BYPASS=1 uvicorn api.main:app --reload --port 8000
+	ENV=development AUTH_DEV_BYPASS=1 uvicorn api.main:app --reload --port 8000
 
 seed:
 	python -m api.seed --reset

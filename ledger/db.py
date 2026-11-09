@@ -12,7 +12,6 @@ audit_log table.  All money columns store integer paise.
 from __future__ import annotations
 
 import os
-import json
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -103,7 +102,8 @@ CREATE TABLE IF NOT EXISTS commission_line (
     commission_paise        INTEGER NOT NULL,
     refund_deduction_paise  INTEGER NOT NULL DEFAULT 0,
     tds_paise               INTEGER NOT NULL DEFAULT 0,
-    net_paise               INTEGER NOT NULL DEFAULT 0
+    net_paise               INTEGER NOT NULL DEFAULT 0,
+    currency                TEXT NOT NULL DEFAULT 'INR'  -- currency of the payment it came from
 );
 
 CREATE TABLE IF NOT EXISTS payment_out (
@@ -124,6 +124,21 @@ CREATE TABLE IF NOT EXISTS bank_statement (
     debit_paise     INTEGER NOT NULL DEFAULT 0,
     payment_id      INTEGER REFERENCES payment_in(id),  -- linked payment (NULL = unmatched)
     UNIQUE(date, narration, credit_paise, debit_paise)   -- idempotent ingestion
+);
+
+CREATE TABLE IF NOT EXISTS app_meta (
+    key             TEXT PRIMARY KEY,             -- e.g. 'environment'
+    value           TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS payout_approval (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    approved_at         TEXT NOT NULL,
+    actor               TEXT NOT NULL,
+    currency            TEXT NOT NULL,
+    total_net_paise     INTEGER NOT NULL,
+    lines_fingerprint   TEXT NOT NULL,             -- hash of the exact lines approved
+    UNIQUE(currency, lines_fingerprint)
 );
 
 CREATE TABLE IF NOT EXISTS audit_log (
@@ -157,6 +172,35 @@ def get_connection(db_path: Path | str | None = None):
     conn.execute("PRAGMA foreign_keys=ON")
     conn.executescript(SCHEMA_SQL)
     return conn
+
+
+def decision_lock(conn) -> None:
+    """Serialize decisions that rewrite shared ledger state (approvals,
+    commission rebuilds, payouts) for the rest of this transaction.
+
+    Postgres: a transaction-scoped advisory lock, released on commit/rollback.
+    SQLite: ``BEGIN IMMEDIATE`` takes the single writer lock up front.
+    Without this, two overlapping approvals could each rebuild the commission
+    lines and leave both sets in place, doubling the payout total.
+    """
+    if isinstance(conn, pg.PgConnection):
+        conn.execute("SELECT pg_advisory_xact_lock(?)", (pg.DECISION_LOCK_KEY,)).fetchone()
+    elif not conn.in_transaction:
+        conn.execute("BEGIN IMMEDIATE")
+
+
+def get_meta(conn, key: str) -> Optional[str]:
+    row = conn.execute("SELECT value FROM app_meta WHERE key = ?", (key,)).fetchone()
+    return row[0] if row else None
+
+
+def set_meta(conn, key: str, value: str) -> None:
+    # Upsert syntax shared by SQLite (3.24+) and Postgres
+    conn.execute(
+        "INSERT INTO app_meta (key, value) VALUES (?, ?) "
+        "ON CONFLICT (key) DO UPDATE SET value = excluded.value",
+        (key, value),
+    )
 
 
 def table_exists(conn, name: str) -> bool:

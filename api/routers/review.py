@@ -15,14 +15,17 @@ from typing import Literal
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
+from api.allocation import AllocationError, apply_status_changes, plan_allocation, remaining_by_installment
 from api.auth import User, current_user, require_finance_lead
 from api.common import conflict, not_found, parse_allocations
 from api.database import get_conn
 from api.reasons import format_match_reason
 from api.seed import recompute_commissions
-from ledger.db import log_audit
+from ledger.db import decision_lock, log_audit
 
 router = APIRouter(prefix="/review", tags=["review"])
+
+BULK_MIN_CONFIDENCE = 0.90
 
 PAYMENT_COLS = (
     "p.id AS payment_id, p.payer_name, p.amount_paid_paise, p.currency, p.date, p.source, "
@@ -101,6 +104,9 @@ def get_item(match_id: int, conn=Depends(get_conn), user: User = Depends(current
         "ORDER BY i.due_date LIMIT 20",
         (row["amount_paid_paise"], row["currency"]),
     ).fetchall()]
+    remaining = remaining_by_installment(conn)
+    for inst in suggested + others:
+        inst["remaining_paise"] = remaining.get(inst["installment_id"], inst["amount_due_paise"])
     suggested_ids = {s["installment_id"] for s in suggested}
     for o in others:
         o["suggested"] = o["installment_id"] in suggested_ids
@@ -111,8 +117,6 @@ def get_item(match_id: int, conn=Depends(get_conn), user: User = Depends(current
 # ---------------------------------------------------------------------------
 # Decisions (finance lead only)
 # ---------------------------------------------------------------------------
-
-BULK_MIN_CONFIDENCE = 0.90
 
 
 def _claim(conn, match_id: int, new_status: str, extra_sql: str = "", extra_params: tuple = ()) -> None:
@@ -128,30 +132,52 @@ def _claim(conn, match_id: int, new_status: str, extra_sql: str = "", extra_para
         raise conflict(f"This payment was already decided (status: {exists[0]}). Refresh the queue.")
 
 
-def _mark_installments_paid(conn, installment_ids: list[int]) -> None:
-    for iid in installment_ids:
-        conn.execute("UPDATE installment SET status = 'paid' WHERE id = ?", (iid,))
+def _plan(conn, row, installment_ids: list[int]):
+    try:
+        return plan_allocation(conn, row["amount_paid_paise"], row["currency"], installment_ids,
+                               exclude_match_id=row["match_id"])
+    except AllocationError as exc:
+        raise conflict(str(exc)) from exc
 
 
 class DecisionResult(BaseModel):
     match_id: int
     status: str
+    allocations: list[dict] = []
+    installment_changes: list[dict] = []
+    unallocated_paise: int = 0
     commission_lines: int
+
+
+def _result(match_id, status, plan=None, n=0) -> DecisionResult:
+    return DecisionResult(
+        match_id=match_id, status=status, commission_lines=n,
+        allocations=plan.allocations if plan else [],
+        installment_changes=[{"installment_id": i, "from": a, "to": b} for i, a, b in plan.status_changes] if plan else [],
+        unallocated_paise=plan.unallocated_paise if plan else 0,
+    )
 
 
 @router.post("/{match_id}/approve", response_model=DecisionResult)
 def approve(match_id: int, conn=Depends(get_conn), user: User = Depends(require_finance_lead)):
+    """Accept the matcher's suggestion.  The payment is applied to what each
+    suggested installment still owes, so a part-payment leaves it 'partial'."""
+    decision_lock(conn)
     row = _match_row(conn, match_id)
-    allocs = parse_allocations(row["allocations"])
-    if not allocs:
+    if row["status"] != "pending_review":
+        raise conflict(f"This payment was already decided (status: {row['status']}). Refresh the queue.")
+    ids = [int(a["installment_id"]) for a in parse_allocations(row["allocations"])]
+    if not ids:
         raise conflict("There is no suggested student to approve. Pick a student instead.")
-    _claim(conn, match_id, "approved")
-    _mark_installments_paid(conn, [int(a["installment_id"]) for a in allocs])
-    n = recompute_commissions(conn)
+    plan = _plan(conn, row, ids)
+    _claim(conn, match_id, "approved", ", allocations = ?", (json.dumps(plan.allocations),))
+    apply_status_changes(conn, plan, user.audit_actor, f"match:{match_id}")
     log_audit(conn, user.audit_actor, "approve_match", f"match:{match_id}",
-              "pending_review", "approved", commit=False)
+              json.dumps({"status": "pending_review", "allocations": row["allocations"]}),
+              json.dumps({"status": "approved", "allocations": plan.allocations}), commit=False)
+    n = recompute_commissions(conn, actor=user.audit_actor)
     conn.commit()
-    return DecisionResult(match_id=match_id, status="approved", commission_lines=n)
+    return _result(match_id, "approved", plan, n)
 
 
 class AssignBody(BaseModel):
@@ -161,30 +187,23 @@ class AssignBody(BaseModel):
 @router.post("/{match_id}/assign", response_model=DecisionResult)
 def assign(match_id: int, body: AssignBody, conn=Depends(get_conn),
            user: User = Depends(require_finance_lead)):
-    """Pick a different student: link the payment to the chosen installment."""
+    """Pick a different student: apply the payment to the chosen installment."""
+    decision_lock(conn)
     row = _match_row(conn, match_id)
-    inst = conn.execute(
-        "SELECT id, amount_due_paise, currency, status FROM installment WHERE id = ?",
-        (body.installment_id,),
-    ).fetchone()
-    if inst is None:
+    if row["status"] != "pending_review":
+        raise conflict(f"This payment was already decided (status: {row['status']}). Refresh the queue.")
+    if conn.execute("SELECT 1 FROM installment WHERE id = ?", (body.installment_id,)).fetchone() is None:
         raise not_found("Installment")
-    if inst["status"] == "paid":
-        raise conflict("That installment is already paid.")
-    if inst["currency"] != row["currency"]:
-        raise conflict(f"Currency mismatch: payment is {row['currency']}, installment is {inst['currency']}.")
-
-    paid = row["amount_paid_paise"]
-    new_allocs = json.dumps([{"installment_id": inst["id"], "allocated_paise": paid}])
+    plan = _plan(conn, row, [body.installment_id])
+    new_allocs = json.dumps(plan.allocations)
     _claim(conn, match_id, "approved", ", allocations = ?, method = 'human', reason = 'manually_assigned'",
            (new_allocs,))
-    new_status = "paid" if paid >= inst["amount_due_paise"] else "partial"
-    conn.execute("UPDATE installment SET status = ? WHERE id = ?", (new_status, inst["id"]))
-    n = recompute_commissions(conn)
+    apply_status_changes(conn, plan, user.audit_actor, f"match:{match_id}")
     log_audit(conn, user.audit_actor, "manual_match", f"match:{match_id}",
               row["allocations"], new_allocs, commit=False)
+    n = recompute_commissions(conn, actor=user.audit_actor)
     conn.commit()
-    return DecisionResult(match_id=match_id, status="approved", commission_lines=n)
+    return _result(match_id, "approved", plan, n)
 
 
 class RejectBody(BaseModel):
@@ -195,13 +214,14 @@ class RejectBody(BaseModel):
 @router.post("/{match_id}/reject", response_model=DecisionResult)
 def reject(match_id: int, body: RejectBody, conn=Depends(get_conn),
            user: User = Depends(require_finance_lead)):
+    decision_lock(conn)
     _match_row(conn, match_id)
     _claim(conn, match_id, "rejected", ", reason = ?", (body.reason,))
     log_audit(conn, user.audit_actor, "mark_not_fee", f"match:{match_id}",
               "pending_review", json.dumps({"status": "rejected", "reason": body.reason, "note": body.note}),
               commit=False)
     conn.commit()
-    return DecisionResult(match_id=match_id, status="rejected", commission_lines=0)
+    return _result(match_id, "rejected")
 
 
 class BulkBody(BaseModel):
@@ -220,28 +240,45 @@ def bulk_approve(body: BulkBody, conn=Depends(get_conn), user: User = Depends(re
     """Approve several high-confidence suggestions in one go.
 
     Takes an explicit list of ids rather than "everything above 90%", so an
-    item that arrived after the page loaded is never approved unseen.
+    item that arrived after the page loaded is never approved unseen.  Each
+    item gets the same checks and allocation as a single approval.
     """
+    decision_lock(conn)
     approved, skipped = [], []
     for mid in dict.fromkeys(body.match_ids):
         row = conn.execute(
-            "SELECT id, allocations, confidence, status FROM match_result WHERE id = ?", (mid,)
+            f"SELECT mr.id AS match_id, mr.allocations, mr.confidence, mr.status, {PAYMENT_COLS} "
+            "FROM match_result mr JOIN payment_in p ON mr.payment_id = p.id WHERE mr.id = ?", (mid,)
         ).fetchone()
-        allocs = parse_allocations(row["allocations"]) if row else []
+        ids = [int(a["installment_id"]) for a in parse_allocations(row["allocations"])] if row else []
         if row is None:
             skipped.append({"match_id": mid, "reason": "not found"})
-        elif row["status"] != "pending_review":
+            continue
+        if row["status"] != "pending_review":
             skipped.append({"match_id": mid, "reason": f"already {row['status']}"})
-        elif row["confidence"] < BULK_MIN_CONFIDENCE:
+            continue
+        if row["confidence"] < BULK_MIN_CONFIDENCE:
             skipped.append({"match_id": mid, "reason": "below bulk-approve confidence"})
-        elif not allocs:
+            continue
+        if not ids:
             skipped.append({"match_id": mid, "reason": "no suggested student"})
-        else:
-            conn.execute("UPDATE match_result SET status = 'approved' WHERE id = ? AND status = 'pending_review'", (mid,))
-            _mark_installments_paid(conn, [int(a["installment_id"]) for a in allocs])
-            log_audit(conn, user.audit_actor, "bulk_approve_match", f"match:{mid}",
-                      "pending_review", "approved", commit=False)
-            approved.append(mid)
-    n = recompute_commissions(conn) if approved else 0
+            continue
+        try:
+            plan = plan_allocation(conn, row["amount_paid_paise"], row["currency"], ids, exclude_match_id=mid)
+        except AllocationError as exc:
+            skipped.append({"match_id": mid, "reason": str(exc)})
+            continue
+        cur = conn.execute(
+            "UPDATE match_result SET status = 'approved', allocations = ? WHERE id = ? AND status = 'pending_review'",
+            (json.dumps(plan.allocations), mid))
+        if cur.rowcount != 1:
+            skipped.append({"match_id": mid, "reason": "decided by someone else just now"})
+            continue
+        apply_status_changes(conn, plan, user.audit_actor, f"match:{mid}")
+        log_audit(conn, user.audit_actor, "bulk_approve_match", f"match:{mid}",
+                  json.dumps({"status": "pending_review", "allocations": row["allocations"]}),
+                  json.dumps({"status": "approved", "allocations": plan.allocations}), commit=False)
+        approved.append(mid)
+    n = recompute_commissions(conn, actor=user.audit_actor) if approved else 0
     conn.commit()
     return BulkResult(approved=approved, skipped=skipped, commission_lines=n)

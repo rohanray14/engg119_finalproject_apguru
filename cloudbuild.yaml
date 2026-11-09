@@ -26,8 +26,9 @@ steps:
       - --max-instances=2         # caps cost if something goes wrong
       - --memory=512Mi
       - --cpu=1
-      - --concurrency=40
-      - --set-env-vars=ENV=production,CLERK_ISSUER=${_CLERK_ISSUER},CLERK_AUTHORIZED_PARTIES=${_FRONTEND_URL},CORS_ORIGINS=${_FRONTEND_URL}
+      - --concurrency=10          # matches the database pool size
+      # ^@^ makes '@' the separator, so _FRONTEND_URL may list several URLs with commas
+      - --set-env-vars=^@^ENV=production@CLERK_ISSUER=${_CLERK_ISSUER}@CLERK_AUTHORIZED_PARTIES=${_FRONTEND_URL}@CORS_ORIGINS=${_FRONTEND_URL}
       - --set-secrets=DATABASE_URL=finance-desk-database-url:latest
 
 images:

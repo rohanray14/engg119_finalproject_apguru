@@ -7,6 +7,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 
+from api.allocation import remaining_by_installment
 from api.auth import User, current_user
 from api.common import data_date_range, resolve_as_of
 from api.database import get_conn
@@ -65,11 +66,23 @@ def dashboard(
     spent_this = _one(conn, "SELECT COALESCE(SUM(amount_paise),0) FROM payment_out WHERE currency='INR' AND date BETWEEN ? AND ?",
                       (this_start.isoformat(), this_end.isoformat()))
 
-    overdue_count = _one(conn, "SELECT COUNT(*) FROM installment WHERE status='open' AND due_date < ?", (iso,))
-    overdue_by_currency = [dict(r) for r in conn.execute(
-        "SELECT currency, COALESCE(SUM(amount_due_paise),0) AS amount_paise, COUNT(*) AS count "
-        "FROM installment WHERE status='open' AND due_date < ? GROUP BY currency ORDER BY currency", (iso,)).fetchall()]
-    oldest = conn.execute("SELECT MIN(due_date) FROM installment WHERE status='open' AND due_date < ?", (iso,)).fetchone()[0]
+    # Balances use what is still owed (amount due minus what was received),
+    # so a part-paid installment counts only for its remainder.
+    remaining = remaining_by_installment(conn)
+    open_insts = conn.execute(
+        "SELECT i.id, i.due_date, i.currency, s.id AS student_id, s.name "
+        "FROM installment i JOIN enrollment e ON i.enrollment_id = e.id JOIN student s ON e.student_id = s.id "
+        "WHERE i.status IN ('open','partial','overdue') AND i.due_date IS NOT NULL"
+    ).fetchall()
+    overdue = [r for r in open_insts if r["due_date"] < iso and remaining.get(r["id"], 0) > 0]
+    overdue_count = len(overdue)
+    by_cur: dict[str, dict] = {}
+    for r in overdue:
+        b = by_cur.setdefault(r["currency"], {"currency": r["currency"], "amount_paise": 0, "count": 0})
+        b["amount_paise"] += remaining[r["id"]]
+        b["count"] += 1
+    overdue_by_currency = [by_cur[k] for k in sorted(by_cur)]
+    oldest = min((r["due_date"] for r in overdue), default=None)
 
     matched = _one(conn, "SELECT COUNT(*) FROM match_result WHERE status IN ('auto','approved')")
     suggested = _one(conn, "SELECT COUNT(*) FROM match_result WHERE status='pending_review' AND allocations != '[]'")
@@ -97,24 +110,27 @@ def dashboard(
     for i in range(6):
         ws = as_of + timedelta(weeks=i)
         we = ws + timedelta(days=6)
-        scheduled = _one(conn, "SELECT COALESCE(SUM(amount_due_paise),0) FROM installment "
-                               "WHERE currency='INR' AND status IN ('open','partial') AND due_date BETWEEN ? AND ?",
-                         (ws.isoformat(), we.isoformat()))
+        scheduled = sum(remaining.get(r["id"], 0) for r in open_insts
+                        if r["currency"] == "INR" and ws.isoformat() <= r["due_date"] <= we.isoformat())
         forecast.append({"week_start": ws, "scheduled_paise": scheduled, "likely_paise": scheduled * 7 // 10})
 
-    commissions = dict(conn.execute(
-        "SELECT COALESCE(SUM(commission_paise),0) AS earned_paise, COALESCE(SUM(tds_paise),0) AS tds_paise, "
-        "COALESCE(SUM(net_paise),0) AS net_paise, COUNT(DISTINCT counselor_id) AS counselors FROM commission_line").fetchone())
+    commissions = [dict(r) for r in conn.execute(
+        "SELECT currency, COALESCE(SUM(commission_paise),0) AS earned_paise, COALESCE(SUM(tds_paise),0) AS tds_paise, "
+        "COALESCE(SUM(net_paise),0) AS net_paise, COUNT(DISTINCT counselor_id) AS counselors "
+        "FROM commission_line GROUP BY currency ORDER BY currency").fetchall()]
 
-    top_owing = [dict(r) for r in conn.execute(
-        "SELECT s.id AS student_id, s.name, i.currency, SUM(i.amount_due_paise) AS owed_paise, MIN(i.due_date) AS earliest_due "
-        "FROM installment i JOIN enrollment e ON i.enrollment_id=e.id JOIN student s ON e.student_id=s.id "
-        "WHERE i.status='open' AND i.due_date < ? GROUP BY s.id, s.name, i.currency ORDER BY owed_paise DESC LIMIT 5",
-        (iso,)).fetchall()]
+    owing: dict[tuple, dict] = {}
+    for r in overdue:
+        k = (r["student_id"], r["currency"])
+        o = owing.setdefault(k, {"student_id": r["student_id"], "name": r["name"], "currency": r["currency"],
+                                 "owed_paise": 0, "earliest_due": r["due_date"]})
+        o["owed_paise"] += remaining[r["id"]]
+        o["earliest_due"] = min(o["earliest_due"], r["due_date"])
+    top_owing = sorted(owing.values(), key=lambda o: (-o["owed_paise"], o["student_id"]))[:5]
     largest_unmatched = [dict(r) for r in conn.execute(
         "SELECT p.id, p.payer_name, p.amount_paid_paise, p.currency, p.date, p.method FROM payment_in p "
         "LEFT JOIN match_result mr ON mr.payment_id=p.id WHERE mr.id IS NULL "
-        "ORDER BY p.amount_paid_paise DESC LIMIT 5").fetchall()]
+        "ORDER BY p.amount_paid_paise DESC, p.id LIMIT 5").fetchall()]
 
     flags = scan_risks(conn, as_of=as_of)
     reminders = generate_reminders(conn, as_of=as_of)
