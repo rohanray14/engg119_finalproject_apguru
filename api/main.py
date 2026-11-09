@@ -19,7 +19,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from fastapi import Depends, FastAPI, Request  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
-from fastapi.responses import JSONResponse  # noqa: E402
+from fastapi.responses import FileResponse, JSONResponse  # noqa: E402
+from fastapi.staticfiles import StaticFiles  # noqa: E402
 
 from api.database import close_pool, get_conn  # noqa: E402
 from api.routers import actions, dashboard, ledger_views, review  # noqa: E402
@@ -95,6 +96,32 @@ def create_app() -> FastAPI:
 
     for r in (dashboard.router, review.router, ledger_views.router, actions.router):
         app.include_router(r, prefix="/api")
+
+    # Serve the Next.js static export if the build output exists.
+    static_dir = Path(__file__).resolve().parent.parent / "web" / "out"
+    if static_dir.is_dir():
+        # Mount _next/ assets first (JS, CSS, images).
+        next_assets = static_dir / "_next"
+        if next_assets.is_dir():
+            app.mount("/_next", StaticFiles(directory=str(next_assets)), name="next-assets")
+
+        # SPA catch-all: serve the matching page HTML or fall back to index.html.
+        @app.get("/{full_path:path}", include_in_schema=False)
+        async def spa_catchall(full_path: str):
+            # Try exact file (e.g. favicon.ico)
+            file = static_dir / full_path
+            if file.is_file():
+                return FileResponse(str(file))
+            # Try page directory (e.g. /students -> /students.html or /students/index.html)
+            page_html = static_dir / f"{full_path}.html"
+            if page_html.is_file():
+                return FileResponse(str(page_html))
+            page_index = static_dir / full_path / "index.html"
+            if page_index.is_file():
+                return FileResponse(str(page_index))
+            # Fall back to root index for client-side routing
+            return FileResponse(str(static_dir / "index.html"))
+
     return app
 
 

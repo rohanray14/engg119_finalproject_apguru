@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: engg119-finalproject-apguru
+    runtime: docker
+    dockerfilePath: Dockerfile.render
+    envVars:
+      - key: ENV
+        value: development
+      - key: AUTH_DEV_BYPASS
+        value: "1"
+      - key: CORS_ORIGINS
+        value: ""
