@@ -192,6 +192,13 @@ def _match_one(
         if i["amount_due_paise"] == pay_amount and i["currency"] == pay_currency
     )
 
+    # Count distinct students with same amount+currency.
+    # If only 1 student has this amount, the match is unambiguous.
+    same_amount_student_ids = set(
+        i["student_id"] for i in installments
+        if i["amount_due_paise"] == pay_amount and i["currency"] == pay_currency
+    )
+
     # Count how many *distinct students* globally match the payer name
     # (not just among amount-matched installments — to catch name collisions)
     students_with_name_match = set()
@@ -204,11 +211,13 @@ def _match_one(
     if len(scored) == 1:
         inst, nscore, dscore = scored[0]
         if nscore >= NAME_THRESHOLD:
-            # Strong name match (>=90) + exact amount = very likely correct
-            # even with common amounts, as long as name uniquely identifies student
-            if nscore >= 90 and len(students_with_name_match) == 1:
+            # Confidence depends on how many distinct students share this amount.
+            # If only 1 student → unambiguous (amount alone identifies them).
+            # If multiple students share the amount, name is the only differentiator
+            # and we must be cautious (cap at MEDIUM for human review).
+            if len(same_amount_student_ids) == 1:
                 confidence = HIGH_CONFIDENCE
-            elif total_same_amount <= 3:
+            elif total_same_amount <= 3 and len(same_amount_student_ids) <= 2:
                 confidence = HIGH_CONFIDENCE
             else:
                 confidence = MEDIUM_CONFIDENCE
@@ -217,7 +226,7 @@ def _match_one(
                 installment_ids=[inst["id"]],
                 confidence=confidence,
                 method="rules",
-                reason=f"exact_amount+name_match({nscore})+global({total_same_amount})",
+                reason=f"exact_amount+name_match({nscore})+global({total_same_amount})+students({len(same_amount_student_ids)})",
             )
         # Weak name, single candidate — not confident enough
         return MatchPrediction(
@@ -244,10 +253,11 @@ def _match_one(
                 )
             winner = top_name_cands[0][0]
 
-            # Strong name (>=90) that uniquely identifies one student → high confidence
-            if best_nscore >= 90 and len(students_with_name_match) == 1:
+            # Confidence depends on how many distinct students share this amount.
+            # Multiple students with same amount → name is the only differentiator → cautious.
+            if len(same_amount_student_ids) == 1:
                 confidence = HIGH_CONFIDENCE
-            elif total_same_amount <= 3:
+            elif total_same_amount <= 3 and len(same_amount_student_ids) <= 2:
                 confidence = MEDIUM_CONFIDENCE
             else:
                 confidence = LOW_CONFIDENCE
@@ -256,7 +266,7 @@ def _match_one(
                 installment_ids=[winner["id"]],
                 confidence=confidence,
                 method="rules",
-                reason=f"amount+name({best_nscore})_vs_second({second_nscore})+fifo+global({total_same_amount})",
+                reason=f"amount+name({best_nscore})_vs_second({second_nscore})+fifo+global({total_same_amount})+students({len(same_amount_student_ids)})",
             )
 
         # Multiple candidates, all with similar name scores → ambiguous
