@@ -68,6 +68,8 @@ export default function PaymentsPage() {
     fetcher
   );
 
+  const activeFilters = [source, currency, confirmation, match, search].filter(Boolean).length;
+
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-1">Payments</h1>
@@ -76,44 +78,72 @@ export default function PaymentsPage() {
       </p>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg border p-4 mb-6 grid grid-cols-2 md:grid-cols-5 gap-3"
+      <div className="bg-white rounded-lg border p-4 mb-6"
         style={{ borderColor: "var(--card-border)" }}>
-        <select value={source} onChange={(e) => setSource(e.target.value)}
-          className="text-sm border border-gray-300 rounded-md px-3 py-2">
-          <option value="">All sources</option>
-          <option value="bank">Bank</option>
-          <option value="gateway">Gateway</option>
-          <option value="cash">Cash</option>
-          <option value="screenshot">Screenshot</option>
-        </select>
-        <select value={currency} onChange={(e) => setCurrency(e.target.value)}
-          className="text-sm border border-gray-300 rounded-md px-3 py-2">
-          <option value="">All currencies</option>
-          <option value="INR">INR</option>
-          <option value="USD">USD</option>
-          <option value="AED">AED</option>
-        </select>
-        <select value={confirmation} onChange={(e) => setConfirmation(e.target.value)}
-          className="text-sm border border-gray-300 rounded-md px-3 py-2">
-          <option value="">All confirmation</option>
-          <option value="in_bank">In bank</option>
-          <option value="seen_by_gateway">Gateway</option>
-          <option value="screenshot_only">Screenshot</option>
-        </select>
-        <select value={match} onChange={(e) => setMatch(e.target.value)}
-          className="text-sm border border-gray-300 rounded-md px-3 py-2">
-          <option value="">All match status</option>
-          <option value="matched">Matched</option>
-          <option value="unmatched">Unmatched</option>
-          <option value="pending_review">Pending review</option>
-        </select>
-        <input
-          type="text"
-          placeholder="Search payer..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="text-sm border border-gray-300 rounded-md px-3 py-2"
-        />
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Filter payments</span>
+          {activeFilters > 0 && (
+            <button
+              onClick={() => { setSource(""); setCurrency(""); setConfirmation(""); setMatch(""); setSearch(""); }}
+              className="text-xs text-gray-500 hover:text-gray-700 underline"
+            >
+              Clear all filters
+            </button>
+          )}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">How they paid</label>
+            <select value={source} onChange={(e) => setSource(e.target.value)}
+              className="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+              <option value="">All methods</option>
+              <option value="bank">Bank transfer (NEFT/UPI/IMPS)</option>
+              <option value="gateway">Gateway (Stripe/PayGlocal/Razorpay)</option>
+              <option value="cash">Cash</option>
+              <option value="screenshot">Screenshot only</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Currency</label>
+            <select value={currency} onChange={(e) => setCurrency(e.target.value)}
+              className="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+              <option value="">All currencies</option>
+              <option value="INR">INR (₹)</option>
+              <option value="USD">USD ($)</option>
+              <option value="AED">AED</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Verified?</label>
+            <select value={confirmation} onChange={(e) => setConfirmation(e.target.value)}
+              className="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+              <option value="">Any level</option>
+              <option value="in_bank">Confirmed in bank</option>
+              <option value="seen_by_gateway">Seen by gateway</option>
+              <option value="screenshot_only">Screenshot only (unverified)</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Linked to a student?</label>
+            <select value={match} onChange={(e) => setMatch(e.target.value)}
+              className="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+              <option value="">Any status</option>
+              <option value="matched">Matched (auto or approved)</option>
+              <option value="unmatched">Not matched yet</option>
+              <option value="pending_review">Waiting for your review</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Payer name</label>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full text-sm border border-gray-300 rounded-md px-3 py-2"
+            />
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
@@ -124,7 +154,10 @@ export default function PaymentsPage() {
         </div>
       ) : (
         <>
-          <p className="text-sm text-gray-500 mb-3">{data.total} payments</p>
+          <p className="text-sm text-gray-500 mb-3">
+            {data.total} payments
+            {activeFilters > 0 && " (filtered)"}
+          </p>
           <div className="bg-white rounded-lg border overflow-x-auto" style={{ borderColor: "var(--card-border)" }}>
             <table className="w-full text-sm">
               <thead>
@@ -170,10 +203,19 @@ export default function PaymentsPage() {
                         <Link href={`/review?id=${r.match_id}`}
                           className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 inline-block"
                           style={{
-                            backgroundColor: matchBadge[r.match_status]?.bg ?? "#f3f4f6",
-                            color: matchBadge[r.match_status]?.text ?? "#374151",
+                            backgroundColor: matchBadge.pending_review.bg,
+                            color: matchBadge.pending_review.text,
                           }}>
-                          pending review →
+                          review →
+                        </Link>
+                      ) : r.match_status === "unmatched" ? (
+                        <Link href="/review"
+                          className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 inline-block"
+                          style={{
+                            backgroundColor: matchBadge.unmatched.bg,
+                            color: matchBadge.unmatched.text,
+                          }}>
+                          unmatched →
                         </Link>
                       ) : (
                         <span className="px-2 py-0.5 rounded text-xs font-medium"
