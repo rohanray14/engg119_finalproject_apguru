@@ -27,8 +27,12 @@ from ledger.money import (
 pytestmark = pytest.mark.skipif(not HAS_HYPOTHESIS, reason="hypothesis not installed")
 
 # Strategy for realistic paise amounts (1 paise to ₹10 crore)
-paise = integers(min_value=1, max_value=1_000_000_000)
-small_paise = integers(min_value=1, max_value=100_000_000)
+if HAS_HYPOTHESIS:
+    paise = integers(min_value=1, max_value=1_000_000_000)
+    small_paise = integers(min_value=1, max_value=100_000_000)
+else:
+    paise = None
+    small_paise = None
 
 
 if HAS_HYPOTHESIS:

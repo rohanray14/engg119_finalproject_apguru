@@ -1,281 +1,281 @@
 id,source,method,payer_name,date,amount_paid_paise,currency,gateway_fee_paise,gst_on_fee_paise,tds_paise,fx_diff_paise,amount_in_bank_paise,confirmation
-2,gateway,payglocal,,2025-09-21,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
-3,gateway,payglocal,Ritika Khanna,2025-05-20,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
-4,gateway,payglocal,,2026-04-25,27848000,INR,765820,137848,0,0,26944332,seen_by_gateway
-5,bank,neft,Isha Srinivasan,2025-07-13,11800000,INR,59000,10620,0,0,11730380,in_bank
-7,screenshot,,,2026-09-18,150000,AED,0,0,0,0,3435000,screenshot_only
-9,gateway,payglocal,,2025-07-23,3750000,INR,103125,18562,0,0,3628313,in_bank
-10,gateway,payglocal,,2025-07-13,150000,AED,4125,742,0,0,3323546,in_bank
-11,gateway,payglocal,,2025-05-22,260000,USD,7150,1287,0,0,21131292,seen_by_gateway
-13,bank,neft,Vidya Agarwal,2026-03-03,11800000,INR,59000,10620,0,0,11730380,in_bank
-14,gateway,stripe,Priya Rao,2026-05-16,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
-15,gateway,stripe,Siddharth Khanna,2025-09-18,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-16,gateway,payglocal,,2026-06-01,11800000,INR,324500,58410,0,0,11417090,in_bank
-17,gateway,stripe,Vikram Bhatia,2025-08-12,130000,USD,3900,702,0,0,10533432,seen_by_gateway
-18,gateway,stripe,Sahil Gupta,2026-09-20,4425000,INR,132750,23895,0,0,4268355,in_bank
-19,gateway,stripe,Nisha Bhatia,2025-07-07,7080000,INR,212400,38232,0,0,6829368,seen_by_gateway
-20,gateway,payglocal,,2025-08-31,75000,AED,2062,371,0,0,1661784,in_bank
-21,gateway,stripe,Pinnacle Trading Co,2026-08-21,150000,AED,4500,810,0,0,3313401,in_bank
-22,bank,neft,,2025-05-22,180000,USD,900,162,0,0,15030792,in_bank
-24,gateway,stripe,Deepak Iyer,2025-07-15,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
-27,bank,neft,Pooja Das,2025-07-09,4130000,INR,20650,3717,0,0,4105633,in_bank
-29,gateway,stripe,,2026-05-25,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
-30,gateway,payglocal,,2026-07-13,4130000,INR,113575,20444,0,0,3995981,in_bank
-31,bank,neft,,2025-08-05,10443000,INR,52215,9399,0,0,10381386,in_bank
-32,gateway,stripe,Deepak Bhatia,2025-05-20,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-33,gateway,stripe,Swati Saxena,2025-09-25,11800000,INR,354000,63720,0,0,11382280,in_bank
-34,bank,neft,,2026-08-30,5900000,INR,29500,5310,0,0,5865190,screenshot_only
-36,bank,neft,,2026-02-01,8850000,INR,44250,7965,0,0,8797785,screenshot_only
-37,gateway,stripe,,2025-11-09,15000000,INR,450000,81000,0,0,14469000,seen_by_gateway
-38,gateway,payglocal,,2025-09-30,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
-40,cash,cash,Utkarsh Mukherjee,2026-06-07,40000,USD,0,0,0,0,3360000,screenshot_only
-42,bank,upi,Diya Desai,2025-05-04,11800000,INR,59000,10620,0,0,11730380,in_bank
-43,gateway,stripe,Pooja Chopra,2026-05-04,2950000,INR,88500,15930,0,0,2845570,seen_by_gateway
-44,screenshot,,Vaishnavi Agarwal,2026-02-15,12390000,INR,0,0,0,0,12390000,screenshot_only
-45,gateway,razorpay,,2026-06-28,90000,USD,2700,486,0,0,7292376,in_bank
-47,bank,neft,,2025-09-25,2065000,INR,10325,1858,0,0,2052817,in_bank
-50,gateway,payglocal,Kavya Khanna,2026-04-02,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
-51,gateway,payglocal,Varun Singh,2026-05-19,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
-52,bank,neft,,2025-11-10,2950000,INR,14750,2655,0,0,2932595,screenshot_only
-54,bank,neft,,2025-12-06,11800000,INR,59000,10620,0,0,11730380,screenshot_only
-55,gateway,payglocal,,2026-05-01,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
-57,gateway,stripe,,2026-09-09,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
-59,gateway,stripe,,2026-06-20,240000,AED,7200,1296,0,0,5301442,seen_by_gateway
-60,cash,cash,Ankita Reddy,2025-05-26,27848000,INR,0,0,0,0,27848000,screenshot_only
-61,bank,neft,,2025-12-21,11800000,INR,59000,10620,0,0,11730380,in_bank
-62,gateway,stripe,,2025-07-31,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
-64,screenshot,,,2026-06-23,5900000,INR,0,0,0,0,5900000,screenshot_only
-65,gateway,stripe,Meridian Corp,2026-01-28,11800000,INR,354000,63720,0,0,11382280,in_bank
-66,bank,neft,Rajat Kumar,2025-04-12,11800000,INR,59000,10620,0,0,11730380,in_bank
-67,gateway,stripe,,2025-06-27,15930000,INR,477900,86022,0,0,15366078,seen_by_gateway
-69,gateway,payglocal,,2025-05-26,13924000,INR,382910,68924,0,0,13472166,in_bank
-70,cash,cash,Bhavya Menon,2025-07-10,5900000,INR,0,0,0,0,5900000,screenshot_only
-71,bank,neft,Simran Srinivasan,2026-01-17,17700000,INR,88500,15930,0,0,17595570,in_bank
-72,cash,cash,,2026-02-08,5900000,INR,0,0,0,0,5900000,screenshot_only
-74,bank,neft,Siddharth Kapoor,2026-03-06,5900000,INR,29500,5310,0,0,5865190,screenshot_only
-75,gateway,stripe,,2025-09-27,240000,AED,7200,1296,0,0,5301442,seen_by_gateway
-76,bank,neft,,2025-10-19,150000,AED,750,135,0,0,3414734,in_bank
-77,screenshot,,,2025-05-02,3097500,INR,0,0,0,0,3097500,screenshot_only
-78,screenshot,,Rohan Rao,2026-07-28,11800000,INR,0,0,0,0,11800000,screenshot_only
-79,gateway,payglocal,,2026-01-23,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
-80,gateway,stripe,,2025-09-17,65000,USD,1950,351,0,0,5266716,in_bank
-81,bank,neft,,2025-08-28,5900000,INR,29500,5310,0,0,5865190,in_bank
-82,gateway,stripe,,2025-06-04,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
-86,gateway,stripe,Esha Chopra,2026-08-07,5900000,INR,177000,31860,0,0,5691140,in_bank
-89,gateway,stripe,Rohan Rao,2025-09-12,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
-90,gateway,stripe,Rohan Rao,2026-05-21,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
-91,gateway,stripe,,2026-01-16,20000,USD,600,108,0,0,1620528,in_bank
-92,bank,neft,Kriti Menon,2025-08-25,13924000,INR,69620,12532,0,0,13841848,in_bank
-93,screenshot,,,2026-03-17,150000,AED,0,0,0,0,3435000,screenshot_only
-95,gateway,payglocal,Pranav Das,2026-09-27,450000,AED,12375,2228,0,0,9970591,seen_by_gateway
-97,gateway,payglocal,Pallavi Verma,2025-11-21,11210000,INR,308275,55490,0,0,10846235,in_bank
-99,bank,neft,Dhruv Singh,2025-12-20,5900000,INR,29500,5310,0,0,5865190,in_bank
-101,bank,neft,,2026-06-08,40000,USD,200,36,0,0,3340176,in_bank
-103,gateway,stripe,,2026-05-13,4130000,INR,123900,22302,0,0,3983798,in_bank
-106,bank,neft,,2026-06-20,5900000,INR,29500,5310,0,0,5865190,in_bank
-107,bank,neft,,2026-05-16,7500000,INR,37500,6750,0,0,7455750,in_bank
-108,gateway,stripe,Shreya Kumar,2026-06-24,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
-109,screenshot,,Ishaan Joshi,2025-11-24,4130000,INR,0,0,0,0,4130000,screenshot_only
-110,gateway,payglocal,Diya Desai,2026-01-08,11800000,INR,324500,58410,0,0,11417090,in_bank
-111,gateway,stripe,,2025-06-10,5900000,INR,177000,31860,0,0,5691140,in_bank
-114,bank,neft,,2025-12-13,7080000,INR,35400,6372,0,0,7038228,in_bank
-115,gateway,razorpay,Kriti Saxena,2026-07-16,4130000,INR,123900,22302,0,0,3983798,in_bank
-116,screenshot,,,2025-11-12,7080000,INR,0,0,0,0,7080000,screenshot_only
-117,gateway,payglocal,,2026-09-11,240000,USD,6600,1188,0,0,19505808,seen_by_gateway
-118,gateway,payglocal,,2026-03-17,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
-121,bank,neft,,2025-09-07,20000,USD,100,18,0,0,1670088,in_bank
-123,gateway,stripe,,2026-08-18,11800000,INR,354000,63720,0,0,11382280,in_bank
-124,screenshot,,Vidya Kumar,2026-05-13,140000,USD,0,0,0,0,11760000,screenshot_only
-126,gateway,payglocal,,2026-02-18,22420000,INR,616550,110979,0,0,21692471,seen_by_gateway
-127,bank,neft,,2025-12-22,4130000,INR,20650,3717,0,0,4105633,in_bank
-128,bank,neft,,2025-10-06,4130000,INR,20650,3717,0,0,4105633,in_bank
-130,gateway,payglocal,Vaishnavi Thakur,2025-10-18,17700000,INR,486750,87615,0,0,17125635,seen_by_gateway
-131,cash,cash,,2026-08-25,5900000,INR,0,0,0,0,5900000,screenshot_only
-132,bank,neft,Rajat Chatterjee,2025-12-13,450000,AED,2250,405,0,0,10244200,in_bank
-133,gateway,stripe,,2025-12-17,90000,USD,2700,486,0,0,7292376,seen_by_gateway
-137,gateway,stripe,,2025-09-19,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
-138,cash,cash,,2025-06-13,17700000,INR,0,0,0,0,17700000,screenshot_only
-139,bank,neft,,2025-12-30,5900000,INR,29500,5310,0,0,5865190,in_bank
-140,gateway,stripe,Dhruv Malhotra,2026-07-06,90000,USD,2700,486,0,0,7292376,seen_by_gateway
-141,bank,neft,,2025-06-21,22420000,INR,112100,20178,0,0,22287722,in_bank
-143,gateway,stripe,Kriti Menon,2026-05-05,12390000,INR,371700,66906,0,0,11951394,seen_by_gateway
-144,bank,neft,,2025-09-22,480000,AED,2400,432,0,0,10927147,in_bank
-145,gateway,payglocal,Swati Malhotra,2026-01-04,27848000,INR,765820,137848,0,0,26944332,seen_by_gateway
-147,gateway,payglocal,,2025-07-01,480000,AED,13200,2376,0,0,10635310,seen_by_gateway
-148,gateway,stripe,,2026-03-19,3750000,INR,112500,20250,0,0,3617250,seen_by_gateway
-149,gateway,stripe,Aisha Shah,2026-01-25,15000000,INR,450000,81000,0,0,14469000,seen_by_gateway
-150,screenshot,,Rohan Chatterjee,2026-05-05,5900000,INR,0,0,0,0,5900000,screenshot_only
-153,screenshot,,,2026-07-08,5900000,INR,0,0,0,0,5900000,screenshot_only
-154,bank,neft,Utkarsh Malhotra,2025-10-08,90000,USD,450,81,0,0,7515396,screenshot_only
-155,bank,neft,,2025-09-02,120000,AED,600,108,0,0,2731787,in_bank
-156,bank,neft,,2026-04-16,5900000,INR,29500,5310,0,0,5865190,in_bank
-157,screenshot,,,2025-05-28,11800000,INR,0,0,0,0,11800000,screenshot_only
-159,screenshot,,,2026-06-28,150000,AED,0,0,0,0,3435000,screenshot_only
-160,bank,neft,Sneha Bansal,2025-10-31,40000,USD,200,36,0,0,3340176,in_bank
-162,gateway,stripe,,2026-04-05,5900000,INR,177000,31860,0,0,5691140,in_bank
-164,bank,neft,Sakshi Reddy,2026-07-31,2065000,INR,10325,1858,0,0,2052817,in_bank
-165,bank,neft,Meera Gupta,2025-06-01,5900000,INR,29500,5310,0,0,5865190,in_bank
-167,gateway,stripe,,2025-08-16,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-168,bank,neft,Riya Iyer,2026-03-23,14160000,INR,70800,12744,0,0,14076456,in_bank
-169,gateway,stripe,Shreya Agarwal,2026-07-05,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-170,bank,neft,,2026-04-24,11800000,INR,59000,10620,0,0,11730380,in_bank
-171,screenshot,,Siddharth Kapoor,2026-05-02,7500000,INR,0,0,0,0,7500000,screenshot_only
-172,bank,neft,Bhavya Menon,2026-02-24,11800000,INR,59000,10620,0,0,11730380,in_bank
-173,gateway,stripe,,2025-05-03,240000,AED,7200,1296,0,0,5301442,seen_by_gateway
-174,gateway,stripe,,2026-08-15,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-176,cash,cash,Rajat Pillai,2026-04-05,5900000,INR,0,0,0,0,5900000,screenshot_only
-178,gateway,payglocal,Ritika Malhotra,2025-11-23,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
-179,bank,neft,Vikram Bhatia,2026-05-31,150000,AED,750,135,0,0,3414734,in_bank
-180,gateway,payglocal,Varun Chopra,2025-10-02,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
-181,gateway,stripe,Ritika Agarwal,2026-02-27,40000,USD,1200,216,0,0,3241056,in_bank
-182,gateway,stripe,Simran Kumar,2026-04-20,8850000,INR,265500,47790,0,0,8536710,in_bank
-183,cash,cash,,2026-05-12,4130000,INR,0,0,0,0,4130000,screenshot_only
-185,bank,upi,,2026-01-08,5900000,INR,29500,5310,0,0,5865190,screenshot_only
-186,gateway,stripe,Omkar Reddy,2025-12-28,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-187,gateway,payglocal,,2026-05-15,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
-188,bank,neft,,2026-08-13,17700000,INR,88500,15930,0,0,17595570,screenshot_only
-189,gateway,payglocal,Omkar Mehta,2026-04-26,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
-190,bank,neft,Rajat Malhotra,2025-11-19,11800000,INR,59000,10620,0,0,11730380,in_bank
-191,screenshot,,Lakshmi Agarwal,2026-02-21,20900000,INR,0,0,0,0,20900000,screenshot_only
-192,gateway,stripe,,2025-05-22,40000,USD,1200,216,0,0,3241056,seen_by_gateway
-194,bank,neft,,2025-12-25,150000,AED,750,135,0,0,3414734,in_bank
-196,bank,cheque,Zara Shah,2025-07-01,180000,USD,0,0,0,0,15120000,in_bank
-198,bank,neft,,2025-08-28,240000,AED,1200,216,0,0,5463574,in_bank
-199,cash,cash,,2025-06-27,7500000,INR,0,0,0,0,7500000,screenshot_only
-200,bank,neft,,2026-01-20,150000,AED,750,135,0,0,3414734,in_bank
-201,gateway,payglocal,,2025-11-03,2950000,INR,81125,14602,0,0,2854273,seen_by_gateway
-202,gateway,stripe,,2025-08-23,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-205,cash,cash,,2026-05-01,20000,USD,0,0,0,0,1680000,screenshot_only
-207,gateway,payglocal,,2025-04-23,11210000,INR,308275,55490,0,0,10846235,seen_by_gateway
-208,cash,cash,,2025-04-19,5900000,INR,0,0,0,0,5900000,screenshot_only
-209,bank,neft,,2026-08-27,2950000,INR,14750,2655,0,0,2932595,in_bank
-210,bank,neft,,2025-05-01,70000,USD,350,63,0,0,5845308,screenshot_only
-211,cash,cash,,2025-08-19,4130000,INR,0,0,0,0,4130000,screenshot_only
-212,bank,neft,,2025-11-19,5900000,INR,29500,5310,0,0,5865190,in_bank
-213,gateway,stripe,,2026-07-04,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-214,bank,neft,,2025-08-20,23600000,INR,118000,21240,0,0,23460760,in_bank
-216,gateway,stripe,Rahul Bhatia,2026-02-21,5900000,INR,177000,31860,0,0,5691140,in_bank
-218,bank,neft,,2025-12-30,4130000,INR,20650,3717,0,0,4105633,in_bank
-220,gateway,payglocal,Omkar Mehta,2025-10-15,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
-222,bank,neft,Pallavi Mehta,2026-07-13,11800000,INR,59000,10620,0,0,11730380,screenshot_only
-223,gateway,stripe,Tushar Nair,2026-09-20,70000,USD,2100,378,0,0,5671848,seen_by_gateway
-224,gateway,payglocal,,2025-05-14,27848000,INR,765820,137848,0,0,26944332,in_bank
-226,gateway,stripe,Deepak Iyer,2025-05-26,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
-227,cash,cash,,2026-08-26,240000,AED,0,0,0,0,5496000,screenshot_only
-228,bank,neft,Sneha Rao,2026-07-06,11800000,INR,59000,10620,0,0,11730380,in_bank
-229,gateway,stripe,Zara Gupta,2025-09-15,11210000,INR,336300,60534,0,0,10813166,in_bank
-231,gateway,payglocal,Sanya Saxena,2026-03-10,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
-234,gateway,payglocal,,2025-04-06,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
-235,gateway,stripe,,2026-06-27,240000,AED,7200,1296,0,0,5301442,seen_by_gateway
-236,gateway,payglocal,,2025-10-30,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
-237,bank,neft,TechServe Solutions Pvt Ltd,2025-06-29,2065000,INR,10325,1858,0,0,2052817,in_bank
-239,gateway,payglocal,,2026-02-25,12390000,INR,340725,61330,0,0,11987945,seen_by_gateway
-242,gateway,payglocal,Siddharth Kapoor,2026-01-20,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
-243,screenshot,,,2025-08-11,14160000,INR,0,0,0,0,14160000,screenshot_only
-244,gateway,payglocal,,2025-10-02,5900000,INR,162250,29205,0,0,5708545,in_bank
-245,bank,neft,,2026-07-21,5900000,INR,29500,5310,0,0,5865190,in_bank
-246,bank,neft,Mohit Bansal,2025-11-04,5900000,INR,29500,5310,0,0,5865190,in_bank
-247,bank,neft,,2026-09-01,4130000,INR,20650,3717,0,0,4105633,in_bank
-248,gateway,payglocal,,2025-04-30,7500000,INR,206250,37125,0,0,7256625,in_bank
-249,bank,neft,Lakshmi Agarwal,2026-08-07,2950000,INR,14750,2655,0,0,2932595,in_bank
-250,gateway,stripe,Yash Mehta,2025-05-28,5900000,INR,177000,31860,0,0,5691140,in_bank
-251,bank,neft,Mohit Malhotra,2026-03-29,11800000,INR,59000,10620,0,0,11730380,in_bank
-253,bank,neft,Arnav Iyer,2025-06-28,15000000,INR,75000,13500,0,0,14911500,in_bank
-255,gateway,stripe,,2026-09-01,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-257,screenshot,,Mohit Bansal,2026-07-15,23600000,INR,0,0,0,0,23600000,screenshot_only
-258,gateway,stripe,Aditya Kumar,2025-06-29,450000,AED,13500,2430,0,0,9940203,seen_by_gateway
-259,screenshot,,,2025-04-24,4130000,INR,0,0,0,0,4130000,screenshot_only
-260,gateway,stripe,,2025-10-15,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
-261,gateway,stripe,Meera Bansal,2026-09-09,12390000,INR,371700,66906,0,0,11951394,seen_by_gateway
-264,bank,neft,,2026-07-01,17700000,INR,88500,15930,0,0,17595570,in_bank
-265,bank,neft,Deepak Bansal,2026-07-21,5900000,INR,29500,5310,0,0,5865190,in_bank
-267,cash,cash,,2026-04-08,15000000,INR,0,0,0,0,15000000,screenshot_only
-268,gateway,stripe,Deepak Bansal,2025-05-01,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-270,bank,neft,,2026-02-28,11800000,INR,59000,10620,0,0,11730380,in_bank
-271,bank,neft,,2025-12-01,90000,USD,450,81,0,0,7515396,in_bank
-272,gateway,stripe,Omkar Mehta,2026-06-20,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-273,bank,neft,Manish Menon,2026-08-12,150000,AED,750,135,0,0,3414734,in_bank
-276,gateway,payglocal,,2025-04-01,11800000,INR,324500,58410,0,0,11417090,in_bank
-278,gateway,payglocal,,2026-02-06,5900000,INR,162250,29205,0,0,5708545,in_bank
-281,gateway,stripe,Ritika Bhatia,2026-05-09,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
-282,gateway,payglocal,,2025-09-25,900000,AED,24750,4455,0,0,19941206,seen_by_gateway
-283,bank,neft,,2025-09-05,150000,AED,750,135,0,0,3414734,in_bank
-284,screenshot,,,2025-08-26,11800000,INR,0,0,0,0,11800000,screenshot_only
-285,gateway,payglocal,,2025-06-26,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
-286,screenshot,,Sakshi Kapoor,2026-07-10,11800000,INR,0,0,0,0,11800000,screenshot_only
-287,gateway,stripe,Omkar Shah,2026-08-24,4130000,INR,123900,22302,0,0,3983798,in_bank
-288,bank,neft,Pallavi Mehta,2026-08-08,11800000,INR,59000,10620,0,0,11730380,in_bank
-289,bank,neft,,2026-09-22,11210000,INR,56050,10089,0,0,11143861,screenshot_only
-291,gateway,payglocal,Sahil Kulkarni,2026-03-18,20000,USD,550,99,0,0,1625484,seen_by_gateway
-292,bank,neft,,2026-03-06,260000,USD,1300,234,0,0,21711144,in_bank
-293,gateway,razorpay,Omkar Thakur,2025-12-23,6962000,INR,208860,37595,0,0,6715545,seen_by_gateway
-295,bank,neft,Varun Desai,2025-12-20,40000,USD,200,36,0,0,3340176,in_bank
-296,bank,neft,,2026-07-02,4130000,INR,20650,3717,0,0,4105633,in_bank
-299,bank,neft,Dhruv Malhotra,2025-09-19,90000,USD,450,81,0,0,7515396,in_bank
-300,gateway,stripe,,2025-11-26,75000,AED,2250,405,0,0,1656700,seen_by_gateway
-301,gateway,payglocal,,2025-04-13,13924000,INR,382910,68924,0,0,13472166,seen_by_gateway
-302,screenshot,,,2025-05-13,4130000,INR,0,0,0,0,4130000,screenshot_only
-303,bank,neft,Arnav Iyer,2026-01-05,11800000,INR,59000,10620,0,0,11730380,in_bank
-305,gateway,payglocal,,2025-10-02,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
-306,bank,neft,,2026-09-20,70000,USD,350,63,0,0,5845308,in_bank
-307,gateway,stripe,,2025-04-25,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
-308,bank,neft,Diya Desai,2025-08-01,11210000,INR,56050,10089,0,0,11143861,in_bank
-310,gateway,payglocal,,2026-07-09,8850000,INR,243375,43808,0,0,8562817,in_bank
-311,bank,neft,,2026-02-26,2065000,INR,10325,1858,0,0,2052817,in_bank
-312,screenshot,,,2025-06-01,23600000,INR,0,0,0,0,23600000,screenshot_only
-314,gateway,stripe,,2025-07-18,5900000,INR,177000,31860,0,0,5691140,in_bank
-315,gateway,payglocal,,2025-12-13,11800000,INR,324500,58410,0,0,11417090,in_bank
-316,bank,neft,,2026-05-05,3481000,INR,17405,3133,0,0,3460462,in_bank
-317,gateway,payglocal,Kriti Saxena,2026-06-21,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
-318,gateway,payglocal,Tanya Malhotra,2026-08-07,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
-319,gateway,stripe,Rajat Singh,2025-07-02,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
-320,screenshot,,,2026-01-22,240000,AED,0,0,0,0,5496000,screenshot_only
-321,gateway,payglocal,,2025-10-13,40000,USD,1100,198,0,0,3250968,seen_by_gateway
-322,gateway,stripe,,2026-06-23,17700000,INR,531000,95580,0,0,17073420,in_bank
-323,bank,neft,,2026-08-14,5900000,INR,29500,5310,0,0,5865190,in_bank
-324,screenshot,,Rajat Pillai,2025-04-17,5900000,INR,0,0,0,0,5900000,screenshot_only
-325,bank,neft,,2025-11-03,240000,AED,1200,216,0,0,5463574,screenshot_only
-326,gateway,payglocal,,2025-08-31,11800000,INR,324500,58410,0,0,11417090,in_bank
-328,cash,cash,,2025-09-24,4130000,INR,0,0,0,0,4130000,screenshot_only
-329,gateway,payglocal,Kriti Mukherjee,2025-06-05,22420000,INR,616550,110979,0,0,21692471,in_bank
-330,bank,neft,,2025-10-25,5900000,INR,29500,5310,0,0,5865190,in_bank
-331,screenshot,,Vidya Mehta,2025-08-19,5900000,INR,0,0,0,0,5900000,screenshot_only
-332,bank,neft,Zara Saxena,2026-01-06,5900000,INR,29500,5310,0,0,5865190,in_bank
-334,bank,neft,,2025-07-01,4130000,INR,20650,3717,0,0,4105633,in_bank
-335,gateway,payglocal,,2026-08-01,150000,AED,4125,742,0,0,3323546,seen_by_gateway
-336,bank,neft,Sakshi Reddy,2025-05-09,2065000,INR,10325,1858,0,0,2052817,in_bank
-339,gateway,payglocal,,2026-07-30,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
-340,bank,neft,GlobalEd Consulting,2026-07-09,8100000,INR,40500,7290,750000,0,8052210,in_bank
-341,gateway,payglocal,Simran Kumar,2025-11-27,8850000,INR,243375,43808,0,0,8562817,in_bank
-342,gateway,payglocal,,2026-02-28,12390000,INR,340725,61330,0,0,11987945,seen_by_gateway
-344,bank,neft,,2025-08-27,5900000,INR,29500,5310,0,0,5865190,in_bank
-345,gateway,payglocal,,2025-10-16,23600000,INR,649000,116820,0,0,22834180,seen_by_gateway
-347,bank,neft,,2025-11-12,5900000,INR,29500,5310,0,0,5865190,screenshot_only
-349,screenshot,,,2026-07-18,12390000,INR,0,0,0,0,12390000,screenshot_only
-350,bank,neft,Vikram Bhatia,2025-08-31,150000,AED,750,135,0,0,3414734,screenshot_only
-351,screenshot,,,2026-08-30,5900000,INR,0,0,0,0,5900000,screenshot_only
-354,gateway,payglocal,,2025-04-25,2065000,INR,56788,10222,0,0,1997990,in_bank
-355,gateway,stripe,,2026-04-15,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
-356,gateway,payglocal,,2026-03-07,480000,AED,13200,2376,0,0,10635310,seen_by_gateway
-357,bank,neft,Siddharth Khanna,2025-06-22,5900000,INR,29500,5310,0,0,5865190,in_bank
-358,bank,neft,Pallavi Mehta,2026-04-28,11800000,INR,59000,10620,0,0,11730380,in_bank
-360,gateway,payglocal,,2026-08-03,4130000,INR,113575,20444,0,0,3995981,in_bank
-361,gateway,payglocal,Esha Iyer,2025-12-30,75000,AED,2062,371,0,0,1661784,seen_by_gateway
-363,bank,neft,Dhruv Verma,2025-06-07,4130000,INR,20650,3717,0,0,4105633,in_bank
-364,screenshot,,,2025-06-18,240000,AED,0,0,0,0,5496000,screenshot_only
-366,gateway,payglocal,,2025-08-14,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
-369,gateway,stripe,,2025-09-23,11210000,INR,336300,60534,0,0,10813166,in_bank
-372,bank,neft,Aditya Kumar,2026-02-19,450000,AED,2250,405,0,0,10244200,in_bank
-374,bank,neft,,2025-08-03,150000,AED,750,135,0,0,3414734,screenshot_only
-377,gateway,payglocal,Vaishnavi Iyer,2025-07-29,112500,AED,3094,557,0,0,2492642,seen_by_gateway
-378,gateway,stripe,Ankita Sharma,2026-09-22,7500000,INR,225000,40500,0,0,7234500,seen_by_gateway
-380,gateway,payglocal,Tanya Bhatia,2026-09-06,150000,AED,4125,742,0,0,3323546,in_bank
-382,gateway,stripe,,2026-07-01,11800000,INR,354000,63720,0,0,11382280,in_bank
-384,gateway,stripe,Dhruv Sharma,2026-09-20,11800000,INR,354000,63720,0,0,11382280,in_bank
-386,gateway,stripe,Sneha Bansal,2026-08-16,40000,USD,1200,216,0,0,3241056,seen_by_gateway
-387,screenshot,,Priya Sharma,2025-09-05,3540000,INR,0,0,0,0,3540000,screenshot_only
-390,gateway,payglocal,Priya Khanna,2025-08-01,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
-392,screenshot,,,2026-06-04,450000,AED,0,0,0,0,10305000,screenshot_only
-396,gateway,stripe,,2025-09-14,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-397,bank,neft,,2026-09-21,5900000,INR,29500,5310,0,0,5865190,screenshot_only
-400,bank,neft,TechServe Solutions Pvt Ltd,2025-11-19,12744000,INR,63720,11470,1180000,0,12668810,in_bank
+2,gateway,stripe,Kriti Mukherjee,2025-05-20,900000,AED,27000,4860,0,0,19880406,seen_by_gateway
+3,gateway,stripe,Sneha Pillai,2025-09-25,11800000,INR,354000,63720,0,0,11382280,in_bank
+4,bank,neft,,2026-08-30,5900000,INR,29500,5310,0,0,5865190,screenshot_only
+5,gateway,stripe,Rohan Nair,2026-01-27,2065000,INR,61950,11151,0,0,1991899,seen_by_gateway
+6,bank,neft,,2026-02-01,450000,AED,2250,405,0,0,10244200,screenshot_only
+7,gateway,stripe,,2025-11-09,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
+8,gateway,payglocal,,2025-09-30,40000,USD,1100,198,0,0,3250968,seen_by_gateway
+9,gateway,payglocal,,2026-08-05,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
+10,cash,cash,Kriti Malhotra,2026-06-07,7080000,INR,0,0,0,0,7080000,screenshot_only
+11,screenshot,,Meridian Corp,2025-09-12,10800000,INR,0,0,1000000,0,10800000,screenshot_only
+12,bank,upi,Kavya Srinivasan,2025-05-04,7500000,INR,37500,6750,0,0,7455750,in_bank
+13,gateway,stripe,Siddharth Gupta,2026-05-04,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
+15,gateway,razorpay,,2026-06-28,8850000,INR,265500,47790,0,0,8536710,in_bank
+17,bank,neft,,2025-09-25,140000,USD,700,126,0,0,11690616,in_bank
+18,bank,neft,,2025-09-12,240000,AED,1200,216,0,0,5463574,in_bank
+19,bank,neft,,2025-09-05,240000,USD,1200,216,0,0,20041056,screenshot_only
+21,gateway,payglocal,Pooja Shah,2026-05-19,2950000,INR,81125,14602,0,0,2854273,seen_by_gateway
+22,bank,neft,,2025-11-10,2950000,INR,14750,2655,0,0,2932595,screenshot_only
+23,gateway,payglocal,,2025-04-10,11210000,INR,308275,55490,0,0,10846235,seen_by_gateway
+24,bank,neft,,2025-12-06,150000,AED,750,135,0,0,3414734,screenshot_only
+25,gateway,payglocal,,2026-05-01,150000,AED,4125,742,0,0,3323546,seen_by_gateway
+26,gateway,payglocal,,2026-09-09,8850000,INR,243375,43808,0,0,8562817,in_bank
+28,bank,neft,Mohit Malhotra,2025-11-05,5900000,INR,29500,5310,0,0,5865190,screenshot_only
+29,gateway,stripe,,2026-06-20,150000,AED,4500,810,0,0,3313401,seen_by_gateway
+30,cash,cash,Aarav Agarwal,2025-05-26,5900000,INR,0,0,0,0,5900000,screenshot_only
+31,bank,neft,,2025-12-21,40000,USD,200,36,0,0,3340176,in_bank
+32,gateway,stripe,,2025-07-31,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+34,screenshot,,,2026-06-23,12390000,INR,0,0,0,0,12390000,screenshot_only
+35,gateway,stripe,Meridian Corp,2026-01-28,11800000,INR,354000,63720,0,0,11382280,in_bank
+36,bank,neft,Kiran Patel,2025-04-12,5900000,INR,29500,5310,0,0,5865190,in_bank
+37,gateway,stripe,,2025-06-27,14160000,INR,424800,76464,0,0,13658736,seen_by_gateway
+38,gateway,payglocal,Pallavi Bhatia,2025-09-12,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
+39,gateway,payglocal,,2025-05-26,5900000,INR,162250,29205,0,0,5708545,in_bank
+42,cash,cash,,2026-02-08,23600000,INR,0,0,0,0,23600000,screenshot_only
+43,gateway,payglocal,,2026-06-13,150000,AED,4125,742,0,0,3323546,seen_by_gateway
+44,bank,neft,Manish Bhatia,2026-03-06,75000,AED,375,68,0,0,1707355,screenshot_only
+45,gateway,stripe,,2025-09-27,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+46,bank,neft,,2025-10-19,2065000,INR,10325,1858,0,0,2052817,in_bank
+47,screenshot,,,2026-09-02,8260000,INR,0,0,0,0,8260000,screenshot_only
+48,gateway,payglocal,Omkar Reddy,2026-07-28,270000,AED,7425,1336,0,0,5982373,seen_by_gateway
+49,bank,neft,,2026-01-23,5900000,INR,29500,5310,0,0,5865190,in_bank
+50,gateway,stripe,,2025-09-17,8850000,INR,265500,47790,0,0,8536710,in_bank
+51,bank,neft,,2025-08-28,240000,USD,1200,216,0,0,20041056,in_bank
+52,gateway,stripe,,2025-06-04,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
+54,gateway,payglocal,,2026-01-06,5900000,INR,162250,29205,0,0,5708545,in_bank
+56,gateway,stripe,Yash Malhotra,2026-08-07,4130000,INR,123900,22302,0,0,3983798,in_bank
+57,bank,neft,Zara Menon,2025-09-01,40000,USD,200,36,0,0,3340176,in_bank
+58,gateway,stripe,Akash Das,2026-08-07,480000,AED,14400,2592,0,0,10602883,seen_by_gateway
+59,gateway,stripe,Sanya Bansal,2025-09-12,150000,AED,4500,810,0,0,3313401,seen_by_gateway
+60,gateway,stripe,Charu Chopra,2026-05-21,15000000,INR,450000,81000,0,0,14469000,seen_by_gateway
+61,gateway,stripe,,2026-01-16,150000,AED,4500,810,0,0,3313401,in_bank
+62,bank,neft,Bhavya Menon,2025-08-25,5900000,INR,29500,5310,0,0,5865190,in_bank
+63,screenshot,,,2026-03-17,20000,USD,0,0,0,0,1680000,screenshot_only
+65,gateway,payglocal,Vikram Singh,2026-09-27,450000,AED,12375,2228,0,0,9970591,seen_by_gateway
+66,bank,neft,,2025-04-02,11800000,INR,59000,10620,0,0,11730380,screenshot_only
+68,gateway,stripe,Aditya Pillai,2025-07-10,180000,USD,5400,972,0,0,14584752,seen_by_gateway
+70,gateway,payglocal,Harsh Reddy,2026-02-18,40000,USD,1100,198,0,0,3250968,seen_by_gateway
+71,bank,neft,,2026-06-08,2950000,INR,14750,2655,0,0,2932595,in_bank
+73,gateway,stripe,,2026-05-13,5900000,INR,177000,31860,0,0,5691140,in_bank
+74,screenshot,,Nisha Agarwal,2025-11-06,120000,USD,0,0,0,0,10080000,screenshot_only
+75,gateway,stripe,Mohit Kapoor,2026-05-04,15000000,INR,450000,81000,0,0,14469000,in_bank
+76,bank,neft,,2026-06-20,7080000,INR,35400,6372,0,0,7038228,in_bank
+78,gateway,stripe,Arnav Bhatia,2026-06-24,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
+80,gateway,payglocal,Bhavya Bansal,2026-01-08,450000,AED,12375,2228,0,0,9970591,in_bank
+81,gateway,stripe,,2025-06-10,8850000,INR,265500,47790,0,0,8536710,in_bank
+82,gateway,stripe,Sakshi Chatterjee,2025-11-18,40000,USD,1200,216,0,0,3241056,seen_by_gateway
+83,bank,neft,Utkarsh Gupta,2025-06-14,5900000,INR,29500,5310,0,0,5865190,in_bank
+84,bank,neft,,2025-12-13,14160000,INR,70800,12744,0,0,14076456,in_bank
+87,gateway,payglocal,,2026-09-11,450000,AED,12375,2228,0,0,9970591,seen_by_gateway
+89,cash,cash,,2026-01-01,150000,AED,0,0,0,0,3435000,screenshot_only
+90,bank,neft,Sanya Kumar,2025-12-04,11800000,INR,59000,10620,0,0,11730380,screenshot_only
+93,gateway,stripe,,2026-08-18,4130000,INR,123900,22302,0,0,3983798,in_bank
+95,bank,neft,Bright Future Inc,2026-05-09,135000,AED,675,122,15000,0,3073249,screenshot_only
+97,bank,neft,,2025-12-22,11800000,INR,59000,10620,0,0,11730380,in_bank
+98,bank,neft,,2025-10-06,5900000,INR,29500,5310,0,0,5865190,in_bank
+99,bank,neft,Priya Patel,2025-08-13,4130000,INR,20650,3717,0,0,4105633,screenshot_only
+102,bank,neft,Ishaan Mukherjee,2025-12-13,4130000,INR,20650,3717,0,0,4105633,in_bank
+103,gateway,stripe,,2025-12-17,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+104,gateway,payglocal,,2025-12-20,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
+105,gateway,stripe,,2025-09-26,4130000,INR,123900,22302,0,0,3983798,in_bank
+106,bank,neft,,2026-07-02,4130000,INR,20650,3717,0,0,4105633,screenshot_only
+107,gateway,stripe,,2025-09-19,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+108,cash,cash,,2025-06-13,4130000,INR,0,0,0,0,4130000,screenshot_only
+109,bank,neft,,2025-12-30,5900000,INR,29500,5310,0,0,5865190,in_bank
+110,gateway,stripe,Sneha Pillai,2026-07-06,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
+111,bank,neft,,2025-06-21,5900000,INR,29500,5310,0,0,5865190,in_bank
+112,gateway,stripe,,2025-05-26,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
+113,gateway,stripe,Rajat Nair,2026-05-05,2065000,INR,61950,11151,0,0,1991899,seen_by_gateway
+116,bank,neft,Manish Kapoor,2026-06-20,5900000,INR,29500,5310,0,0,5865190,in_bank
+117,gateway,payglocal,,2025-07-01,150000,AED,4125,742,0,0,3323546,seen_by_gateway
+118,gateway,stripe,,2026-03-19,60000,USD,1800,324,0,0,4861584,seen_by_gateway
+119,gateway,stripe,Rahul Nair,2026-01-25,150000,AED,4500,810,0,0,3313401,seen_by_gateway
+120,screenshot,,Pooja Shah,2026-05-05,2950000,INR,0,0,0,0,2950000,screenshot_only
+121,screenshot,,,2026-09-12,27848000,INR,0,0,0,0,27848000,screenshot_only
+123,screenshot,,,2026-07-08,140000,USD,0,0,0,0,11760000,screenshot_only
+124,bank,neft,Arnav Thakur,2025-10-08,40000,USD,200,36,0,0,3340176,screenshot_only
+125,bank,neft,,2025-09-02,10000,USD,50,9,0,0,835044,in_bank
+126,bank,neft,,2026-04-16,11800000,INR,59000,10620,0,0,11730380,in_bank
+128,bank,neft,,2025-12-13,40000,USD,200,36,0,0,3340176,screenshot_only
+130,bank,neft,Pallavi Iyer,2025-10-31,150000,AED,750,135,0,0,3414734,in_bank
+131,gateway,payglocal,,2025-05-14,40000,USD,1100,198,0,0,3250968,in_bank
+132,gateway,stripe,,2026-04-05,5900000,INR,177000,31860,0,0,5691140,in_bank
+133,screenshot,,,2026-02-27,27848000,INR,0,0,0,0,27848000,screenshot_only
+135,bank,neft,Jatin Gupta,2025-06-01,480000,AED,2400,432,0,0,10927147,in_bank
+136,gateway,payglocal,Simran Joshi,2026-03-22,11800000,INR,324500,58410,0,0,11417090,in_bank
+137,gateway,stripe,,2025-08-16,7080000,INR,212400,38232,0,0,6829368,seen_by_gateway
+139,gateway,stripe,Pallavi Bhatia,2026-07-05,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+140,bank,neft,,2026-04-24,11800000,INR,59000,10620,0,0,11730380,in_bank
+142,bank,neft,Aarav Agarwal,2026-02-24,5900000,INR,29500,5310,0,0,5865190,in_bank
+143,gateway,stripe,,2025-05-03,130000,USD,3900,702,0,0,10533432,seen_by_gateway
+145,gateway,payglocal,,2025-06-12,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
+146,cash,cash,Vidya Thakur,2026-04-05,180000,USD,0,0,0,0,15120000,screenshot_only
+147,gateway,stripe,Vikram Patel,2025-12-29,11210000,INR,336300,60534,0,0,10813166,seen_by_gateway
+148,gateway,payglocal,Ritika Kapoor,2025-11-23,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
+149,bank,neft,Kiran Thakur,2026-05-31,140000,USD,700,126,0,0,11690616,in_bank
+150,gateway,payglocal,Priya Mukherjee,2025-10-02,12390000,INR,340725,61330,0,0,11987945,seen_by_gateway
+152,gateway,stripe,Tanvi Agarwal,2026-04-20,5900000,INR,177000,31860,0,0,5691140,in_bank
+153,cash,cash,,2026-05-12,150000,AED,0,0,0,0,3435000,screenshot_only
+154,bank,neft,,2026-02-04,2950000,INR,14750,2655,0,0,2932595,in_bank
+155,bank,upi,,2026-01-08,4130000,INR,20650,3717,0,0,4105633,screenshot_only
+156,gateway,stripe,Aditi Pillai,2025-12-28,40000,USD,1200,216,0,0,3241056,seen_by_gateway
+157,gateway,payglocal,,2026-05-15,40000,USD,1100,198,0,0,3250968,seen_by_gateway
+158,bank,neft,,2026-08-13,11800000,INR,59000,10620,0,0,11730380,screenshot_only
+159,gateway,payglocal,Priya Sharma,2026-04-26,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
+160,bank,neft,Sahil Joshi,2025-11-19,4130000,INR,20650,3717,0,0,4105633,in_bank
+161,screenshot,,Varun Chopra,2026-02-21,4130000,INR,0,0,0,0,4130000,screenshot_only
+162,gateway,stripe,,2025-05-22,22420000,INR,672600,121068,0,0,21626332,seen_by_gateway
+165,gateway,stripe,Ankita Reddy,2025-10-18,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
+166,bank,cheque,Shreya Kumar,2025-07-01,27848000,INR,0,0,0,0,27848000,in_bank
+167,gateway,stripe,,2025-04-25,70000,USD,2100,378,0,0,5671848,in_bank
+169,cash,cash,,2025-06-27,13924000,INR,0,0,0,0,13924000,screenshot_only
+171,gateway,payglocal,,2025-11-03,20000,USD,550,99,0,0,1625484,seen_by_gateway
+172,gateway,stripe,,2025-08-23,40000,USD,1200,216,0,0,3241056,seen_by_gateway
+174,bank,neft,Omkar Joshi,2026-01-03,10620000,INR,53100,9558,0,0,10557342,in_bank
+177,gateway,payglocal,,2025-04-23,40000,USD,1100,198,0,0,3250968,seen_by_gateway
+178,cash,cash,,2025-04-19,11800000,INR,0,0,0,0,11800000,screenshot_only
+179,bank,neft,,2026-08-27,5900000,INR,29500,5310,0,0,5865190,in_bank
+180,bank,neft,,2025-05-01,11800000,INR,59000,10620,0,0,11730380,screenshot_only
+182,bank,neft,,2025-11-19,4130000,INR,20650,3717,0,0,4105633,in_bank
+183,gateway,stripe,,2026-07-04,150000,AED,4500,810,0,0,3313401,seen_by_gateway
+184,bank,neft,,2025-08-20,5900000,INR,29500,5310,0,0,5865190,in_bank
+186,gateway,stripe,Arjun Kumar,2026-02-21,5900000,INR,177000,31860,0,0,5691140,in_bank
+187,gateway,stripe,,2026-01-06,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
+191,gateway,stripe,Arnav Bhatia,2025-10-25,4130000,INR,123900,22302,0,0,3983798,in_bank
+193,gateway,stripe,Utkarsh Gupta,2026-09-20,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+194,gateway,payglocal,,2025-05-14,6962000,INR,191455,34462,0,0,6736083,in_bank
+198,bank,neft,Pooja Nair,2026-07-06,5900000,INR,29500,5310,0,0,5865190,in_bank
+199,gateway,stripe,Priya Rao,2025-09-15,5900000,INR,177000,31860,0,0,5691140,in_bank
+203,bank,neft,Gauri Kumar,2025-10-25,5900000,INR,29500,5310,0,0,5865190,in_bank
+204,gateway,payglocal,,2025-04-06,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
+206,gateway,payglocal,,2025-10-30,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
+209,gateway,payglocal,,2026-02-25,480000,AED,13200,2376,0,0,10635310,seen_by_gateway
+210,gateway,stripe,,2026-01-25,8850000,INR,265500,47790,0,0,8536710,seen_by_gateway
+211,bank,neft,Sanya Sharma,2025-05-30,6962000,INR,34810,6266,0,0,6920924,in_bank
+212,gateway,payglocal,Rahul Singh,2026-01-20,150000,AED,4125,742,0,0,3323546,seen_by_gateway
+213,screenshot,,,2025-08-11,150000,AED,0,0,0,0,3435000,screenshot_only
+214,gateway,payglocal,,2025-10-02,24780000,INR,681450,122661,0,0,23975889,in_bank
+215,bank,neft,,2026-07-21,140000,USD,700,126,0,0,11690616,in_bank
+216,bank,neft,Bhavya Bansal,2025-11-04,450000,AED,2250,405,0,0,10244200,in_bank
+217,bank,neft,,2026-09-01,4130000,INR,20650,3717,0,0,4105633,in_bank
+218,gateway,payglocal,,2025-04-30,11800000,INR,324500,58410,0,0,11417090,in_bank
+219,bank,neft,Manish Chatterjee,2026-08-07,2950000,INR,14750,2655,0,0,2932595,in_bank
+220,gateway,stripe,Pranav Agarwal,2025-05-28,5900000,INR,177000,31860,0,0,5691140,in_bank
+221,bank,neft,Yash Malhotra,2026-03-29,4130000,INR,20650,3717,0,0,4105633,in_bank
+222,bank,neft,Aditya Kapoor,2026-05-04,150000,AED,750,135,0,0,3414734,in_bank
+223,bank,neft,Swati Verma,2025-06-28,11800000,INR,59000,10620,0,0,11730380,in_bank
+225,gateway,stripe,,2026-09-01,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+226,gateway,stripe,Isha Rao,2026-03-02,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+227,screenshot,,Manish Chatterjee,2026-07-15,5900000,INR,0,0,0,0,5900000,screenshot_only
+228,gateway,stripe,Jatin Gupta,2025-06-29,80000,USD,2400,432,0,0,6482112,seen_by_gateway
+229,screenshot,,,2025-04-24,11800000,INR,0,0,0,0,11800000,screenshot_only
+230,gateway,stripe,,2025-10-15,180000,USD,5400,972,0,0,14584752,seen_by_gateway
+231,gateway,stripe,Isha Shah,2026-09-09,120000,USD,3600,648,0,0,9723168,seen_by_gateway
+233,gateway,payglocal,,2026-07-27,4130000,INR,113575,20444,0,0,3995981,in_bank
+235,bank,neft,Nisha Agarwal,2026-07-21,40000,USD,200,36,0,0,3340176,in_bank
+238,gateway,stripe,Aditi Shah,2025-05-01,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
+239,bank,neft,,2026-03-23,22420000,INR,112100,20178,0,0,22287722,in_bank
+240,bank,neft,,2026-02-28,40000,USD,200,36,0,0,3340176,in_bank
+241,bank,neft,,2025-12-01,150000,AED,750,135,0,0,3414734,in_bank
+242,gateway,stripe,Varun Iyer,2026-06-20,240000,AED,7200,1296,0,0,5301442,seen_by_gateway
+243,bank,neft,Vaishnavi Thakur,2026-08-12,4130000,INR,20650,3717,0,0,4105633,in_bank
+244,gateway,payglocal,,2026-02-10,5900000,INR,162250,29205,0,0,5708545,in_bank
+245,bank,neft,,2026-04-24,4130000,INR,20650,3717,0,0,4105633,in_bank
+246,gateway,payglocal,,2025-04-01,4130000,INR,113575,20444,0,0,3995981,in_bank
+247,gateway,payglocal,,2026-07-02,260000,USD,7150,1287,0,0,21131292,seen_by_gateway
+249,cash,cash,Rohan Nair,2026-09-05,11800000,INR,0,0,0,0,11800000,screenshot_only
+250,gateway,stripe,,2025-05-25,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+251,gateway,stripe,Aditi Iyer,2026-05-09,40000,USD,1200,216,0,0,3241056,seen_by_gateway
+252,gateway,payglocal,,2025-09-25,240000,AED,6600,1188,0,0,5317655,seen_by_gateway
+256,screenshot,,Aditya Srinivasan,2026-07-10,4130000,INR,0,0,0,0,4130000,screenshot_only
+257,gateway,stripe,Arnav Pillai,2026-08-24,5900000,INR,177000,31860,0,0,5691140,in_bank
+258,bank,neft,Aditi Iyer,2026-08-08,150000,AED,750,135,0,0,3414734,in_bank
+260,bank,upi,Isha Srinivasan,2026-07-28,13924000,INR,69620,12532,0,0,13841848,in_bank
+261,gateway,payglocal,Rohan Joshi,2026-03-18,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
+262,bank,neft,,2026-03-06,4130000,INR,20650,3717,0,0,4105633,in_bank
+263,gateway,razorpay,Jatin Nair,2025-12-23,2065000,INR,61950,11151,0,0,1991899,seen_by_gateway
+264,gateway,stripe,,2025-04-28,14160000,INR,424800,76464,0,0,13658736,seen_by_gateway
+266,bank,neft,,2026-07-02,150000,AED,750,135,0,0,3414734,in_bank
+267,bank,neft,Vaishnavi Thakur,2025-08-27,2950000,INR,14750,2655,0,0,2932595,in_bank
+268,screenshot,,Vidya Sharma,2025-09-19,11800000,INR,0,0,0,0,11800000,screenshot_only
+270,gateway,stripe,,2025-11-26,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+271,gateway,payglocal,,2025-04-13,150000,AED,4125,742,0,0,3323546,seen_by_gateway
+274,bank,neft,,2025-12-04,23600000,INR,118000,21240,0,0,23460760,in_bank
+275,gateway,payglocal,,2025-10-02,2950000,INR,81125,14602,0,0,2854273,seen_by_gateway
+276,bank,neft,,2026-09-20,11800000,INR,59000,10620,0,0,11730380,in_bank
+277,gateway,stripe,,2025-04-25,22420000,INR,672600,121068,0,0,21626332,seen_by_gateway
+279,gateway,payglocal,,2025-10-07,11800000,INR,324500,58410,0,0,11417090,in_bank
+281,bank,neft,,2026-02-26,40000,USD,200,36,0,0,3340176,in_bank
+282,screenshot,,,2025-06-01,240000,USD,0,0,0,0,20160000,screenshot_only
+283,bank,neft,Lakshmi Mukherjee,2026-05-08,150000,AED,750,135,0,0,3414734,in_bank
+284,gateway,stripe,,2025-07-18,40000,USD,1200,216,0,0,3241056,in_bank
+285,gateway,payglocal,,2025-12-13,22420000,INR,616550,110979,0,0,21692471,in_bank
+286,bank,neft,,2026-05-05,11800000,INR,59000,10620,0,0,11730380,in_bank
+287,gateway,payglocal,Nisha Kulkarni,2026-06-21,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
+289,gateway,stripe,Swati Bhatia,2025-07-02,15000000,INR,450000,81000,0,0,14469000,seen_by_gateway
+290,screenshot,,,2026-01-22,22420000,INR,0,0,0,0,22420000,screenshot_only
+291,gateway,payglocal,,2025-10-13,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
+293,bank,neft,,2026-08-14,260000,USD,1300,234,0,0,21711144,in_bank
+297,bank,neft,,2025-04-20,13924000,INR,69620,12532,0,0,13841848,in_bank
+299,gateway,payglocal,Kavya Malhotra,2025-06-05,11210000,INR,308275,55490,0,0,10846235,in_bank
+300,bank,neft,,2025-10-25,4130000,INR,20650,3717,0,0,4105633,in_bank
+301,screenshot,,Isha Kulkarni,2025-08-19,40000,USD,0,0,0,0,3360000,screenshot_only
+302,bank,neft,Kavya Malhotra,2026-01-06,11210000,INR,56050,10089,0,0,11143861,in_bank
+303,gateway,stripe,Sahil Joshi,2026-04-21,5900000,INR,177000,31860,0,0,5691140,in_bank
+305,gateway,payglocal,,2026-08-01,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
+306,bank,neft,Nisha Thakur,2025-05-09,40000,USD,200,36,0,0,3340176,in_bank
+307,gateway,payglocal,Arnav Bhatia,2025-11-28,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
+308,bank,upi,Kriti Chatterjee,2026-07-20,5900000,INR,29500,5310,0,0,5865190,in_bank
+309,gateway,payglocal,,2026-07-30,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
+311,gateway,payglocal,Pranav Patel,2025-11-27,6962000,INR,191455,34462,0,0,6736083,in_bank
+312,gateway,payglocal,,2026-02-28,150000,AED,4125,742,0,0,3323546,seen_by_gateway
+319,screenshot,,,2026-07-18,13924000,INR,0,0,0,0,13924000,screenshot_only
+324,gateway,payglocal,,2025-04-25,40000,USD,1100,198,0,0,3250968,in_bank
+325,gateway,stripe,,2026-04-15,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
+326,gateway,payglocal,,2026-03-07,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
+327,bank,neft,Rohan Joshi,2025-06-22,5900000,INR,29500,5310,0,0,5865190,in_bank
+328,bank,neft,Lakshmi Patel,2026-04-28,4130000,INR,20650,3717,0,0,4105633,in_bank
+329,gateway,payglocal,,2025-06-08,5900000,INR,162250,29205,0,0,5708545,seen_by_gateway
+331,gateway,payglocal,Arnav Bhatia,2025-12-30,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
+332,gateway,stripe,,2026-08-27,24780000,INR,743400,133812,0,0,23902788,seen_by_gateway
+333,bank,neft,Diya Thakur,2025-06-07,23600000,INR,118000,21240,0,0,23460760,in_bank
+335,bank,neft,,2025-10-27,4130000,INR,20650,3717,0,0,4105633,in_bank
+337,gateway,stripe,Meridian Corp,2026-09-15,3780000,INR,113400,20412,350000,0,3646188,seen_by_gateway
+338,gateway,stripe,,2026-09-25,4130000,INR,123900,22302,0,0,3983798,in_bank
+339,gateway,stripe,,2025-09-23,4130000,INR,123900,22302,0,0,3983798,in_bank
+341,gateway,stripe,,2026-01-18,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+342,bank,neft,Pranav Mehta,2026-02-19,11800000,INR,59000,10620,0,0,11730380,in_bank
+343,gateway,stripe,,2026-02-19,5900000,INR,177000,31860,0,0,5691140,in_bank
+345,gateway,stripe,,2026-02-22,11210000,INR,336300,60534,0,0,10813166,seen_by_gateway
+346,gateway,razorpay,Isha Rao,2025-08-29,5900000,INR,177000,31860,0,0,5691140,in_bank
+348,gateway,stripe,Dhruv Kumar,2026-09-22,22420000,INR,672600,121068,0,0,21626332,seen_by_gateway
+354,gateway,stripe,Aditi Shah,2026-09-20,5900000,INR,177000,31860,0,0,5691140,in_bank
+355,bank,neft,Siddharth Bhatia,2026-05-30,11800000,INR,59000,10620,0,0,11730380,in_bank
+356,gateway,stripe,Pallavi Iyer,2026-08-16,150000,AED,4500,810,0,0,3313401,seen_by_gateway
+358,bank,neft,Neha Patel,2026-06-02,23600000,INR,118000,21240,0,0,23460760,in_bank
+361,gateway,payglocal,,2025-08-28,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
+362,screenshot,,,2026-06-04,40000,USD,0,0,0,0,3360000,screenshot_only
+365,gateway,payglocal,,2025-08-26,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
+371,bank,neft,Isha Reddy,2026-06-16,84000,USD,420,76,0,0,7014336,in_bank
+372,bank,neft,Utkarsh Menon,2025-06-07,150000,AED,750,135,0,0,3414734,in_bank
+373,bank,neft,,2025-10-22,120000,USD,600,108,0,0,10020528,in_bank
+374,gateway,stripe,,2026-03-23,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
+375,screenshot,,Siddharth Kapoor,2025-04-15,15000000,INR,0,0,0,0,15000000,screenshot_only
+377,cash,cash,Deepak Malhotra,2025-07-19,150000,AED,0,0,0,0,3435000,screenshot_only
+379,gateway,payglocal,,2026-08-21,20000,USD,550,99,0,0,1625484,in_bank
+381,screenshot,,,2026-06-13,4130000,INR,0,0,0,0,4130000,screenshot_only
+382,bank,neft,,2026-04-12,4130000,INR,20650,3717,0,0,4105633,in_bank
+384,gateway,stripe,Aditi Gupta,2026-04-08,90000,USD,2700,486,0,0,7292376,in_bank
+387,gateway,stripe,,2026-08-15,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
+388,gateway,payglocal,,2025-06-09,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
+389,bank,neft,,2026-02-05,11800000,INR,59000,10620,0,0,11730380,in_bank
+391,gateway,payglocal,,2025-04-19,5900000,INR,162250,29205,0,0,5708545,in_bank
+392,bank,neft,,2026-02-17,5900000,INR,29500,5310,0,0,5865190,screenshot_only
+393,gateway,stripe,,2026-02-05,5900000,INR,177000,31860,0,0,5691140,in_bank
+395,gateway,stripe,Kavya Srinivasan,2025-05-28,7500000,INR,225000,40500,0,0,7234500,seen_by_gateway
+396,gateway,stripe,Arnav Bansal,2025-04-29,23600000,INR,708000,127440,0,0,22764560,seen_by_gateway
+397,bank,neft,,2026-03-16,4130000,INR,20650,3717,0,0,4105633,in_bank
+398,gateway,stripe,Varun Reddy,2026-02-14,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
+399,cash,cash,,2025-04-21,13924000,INR,0,0,0,0,13924000,screenshot_only
+400,gateway,stripe,,2026-09-10,2065000,INR,61950,11151,0,0,1991899,in_bank
