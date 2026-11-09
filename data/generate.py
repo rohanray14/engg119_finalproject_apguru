@@ -493,12 +493,16 @@ class Generator:
         }
         self.enrollments.append(enrollment)
 
-        # Create installments
+        # Create installments — spread across the full date range
+        # Each enrollment gets a random start point within the range
+        range_days = (DATE_END - DATE_START).days
+        enroll_start = _rand_date(self.rng, DATE_START, DATE_START + timedelta(days=range_days - 120))
+
         if fee_model == "package":
             if self.rng.random() < 0.4:
                 # Two installments
                 half = total_fee_paise // 2
-                due1 = _rand_date(self.rng, DATE_START, DATE_START + timedelta(days=60))
+                due1 = enroll_start + timedelta(days=self.rng.randint(0, 30))
                 due2 = due1 + timedelta(days=self.rng.randint(45, 75))
                 self.installments.append({
                     "id": self._iid(), "enrollment_id": eid,
@@ -514,7 +518,7 @@ class Generator:
                 })
             else:
                 # Single installment
-                due = _rand_date(self.rng, DATE_START, DATE_START + timedelta(days=90))
+                due = enroll_start + timedelta(days=self.rng.randint(0, 45))
                 self.installments.append({
                     "id": self._iid(), "enrollment_id": eid,
                     "due_date": due.isoformat(),
@@ -525,8 +529,7 @@ class Generator:
             # Hourly: 1-3 top-up installments
             n_topups = self.rng.randint(1, 3)
             for j in range(n_topups):
-                due = _rand_date(self.rng, DATE_START + timedelta(days=30 * j),
-                                DATE_START + timedelta(days=30 * (j + 2)))
+                due = enroll_start + timedelta(days=self.rng.randint(30 * j, 30 * (j + 2)))
                 self.installments.append({
                     "id": self._iid(), "enrollment_id": eid,
                     "due_date": due.isoformat(),
