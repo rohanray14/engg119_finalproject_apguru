@@ -150,6 +150,10 @@ def main():
         layout="wide",
     )
 
+    from app.auth import check_auth
+    if not check_auth():
+        st.stop()
+
     from app.style import apply_theme, badge, metric_subtitle, fmt_inr, fmt_amount, fmt_date_display
     apply_theme()
 

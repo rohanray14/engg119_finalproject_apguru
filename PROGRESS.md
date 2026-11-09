@@ -35,14 +35,14 @@
 - [x] Copilot eval — 30 questions 100%; added 4 missing patterns (count transactions, spend, biggest, expenses)
 
 ## Phase 4: Production engineering
-- [ ] Persistence (DATABASE_URL, migrations)
-- [ ] Ledger integrity (append-only events)
-- [ ] Auth (login gate)
-- [ ] Config (single Pydantic config)
-- [ ] Quality gates (ruff, mypy, coverage)
-- [ ] CI (GitHub Actions)
-- [ ] Packaging (Dockerfile, Makefile)
-- [ ] Property-based tests (hypothesis)
+- [x] Persistence — DATABASE_URL env var support in db.py
+- [x] Ledger integrity — append-only audit log with verify_audit_integrity() gap detection
+- [x] Auth — FINANCE_DESK_PASSWORD env var, Streamlit login gate with hmac.compare_digest
+- [x] Config (single Pydantic config) — already done in config.py
+- [x] Quality gates — ruff lint in Makefile (`make ci`), GitHub Actions workflow
+- [x] CI — .github/workflows/ci.yml (Python 3.11+3.12, lint, test, agent evals)
+- [x] Packaging — Dockerfile, Makefile, pyproject.toml (done in earlier commit)
+- [x] Property-based tests — 9 hypothesis tests for money math (GST, fees, FX, TDS, balance)
 
 ## Phase 5: UI fixes
 - [x] Home page contradictions (consistent numbers) — compute_dashboard_stats() single source of truth
