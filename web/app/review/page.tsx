@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useCallback, useEffect } from "react";
+import { Suspense, useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
@@ -178,7 +178,8 @@ function ReviewContent() {
                 const active = item.match_id === activeId;
                 const eligible = item.has_suggestion && item.confidence >= (queue?.bulk_approve_min_confidence ?? 0.9);
                 return (
-                  <div key={item.match_id} className="flex items-center gap-2">
+                  <div key={item.match_id} className="flex items-center gap-2"
+                    ref={active ? (el) => { el?.scrollIntoView({ block: "nearest", behavior: "smooth" }); } : undefined}>
                     {canApprove && eligible && (
                       <input
                         type="checkbox"
