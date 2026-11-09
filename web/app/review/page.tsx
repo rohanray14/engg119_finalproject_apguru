@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { Suspense, useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import type { ReviewQueue, ReviewDetail as ReviewDetailType, BulkResult } from "@/lib/types";
@@ -13,8 +14,17 @@ function fetcher<T>(path: string) {
 }
 
 export default function ReviewPage() {
+  return (
+    <Suspense fallback={<div className="p-8"><div className="animate-pulse h-64 bg-gray-200 rounded" /></div>}>
+      <ReviewContent />
+    </Suspense>
+  );
+}
+
+function ReviewContent() {
   const { user } = useAppUser();
   const canApprove = user?.can_approve ?? false;
+  const searchParams = useSearchParams();
 
   const { data: queue, mutate: mutateQueue, isLoading } = useSWR<ReviewQueue>(
     "/review",
@@ -25,6 +35,15 @@ export default function ReviewPage() {
   const [bulkSelected, setBulkSelected] = useState<Set<number>>(new Set());
   const [bulkActing, setBulkActing] = useState(false);
   const [bulkResult, setBulkResult] = useState<BulkResult | null>(null);
+
+  // Read ?id= from URL (e.g. linked from Payments page)
+  useEffect(() => {
+    const idParam = searchParams.get("id");
+    if (idParam && selectedId === null) {
+      setSelectedId(Number(idParam));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Auto-select first item when queue loads
   const items = queue?.items ?? [];

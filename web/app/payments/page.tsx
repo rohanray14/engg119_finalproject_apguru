@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate } from "@/lib/format";
@@ -165,13 +166,24 @@ export default function PaymentsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-2.5">
-                      <span className="px-2 py-0.5 rounded text-xs font-medium"
-                        style={{
-                          backgroundColor: matchBadge[r.match_status]?.bg ?? "#f3f4f6",
-                          color: matchBadge[r.match_status]?.text ?? "#374151",
-                        }}>
-                        {r.match_status.replace(/_/g, " ")}
-                      </span>
+                      {r.match_id && r.match_status === "pending_review" ? (
+                        <Link href={`/review?id=${r.match_id}`}
+                          className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 inline-block"
+                          style={{
+                            backgroundColor: matchBadge[r.match_status]?.bg ?? "#f3f4f6",
+                            color: matchBadge[r.match_status]?.text ?? "#374151",
+                          }}>
+                          pending review →
+                        </Link>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium"
+                          style={{
+                            backgroundColor: matchBadge[r.match_status]?.bg ?? "#f3f4f6",
+                            color: matchBadge[r.match_status]?.text ?? "#374151",
+                          }}>
+                          {r.match_status.replace(/_/g, " ")}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
