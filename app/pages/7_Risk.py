@@ -17,6 +17,13 @@ apply_theme()
 
 conn = get_db()
 
+# Use same default date as Home page (midpoint of data range)
+min_date_row = conn.execute("SELECT MIN(due_date) FROM installment WHERE due_date IS NOT NULL").fetchone()
+max_date_row = conn.execute("SELECT MAX(due_date) FROM installment WHERE due_date IS NOT NULL").fetchone()
+min_date = date.fromisoformat(min_date_row[0]) if min_date_row and min_date_row[0] else date(2025, 4, 1)
+max_date = date.fromisoformat(max_date_row[0]) if max_date_row and max_date_row[0] else date(2026, 9, 30)
+default_as_of = min_date + (max_date - min_date) // 2
+
 with st.sidebar:
     st.markdown("## Educore")
     st.caption("Finance Desk")
@@ -24,7 +31,7 @@ with st.sidebar:
 st.title("Risk flags")
 st.caption("Automatically detected issues that may need attention.")
 
-as_of = st.date_input("As of date", value=date(2025, 7, 1))
+as_of = st.date_input("As of date", value=default_as_of, min_value=min_date, max_value=max_date)
 flags = scan_risks(conn, as_of=as_of)
 
 high = [f for f in flags if f.severity == "high"]
