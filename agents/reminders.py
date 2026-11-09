@@ -12,10 +12,9 @@ Output: list of Reminder objects with correct student, amount, date, and message
 
 from __future__ import annotations
 
-import json
 import sqlite3
-from datetime import date, timedelta
 from dataclasses import dataclass
+from datetime import date, timedelta
 from typing import Optional
 
 
@@ -159,10 +158,21 @@ def _get_open_installments(conn: sqlite3.Connection) -> list[dict]:
         "FROM installment i "
         "JOIN enrollment e ON i.enrollment_id = e.id "
         "JOIN student s ON e.student_id = s.id "
-        "WHERE i.status IN ('open', 'overdue') "
+        "WHERE i.status IN ('open', 'overdue', 'partial') "
         "ORDER BY i.due_date"
     ).fetchall()
-    return [dict(r) for r in rows]
+    # Remind for what is still owed: a part-paid installment gets a reminder
+    # for its remainder, a fully covered one gets none.
+    from ledger.balances import remaining_by_installment
+
+    remaining = remaining_by_installment(conn)
+    out = []
+    for r in rows:
+        d = dict(r)
+        d["amount_due_paise"] = remaining.get(d["id"], d["amount_due_paise"])
+        if d["amount_due_paise"] > 0:
+            out.append(d)
+    return out
 
 
 def _get_existing_reminders(conn: sqlite3.Connection) -> dict[int, int]:

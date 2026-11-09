@@ -141,7 +141,7 @@ def _who_owes(conn: sqlite3.Connection, question: str, m) -> CopilotAnswer:
         lines.append(f"  {r['name']}: {r['currency']} {r['owed']/100:,.0f}")
     return CopilotAnswer(
         question=question,
-        answer=f"Top students with outstanding balances:\n" + "\n".join(lines),
+        answer="Top students with outstanding balances:\n" + "\n".join(lines),
         query_used="SELECT student, SUM(amount_due) ... WHERE status IN (open, overdue) GROUP BY student",
         transactions=[dict(r) for r in rows],
     )
@@ -184,30 +184,38 @@ def _unmatched_payments(conn: sqlite3.Connection, question: str, m) -> CopilotAn
 
 
 def _commission_totals(conn: sqlite3.Connection, question: str, m) -> CopilotAnswer:
+    # Grouped per currency: a counselor paid in INR and AED gets two lines.
     rows = conn.execute(
-        "SELECT c.name, "
+        "SELECT c.name, cl.currency, "
         "COALESCE(SUM(cl.commission_paise), 0) as earned, "
         "COALESCE(SUM(cl.tds_paise), 0) as tds, "
         "COALESCE(SUM(cl.net_paise), 0) as net "
         "FROM counselor c "
-        "LEFT JOIN commission_line cl ON cl.counselor_id = c.id "
-        "GROUP BY c.id ORDER BY earned DESC"
+        "JOIN commission_line cl ON cl.counselor_id = c.id "
+        "GROUP BY c.id, c.name, cl.currency ORDER BY cl.currency, earned DESC"
     ).fetchall()
     lines = []
     for r in rows:
         if r['earned'] > 0:
+            cur = r['currency']
             lines.append(
-                f"  {r['name']}: earned ₹{r['earned']/100:,.0f}, "
-                f"TDS ₹{r['tds']/100:,.0f}, net ₹{r['net']/100:,.0f}"
+                f"  {r['name']}: earned {_fmt_money(r['earned'], cur)}, "
+                f"TDS {_fmt_money(r['tds'], cur)}, net {_fmt_money(r['net'], cur)}"
             )
     if not lines:
         return CopilotAnswer(question=question, answer="No commissions computed yet.")
     return CopilotAnswer(
         question=question,
         answer="Commission totals:\n" + "\n".join(lines),
-        query_used="SELECT counselor, SUM(commission), SUM(tds), SUM(net) ... GROUP BY counselor",
+        query_used="SELECT counselor, currency, SUM(commission), SUM(tds), SUM(net) ... GROUP BY counselor, currency",
         transactions=[dict(r) for r in rows],
     )
+
+
+def _fmt_money(paise: int, currency: str) -> str:
+    if currency == "INR":
+        return f"₹{paise / 100:,.0f}"
+    return f"{currency} {paise / 100:,.2f}"
 
 
 def _payments_for(conn: sqlite3.Connection, question: str, m) -> CopilotAnswer:
@@ -248,12 +256,20 @@ def _student_detail(conn: sqlite3.Connection, question: str, m) -> CopilotAnswer
         "WHERE e.student_id = ?", (student["id"],)
     ).fetchall()
 
-    total_due = sum(i["amount_due_paise"] for i in installments if i["status"] in ("open", "overdue"))
+    from ledger.balances import remaining_by_installment
+
+    remaining = remaining_by_installment(conn)
+    owed: dict[str, int] = {}
+    for i in installments:
+        if i["status"] in ("open", "overdue", "partial"):
+            owed[i["currency"]] = owed.get(i["currency"], 0) + remaining.get(i["id"], i["amount_due_paise"])
+    # One figure per currency: never add rupees to dollars (CLAUDE.md rule 8).
+    owed_text = ", ".join(_fmt_money(v, c) for c, v in sorted(owed.items()) if v) or "nothing"
     lines = [
         f"Student: {student['name']} (ID: {student['id']})",
         f"City: {student['city'] or '?'}, Country: {student['country'] or '?'}",
         f"Enrollments: {len(enrollments)}",
-        f"Outstanding: ₹{total_due/100:,.0f}",
+        f"Outstanding: {owed_text}",
     ]
     return CopilotAnswer(
         question=question,

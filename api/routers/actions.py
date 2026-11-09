@@ -83,20 +83,40 @@ def _commission_overview(conn) -> dict:
     }
 
 
-def _lines_fingerprint(conn, currency: str) -> tuple[str, int, dict]:
-    rows = conn.execute(
-        "SELECT counselor_id, payment_id, net_paise FROM commission_line WHERE currency = ? "
-        "ORDER BY counselor_id, payment_id, net_paise", (currency,)).fetchall()
-    digest = hashlib.sha256(json.dumps([list(r) for r in rows]).encode()).hexdigest()
+def _payable(conn, currency: str) -> tuple[list[dict], dict[int, int], int]:
+    """What is still owed to counselors in one currency.
+
+    Payable per (counselor, payment) = current net commission minus everything
+    already approved for it.  After an approval this is zero, so the same money
+    can't be approved twice; if a rule changes later, only the difference
+    (possibly negative, a claw-back) shows up.
+    """
+    current = {}
+    for r in conn.execute(
+        "SELECT counselor_id, payment_id, SUM(net_paise) AS net FROM commission_line "
+        "WHERE currency = ? GROUP BY counselor_id, payment_id", (currency,)).fetchall():
+        current[(r["counselor_id"], r["payment_id"])] = r["net"]
+    approved = {}
+    for r in conn.execute(
+        "SELECT counselor_id, payment_id, SUM(net_paise) AS net FROM payout_approval_line "
+        "WHERE currency = ? GROUP BY counselor_id, payment_id", (currency,)).fetchall():
+        approved[(r["counselor_id"], r["payment_id"])] = r["net"]
+    deltas = []
+    for key in sorted(set(current) | set(approved)):
+        d = current.get(key, 0) - approved.get(key, 0)
+        if d:
+            deltas.append({"counselor_id": key[0], "payment_id": key[1], "net_paise": d})
     per = {}
-    for r in rows:
-        per[r["counselor_id"]] = per.get(r["counselor_id"], 0) + r["net_paise"]
-    return digest, sum(per.values()), per
+    for d in deltas:
+        per[d["counselor_id"]] = per.get(d["counselor_id"], 0) + d["net_paise"]
+    return deltas, per, sum(per.values())
 
 
 @router.get("/commissions")
 def commissions(conn=Depends(get_conn), user: User = Depends(current_user)):
     out = _commission_overview(conn)
+    for t in out["totals"]:
+        t["payable_paise"] = _payable(conn, t["currency"])[2]
     out["approved_payouts"] = [dict(r) for r in conn.execute(
         "SELECT id, approved_at, actor, currency, total_net_paise FROM payout_approval "
         "ORDER BY id DESC LIMIT 20").fetchall()]
@@ -150,37 +170,45 @@ def set_rule(counselor_id: int, body: RuleBody, conn=Depends(get_conn),
 
 class PayoutBody(BaseModel):
     currency: str = Field(..., min_length=3, max_length=3)
-    expected_net_paise: int = Field(..., ge=0, description="The total the finance lead saw on screen")
+    expected_payable_paise: int = Field(..., description="The payable total the finance lead saw on screen")
 
 
 @router.post("/commissions/payout/approve")
 def approve_payout(body: PayoutBody, conn=Depends(get_conn), user: User = Depends(require_finance_lead)):
-    """Approve the commission payout for one currency.
+    """Approve what is currently payable to counselors in one currency.
 
-    The client sends the total it displayed; if the numbers changed since,
-    refuse, so nobody approves an amount they didn't see.  The exact set of
-    lines is fingerprinted, so the same payout can't be approved twice.
+    The client sends the total it displayed; if it changed since, refuse, so
+    nobody approves an amount they didn't see.  Each approved line is
+    recorded, so the next payout only contains money not yet approved.
     """
     decision_lock(conn)
     currency = body.currency.upper()
-    fingerprint, current, per_counselor = _lines_fingerprint(conn, currency)
-    if current == 0:
-        raise conflict(f"There is no {currency} commission to pay out.")
-    if body.expected_net_paise != current:
+    deltas, per_counselor, payable = _payable(conn, currency)
+    if not deltas:
+        raise conflict(f"There is no {currency} commission waiting for approval.")
+    if body.expected_payable_paise != payable:
         raise conflict("The payout total changed since you loaded the page. Refresh and review it again.")
-    if conn.execute("SELECT 1 FROM payout_approval WHERE currency = ? AND lines_fingerprint = ?",
-                    (currency, fingerprint)).fetchone():
-        raise conflict("This exact payout was already approved.")
+    if payable < 0:
+        raise conflict("Commissions went down since the last payout (net claw-back). Settle this outside the app.")
+    fingerprint = hashlib.sha256(json.dumps(deltas, sort_keys=True).encode()).hexdigest()
     conn.execute(
         "INSERT INTO payout_approval (approved_at, actor, currency, total_net_paise, lines_fingerprint) "
         "VALUES (?, ?, ?, ?, ?)",
-        (datetime.now(timezone.utc).isoformat(), user.audit_actor, currency, current, fingerprint))
-    log_audit(conn, user.audit_actor, "approve_commission_payout", f"commissions:{currency}", None,
-              json.dumps({"currency": currency, "total_net_paise": current,
-                          "per_counselor_net_paise": per_counselor, "fingerprint": fingerprint}),
+        (datetime.now(timezone.utc).isoformat(), user.audit_actor, currency, payable, fingerprint))
+    payout_id = conn.execute(  # safe: we hold the decision lock
+        "SELECT MAX(id) FROM payout_approval WHERE currency = ? AND lines_fingerprint = ?",
+        (currency, fingerprint)).fetchone()[0]
+    for d in deltas:
+        conn.execute(
+            "INSERT INTO payout_approval_line (payout_id, counselor_id, payment_id, currency, net_paise) "
+            "VALUES (?, ?, ?, ?, ?)", (payout_id, d["counselor_id"], d["payment_id"], currency, d["net_paise"]))
+    log_audit(conn, user.audit_actor, "approve_commission_payout", f"payout:{payout_id}", None,
+              json.dumps({"currency": currency, "total_net_paise": payable,
+                          "per_counselor_net_paise": per_counselor, "lines": len(deltas)}),
               commit=False)
     conn.commit()
-    return {"currency": currency, "approved_net_paise": current, "counselors": len(per_counselor)}
+    return {"payout_id": payout_id, "currency": currency, "approved_net_paise": payable,
+            "counselors": len(per_counselor)}
 
 
 # ---------------------------------------------------------------------------

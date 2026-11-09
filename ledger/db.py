@@ -137,8 +137,16 @@ CREATE TABLE IF NOT EXISTS payout_approval (
     actor               TEXT NOT NULL,
     currency            TEXT NOT NULL,
     total_net_paise     INTEGER NOT NULL,
-    lines_fingerprint   TEXT NOT NULL,             -- hash of the exact lines approved
-    UNIQUE(currency, lines_fingerprint)
+    lines_fingerprint   TEXT NOT NULL              -- hash of the exact lines approved
+);
+
+CREATE TABLE IF NOT EXISTS payout_approval_line (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    payout_id       INTEGER NOT NULL REFERENCES payout_approval(id),
+    counselor_id    INTEGER NOT NULL,
+    payment_id      INTEGER NOT NULL,
+    currency        TEXT NOT NULL,
+    net_paise       INTEGER NOT NULL              -- amount approved for this line in this payout
 );
 
 CREATE TABLE IF NOT EXISTS audit_log (
@@ -171,7 +179,16 @@ def get_connection(db_path: Path | str | None = None):
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     conn.executescript(SCHEMA_SQL)
+    migrate_sqlite(conn)
     return conn
+
+
+def migrate_sqlite(conn) -> None:
+    """Add columns introduced after a SQLite file was created."""
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(commission_line)").fetchall()}
+    if "currency" not in cols:
+        conn.execute("ALTER TABLE commission_line ADD COLUMN currency TEXT NOT NULL DEFAULT 'INR'")
+        conn.commit()
 
 
 def decision_lock(conn) -> None:

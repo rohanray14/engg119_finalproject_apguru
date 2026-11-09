@@ -174,7 +174,8 @@ def approve(match_id: int, conn=Depends(get_conn), user: User = Depends(require_
     apply_status_changes(conn, plan, user.audit_actor, f"match:{match_id}")
     log_audit(conn, user.audit_actor, "approve_match", f"match:{match_id}",
               json.dumps({"status": "pending_review", "allocations": row["allocations"]}),
-              json.dumps({"status": "approved", "allocations": plan.allocations}), commit=False)
+              json.dumps({"status": "approved", "allocations": plan.allocations,
+                                     "unallocated_paise": plan.unallocated_paise}), commit=False)
     n = recompute_commissions(conn, actor=user.audit_actor)
     conn.commit()
     return _result(match_id, "approved", plan, n)
@@ -200,7 +201,8 @@ def assign(match_id: int, body: AssignBody, conn=Depends(get_conn),
            (new_allocs,))
     apply_status_changes(conn, plan, user.audit_actor, f"match:{match_id}")
     log_audit(conn, user.audit_actor, "manual_match", f"match:{match_id}",
-              row["allocations"], new_allocs, commit=False)
+              row["allocations"], json.dumps({"allocations": plan.allocations,
+                                              "unallocated_paise": plan.unallocated_paise}), commit=False)
     n = recompute_commissions(conn, actor=user.audit_actor)
     conn.commit()
     return _result(match_id, "approved", plan, n)
@@ -277,7 +279,8 @@ def bulk_approve(body: BulkBody, conn=Depends(get_conn), user: User = Depends(re
         apply_status_changes(conn, plan, user.audit_actor, f"match:{mid}")
         log_audit(conn, user.audit_actor, "bulk_approve_match", f"match:{mid}",
                   json.dumps({"status": "pending_review", "allocations": row["allocations"]}),
-                  json.dumps({"status": "approved", "allocations": plan.allocations}), commit=False)
+                  json.dumps({"status": "approved", "allocations": plan.allocations,
+                                     "unallocated_paise": plan.unallocated_paise}), commit=False)
         approved.append(mid)
     n = recompute_commissions(conn, actor=user.audit_actor) if approved else 0
     conn.commit()

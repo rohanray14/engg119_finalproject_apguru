@@ -15,7 +15,7 @@ from typing import Iterator
 
 from api.settings import get_settings
 from ledger import pg
-from ledger.db import SCHEMA_SQL, set_meta
+from ledger.db import SCHEMA_SQL, migrate_sqlite
 
 _pool = None
 _pool_lock = threading.Lock()
@@ -31,13 +31,19 @@ def _get_pool():
         from psycopg_pool import ConnectionPool
 
         url = get_settings().database_url
-        # Create tables / audit trigger once per process.
-        boot = pg.connect(url, SCHEMA_SQL)
         if get_settings().is_production:
-            # Stamp the database so seed/--reset refuse to touch it.
-            set_meta(boot, "environment", "production")
-            boot.commit()
-        boot.close()
+            # Production connects as a restricted role that can't change the
+            # schema (docs/DEPLOY.md). Schema changes are `python -m api.migrate`,
+            # run separately as the owner; here we only check it was done.
+            boot = pg.connect(url, SCHEMA_SQL, create_schema=False)
+            try:
+                problems = pg.check_production_ready(boot, SCHEMA_SQL)
+            finally:
+                boot.close()
+            if problems:
+                raise RuntimeError("Database not ready for production: " + "; ".join(problems))
+        else:
+            pg.connect(url, SCHEMA_SQL).close()  # dev/test: create tables automatically
         _pool = ConnectionPool(
             url,
             min_size=0,
@@ -66,6 +72,7 @@ def _sqlite_connect(path: str):
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys=ON")
     conn.executescript(SCHEMA_SQL)
+    migrate_sqlite(conn)
     return conn
 
 

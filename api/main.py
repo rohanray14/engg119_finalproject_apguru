@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
     if s.is_production:
         from api.database import _get_pool
 
-        _get_pool()  # connect, create schema, stamp the database as production
+        _get_pool()  # connect and verify the schema was migrated; refuse to start otherwise
     yield
     close_pool()
 

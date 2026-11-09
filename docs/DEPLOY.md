@@ -15,15 +15,17 @@ Pro (about $20/month) before the business relies on it.
 
 1. Create a Neon project in the region closest to your users (India).
 2. Copy the connection string (it ends in `?sslmode=require`).
-3. Create the tables. They are also created automatically on the API's first request:
+3. Create the tables and mark the database as production, **as the owner role**
+   (the default role Neon gives you). Re-run this after any release that changes the schema:
    ```
-   DATABASE_URL="postgresql://...neon.tech/neondb?sslmode=require" python -c "from ledger.db import get_connection; get_connection().close()"
+   DATABASE_URL="postgresql://<owner>...neon.tech/neondb?sslmode=require" python -m api.migrate --environment production
    ```
+   The API never changes the schema itself in production. If this step was
+   skipped it refuses to start and says so in the Cloud Run logs.
 4. Optional, for a demo environment only: load the fake data with
    `DATABASE_URL=... python -m api.seed`. Never run this on the database that
-   will hold real data. Once the API has started with `ENV=production` against
-   a database, it marks that database as production, and seeding or `--reset`
-   are refused from then on. `--reset` on Postgres also asks you to type the
+   will hold real data. Once `api.migrate --environment production` has run
+   on a database, seeding and `--reset` are refused on it for good. `--reset` on Postgres also asks you to type the
    database name.
 
 Neon keeps a short history you can restore from. Before real data goes in, check
@@ -41,7 +43,7 @@ GRANT USAGE ON SCHEMA public TO finance_api;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO finance_api;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO finance_api;
 -- the audit log and payout approvals: add-only
-REVOKE UPDATE, DELETE, TRUNCATE ON audit_log, payout_approval FROM finance_api;
+REVOKE UPDATE, DELETE, TRUNCATE ON audit_log, payout_approval, payout_approval_line FROM finance_api;
 ```
 
 Put the `finance_api` connection string (not the owner's) in the Cloud Run

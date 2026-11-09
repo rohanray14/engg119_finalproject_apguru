@@ -280,15 +280,39 @@ class TestDecisions:
         assert [s["match_id"] for s in body["skipped"]] == low
 
     def test_payout_requires_the_total_shown_and_only_once(self, client):
-        totals = client.get("/api/commissions", headers=auth()).json()["totals"]
-        inr = next(t for t in totals if t["currency"] == "INR")
-        body = {"currency": "INR", "expected_net_paise": inr["net_paise"] + 1}
+        def inr():
+            totals = client.get("/api/commissions", headers=auth()).json()["totals"]
+            return next(t for t in totals if t["currency"] == "INR")
+
+        payable = inr()["payable_paise"]
+        assert payable > 0
+        body = {"currency": "INR", "expected_payable_paise": payable + 1}
         assert client.post("/api/commissions/payout/approve", headers=auth(), json=body).status_code == 409
-        body["expected_net_paise"] = inr["net_paise"]
+        body["expected_payable_paise"] = payable
         r = client.post("/api/commissions/payout/approve", headers=auth(), json=body)
-        assert r.status_code == 200 and r.json()["approved_net_paise"] == inr["net_paise"]
-        # Same lines, same total: a second approval would mean paying twice.
+        assert r.status_code == 200 and r.json()["approved_net_paise"] == payable
+        # Nothing left to pay: approving again would mean paying twice.
+        assert inr()["payable_paise"] == 0
         assert client.post("/api/commissions/payout/approve", headers=auth(), json=body).status_code == 409
+
+    def test_rate_change_after_payout_only_pays_the_difference(self, client):
+        """Reviewer's repro: changing one rate used to make the whole total
+        approvable again, including lines already approved."""
+        def inr():
+            return next(t for t in client.get("/api/commissions", headers=auth()).json()["totals"]
+                        if t["currency"] == "INR")
+
+        first = inr()["payable_paise"]
+        client.post("/api/commissions/payout/approve", headers=auth(),
+                    json={"currency": "INR", "expected_payable_paise": first})
+        c = next(c for c in client.get("/api/commissions", headers=auth()).json()["counselors"]
+                 if any(a["currency"] == "INR" and a["net_paise"] > 0 for a in c["amounts"]))
+        before_net = next(a["net_paise"] for a in c["amounts"] if a["currency"] == "INR")
+        client.post(f"/api/commissions/counselors/{c['id']}/rule", headers=auth(),
+                    json={"rate_bps": c["rule"]["rate_bps"] + 100})
+        c2 = next(x for x in client.get("/api/commissions", headers=auth()).json()["counselors"] if x["id"] == c["id"])
+        after_net = next(a["net_paise"] for a in c2["amounts"] if a["currency"] == "INR")
+        assert inr()["payable_paise"] == after_net - before_net > 0
 
     def test_commissions_never_mix_currencies(self, client):
         d = client.get("/api/commissions", headers=auth()).json()
@@ -480,3 +504,29 @@ class TestSafetyRails:
                 from ledger.db import SCHEMA_SQL
 
                 pg.reset_schema(url, SCHEMA_SQL).close()  # don't leave a "production" test DB behind
+
+
+@pytest.mark.skipif(not os.environ.get("TEST_POSTGRES_URL"), reason="Postgres migration flow")
+class TestMigration:
+    def test_production_needs_migration_then_blocks_seeding(self):
+        from api.migrate import migrate
+        from api.seed import seed
+        from ledger import pg
+        from ledger.db import SCHEMA_SQL
+
+        url = os.environ["TEST_POSTGRES_URL"]
+        conn = pg.reset_schema(url, SCHEMA_SQL)
+        conn.executescript("DROP SCHEMA public CASCADE; CREATE SCHEMA public;")
+        conn.commit()
+        problems = pg.check_production_ready(conn, SCHEMA_SQL)
+        conn.close()
+        assert any("missing tables" in p for p in problems)
+        pg._schema_ready.discard(url)
+        try:
+            assert migrate(url, "production") == []
+            with pytest.raises(SystemExit, match="PRODUCTION"):
+                seed(url, reset=True)
+            with pytest.raises(SystemExit, match="can't be re-marked"):
+                migrate(url, "demo")
+        finally:
+            pg.reset_schema(url, SCHEMA_SQL).close()

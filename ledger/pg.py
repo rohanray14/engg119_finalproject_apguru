@@ -270,11 +270,11 @@ def ensure_schema(conn: PgConnection, sqlite_ddl: str) -> None:
     conn.commit()
 
 
-def connect(url: str, sqlite_ddl: str) -> PgConnection:
+def connect(url: str, sqlite_ddl: str, create_schema: bool = True) -> PgConnection:
     import psycopg
 
     conn = PgConnection(psycopg.connect(url))
-    if url not in _schema_ready:
+    if create_schema and url not in _schema_ready:
         ensure_schema(conn, sqlite_ddl)
         _schema_ready.add(url)
     return conn
@@ -289,6 +289,36 @@ def reset_schema(url: str, sqlite_ddl: str) -> PgConnection:
     ensure_schema(conn, sqlite_ddl)
     _schema_ready.add(url)
     return conn
+
+
+def expected_tables(sqlite_ddl: str) -> list[str]:
+    return re.findall(r"CREATE TABLE IF NOT EXISTS (\w+)", sqlite_ddl)
+
+
+def check_production_ready(conn: PgConnection, sqlite_ddl: str) -> list[str]:
+    """Problems that must be fixed (by running the migration as the owner)
+    before the API may serve production traffic.  Empty list = ready."""
+    problems = []
+    have = {r[0] for r in conn.execute(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema()").fetchall()}
+    missing = [t for t in expected_tables(sqlite_ddl) if t not in have]
+    if missing:
+        problems.append(f"missing tables {', '.join(missing)}")
+    else:
+        cols = {r[0] for r in conn.execute(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema = current_schema() AND table_name = 'commission_line'").fetchall()}
+        if "currency" not in cols:
+            problems.append("commission_line.currency missing")
+        if not audit_guard_installed(conn):
+            problems.append("audit log guard triggers missing or disabled")
+        env = conn.execute("SELECT value FROM app_meta WHERE key = 'environment'").fetchone()
+        if not env or env[0] != "production":
+            problems.append("database is not marked as production")
+    conn.rollback()
+    if problems:
+        problems.append("run `python -m api.migrate --environment production` as the database owner")
+    return problems
 
 
 def audit_guard_installed(conn: PgConnection) -> bool:

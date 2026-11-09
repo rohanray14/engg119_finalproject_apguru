@@ -10,33 +10,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from api.common import parse_allocations
+from ledger.balances import allocated_by_installment, remaining_by_installment  # noqa: F401 (re-exported)
 from ledger.db import log_audit
-
-SETTLED = ("auto", "approved")
-
-
-def allocated_by_installment(conn, exclude_match_id: int | None = None) -> dict[int, int]:
-    """{installment_id: paise received so far} from settled matches."""
-    totals: dict[int, int] = {}
-    for m in conn.execute(
-        "SELECT id, allocations FROM match_result WHERE status IN ('auto','approved')"
-    ).fetchall():
-        if exclude_match_id is not None and m["id"] == exclude_match_id:
-            continue
-        for a in parse_allocations(m["allocations"]):
-            iid = int(a["installment_id"])
-            totals[iid] = totals.get(iid, 0) + int(a.get("allocated_paise") or 0)
-    return totals
-
-
-def remaining_by_installment(conn) -> dict[int, int]:
-    """{installment_id: paise still owed} for every installment."""
-    received = allocated_by_installment(conn)
-    return {
-        r["id"]: max(r["amount_due_paise"] - received.get(r["id"], 0), 0)
-        for r in conn.execute("SELECT id, amount_due_paise FROM installment").fetchall()
-    }
 
 
 class AllocationError(ValueError):
