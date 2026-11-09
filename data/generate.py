@@ -311,9 +311,12 @@ class Generator:
         self._next_payment_in_id = 1
         self._next_payment_out_id = 1
         self._next_counselor_id = 1
+        self._next_family_id = 1
 
-        # Track sibling families: family_key → list of student_ids
-        self._families: dict[str, list[int]] = {}
+        # Track sibling families: family_id → list of student_ids
+        self._families: dict[int, list[int]] = {}
+        # family_id → family metadata (last_name, parent_name, etc.)
+        self._family_meta: dict[int, dict] = {}
 
     # -- ID generators --
     def _sid(self) -> int:
@@ -362,20 +365,39 @@ class Generator:
     # Students & enrollments & installments
     # ------------------------------------------------------------------
     def _generate_students(self, n: int):
-        used_names: set[str] = set()
+        # Pre-create families: ~12% of students are in multi-child families (2-3 kids).
+        # This means ~88% are single-child families.
+        # With 200 students: ~24 students in multi-child families → ~10 families of 2-3.
+        multi_child_families = []
+        multi_child_slots = 0
+        target_multi = int(n * 0.12)  # ~24 students in multi-child families
+        while multi_child_slots < target_multi:
+            size = self.rng.choice([2, 2, 2, 3])  # mostly pairs, some triples
+            multi_child_families.append(size)
+            multi_child_slots += size
 
-        for i in range(n):
-            sid = self._sid()
-            # Generate unique name
+        # Build a family plan: list of family sizes
+        single_count = n - multi_child_slots
+        family_plan = [1] * single_count + multi_child_families
+        self.rng.shuffle(family_plan)
+
+        used_names: set[str] = set()
+        used_parent_names: set[str] = set()
+
+        for family_size in family_plan:
+            # Each family gets a unique parent identity
             while True:
-                first = self.rng.choice(FIRST_NAMES)
                 last = self.rng.choice(LAST_NAMES)
-                name = f"{first} {last}"
-                if name not in used_names:
-                    used_names.add(name)
+                parent_first = self.rng.choice(FIRST_NAMES)
+                parent_name = f"{parent_first} {last}"
+                if parent_name not in used_parent_names:
+                    used_parent_names.add(parent_name)
                     break
 
-            # ~70% India, ~30% overseas
+            fid = self._next_family_id
+            self._next_family_id += 1
+
+            # ~70% India, ~30% overseas (decided per family)
             if self.rng.random() < 0.70:
                 city, country = self.rng.choice(INDIA_CITIES)
                 is_overseas = False
@@ -383,43 +405,50 @@ class Generator:
                 city, country = self.rng.choice(OVERSEAS_CITIES)
                 is_overseas = True
 
-            # Messy city/country
             messy_city = self.rng.choice(CITY_MESS.get(city, [city]))
             messy_country = self.rng.choice(COUNTRY_MESS.get(country, [country]))
-            # SPEC: "Dubai" in country column
             if city == "Dubai" and self.rng.random() < 0.3:
                 messy_country = "Dubai"
 
-            # Parent name (payer)
-            parent_last = last
-            parent_first = self.rng.choice(FIRST_NAMES)
-            parent_name = f"{parent_first} {parent_last}"
-
-            # Counselor assignment (~60% have one)
+            # Counselor assignment (~60% have one, shared by family)
             counselor_ids = []
             if self.rng.random() < 0.60:
                 counselor_ids = [self.rng.choice(self.counselors)["id"]]
 
-            student = {
-                "id": sid, "name": name,
-                "aliases": [_messy_name(self.rng, name)],
-                "city": messy_city, "country": messy_country,
-                "counselor_ids": counselor_ids,
-                "parent_name": parent_name,
-                "payer_aliases": [parent_name],
-                "is_overseas": is_overseas,
-                "family_key": parent_last,  # siblings share last name
+            self._family_meta[fid] = {
+                "last_name": last, "parent_name": parent_name,
+                "city": city, "country": country,
+                "messy_city": messy_city, "messy_country": messy_country,
+                "is_overseas": is_overseas, "counselor_ids": counselor_ids,
             }
-            self.students.append(student)
+            self._families[fid] = []
 
-            # Track families for sibling cases
-            fk = parent_last
-            self._families.setdefault(fk, []).append(sid)
+            for _ in range(family_size):
+                sid = self._sid()
+                while True:
+                    first = self.rng.choice(FIRST_NAMES)
+                    name = f"{first} {last}"
+                    if name not in used_names:
+                        used_names.add(name)
+                        break
 
-            # Enrollments: 1-2 programs per student
-            n_programs = 1 if self.rng.random() < 0.75 else 2
-            for _ in range(n_programs):
-                self._generate_enrollment(student, is_overseas)
+                student = {
+                    "id": sid, "name": name,
+                    "aliases": [_messy_name(self.rng, name)],
+                    "city": messy_city, "country": messy_country,
+                    "counselor_ids": counselor_ids,
+                    "parent_name": parent_name,
+                    "payer_aliases": [parent_name],
+                    "is_overseas": is_overseas,
+                    "family_id": fid,
+                }
+                self.students.append(student)
+                self._families[fid].append(sid)
+
+                # Enrollments: 1-2 programs per student
+                n_programs = 1 if self.rng.random() < 0.75 else 2
+                for _ in range(n_programs):
+                    self._generate_enrollment(student, is_overseas)
 
     def _generate_enrollment(self, student: dict, is_overseas: bool):
         eid = self._eid()
@@ -559,9 +588,9 @@ class Generator:
                    for p in self.payments_in):
                 case_types.append(CASE_DUPLICATE_AMOUNT)
 
-            # Check siblings
-            fk = student["family_key"]
-            if len(self._families.get(fk, [])) > 1:
+            # Check siblings — only tag if family has multiple children
+            fid = student["family_id"]
+            if len(self._families.get(fid, [])) > 1:
                 case_types.append(CASE_SIBLINGS)
 
             # Company TDS: ~6% of company payers withhold 10% TDS
@@ -592,7 +621,7 @@ class Generator:
                 for idx, pi in enumerate(payable):
                     ei = enroll_by_id[pi["enrollment_id"]]
                     si = student_by_id[ei["student_id"]]
-                    if si["family_key"] == fk and pi["id"] not in paid_installments:
+                    if si["family_id"] == fid and pi["id"] not in paid_installments:
                         sibling_inst = payable.pop(idx)
                         break
                 if sibling_inst:
