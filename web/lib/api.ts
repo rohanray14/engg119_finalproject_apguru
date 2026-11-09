@@ -7,21 +7,6 @@ class ApiError extends Error {
   }
 }
 
-async function getAuthHeader(): Promise<Record<string, string>> {
-  // In dev with AUTH_DEV_BYPASS, no token needed.
-  // In production, get the Clerk token.
-  if (typeof window !== "undefined") {
-    try {
-      const { useAuth } = await import("@clerk/nextjs");
-      // This won't work outside a component. For SWR fetchers,
-      // we pass the token explicitly.
-    } catch {
-      // Clerk not configured
-    }
-  }
-  return {};
-}
-
 /**
  * Fetch wrapper for the FastAPI backend.
  * Token is passed explicitly so SWR fetchers can use it.

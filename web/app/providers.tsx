@@ -1,6 +1,5 @@
 "use client";
 
-import { ClerkProvider } from "@clerk/nextjs";
 import { SWRConfig } from "swr";
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { apiFetch } from "@/lib/api";
@@ -36,18 +35,11 @@ function UserProvider({ children }: { children: ReactNode }) {
 }
 
 export default function Providers({ children }: { children: ReactNode }) {
-  const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-
   const inner = (
     <SWRConfig value={{ revalidateOnFocus: false, dedupingInterval: 5000 }}>
       <UserProvider>{children}</UserProvider>
     </SWRConfig>
   );
 
-  // If no Clerk key (local dev), skip ClerkProvider
-  if (!clerkKey) {
-    return inner;
-  }
-
-  return <ClerkProvider publishableKey={clerkKey}>{inner}</ClerkProvider>;
+  return inner;
 }
