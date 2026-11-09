@@ -23,10 +23,10 @@
 - [ ] Split and partial payments (deferred — explain_amount handles detection, full allocation needs global optimizer)
 
 ## Phase 2: Reconciliation
-- [ ] Gateway settlement breakdown
-- [ ] Three-way reconciliation view
-- [ ] Idempotent ingestion
-- [ ] Settlement eval
+- [x] Gateway settlement breakdown — per-gateway totals (paid, fees, GST, net, discrepancy)
+- [x] Three-way reconciliation view — payment ↔ gateway fees ↔ bank statement matching
+- [x] Idempotent ingestion — UNIQUE constraint + INSERT OR IGNORE on bank_statement
+- [x] Settlement eval — 343/343 matched, 0 gateway mismatches, 0 bank mismatches
 
 ## Phase 3: Other agent evals
 - [ ] Commissions eval

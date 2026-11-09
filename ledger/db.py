@@ -106,6 +106,16 @@ CREATE TABLE IF NOT EXISTS payment_out (
     currency        TEXT NOT NULL DEFAULT 'INR'
 );
 
+CREATE TABLE IF NOT EXISTS bank_statement (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    date            TEXT NOT NULL,                -- ISO date
+    narration       TEXT NOT NULL,
+    credit_paise    INTEGER NOT NULL DEFAULT 0,
+    debit_paise     INTEGER NOT NULL DEFAULT 0,
+    payment_id      INTEGER REFERENCES payment_in(id),  -- linked payment (NULL = unmatched)
+    UNIQUE(date, narration, credit_paise, debit_paise)   -- idempotent ingestion
+);
+
 CREATE TABLE IF NOT EXISTS audit_log (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp       TEXT NOT NULL,                -- ISO datetime

@@ -234,6 +234,11 @@ def load_all(data_dir: Path | None = None, db_path: Path | str | None = None) ->
     _load_payments_in(conn, ddir / "payments_in.csv")
     _load_payments_out(conn, ddir / "payments_out.csv")
 
+    # Bank statement (optional — may not exist in test splits)
+    bs_path = ddir / "bank_statement.csv"
+    if bs_path.exists():
+        _load_bank_statement(conn, bs_path)
+
     log_audit(conn, "loader", "load_all", "database", new_value=str(ddir))
     return conn
 
@@ -337,6 +342,24 @@ def _load_payments_in(conn: sqlite3.Connection, path: Path):
                 int(row.get("tds_paise", 0)),
                 int(row.get("amount_in_bank_paise", 0)) if row.get("amount_in_bank_paise") else None,
                 row.get("confirmation", "screenshot_only"),
+            ),
+        )
+    conn.commit()
+
+
+def _load_bank_statement(conn: sqlite3.Connection, path: Path):
+    """Load bank statement CSV. Uses INSERT OR IGNORE for idempotent ingestion."""
+    for row in _read_csv(path):
+        stmt_date = parse_date(row.get("date", ""))
+        conn.execute(
+            "INSERT OR IGNORE INTO bank_statement "
+            "(date, narration, credit_paise, debit_paise) "
+            "VALUES (?, ?, ?, ?)",
+            (
+                stmt_date.isoformat() if stmt_date else "",
+                row.get("narration", ""),
+                int(row.get("credit_paise", 0)),
+                int(row.get("debit_paise", 0)),
             ),
         )
     conn.commit()
