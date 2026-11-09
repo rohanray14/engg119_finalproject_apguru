@@ -145,6 +145,15 @@ def _shortlist_candidates(
     pay_date = _parse_iso_date(payment["date"])
     payer_name = normalize_name(payment["payer_name"] or "")
 
+    # Pre-compute same-amount student counts for safety checks
+    from collections import Counter
+    _amount_students: dict[tuple, set] = {}
+    for inst in installments:
+        key = (inst["amount_due_paise"], inst["currency"])
+        if key not in _amount_students:
+            _amount_students[key] = set()
+        _amount_students[key].add(inst["student_id"])
+
     scored_candidates = []
 
     for inst in installments:
@@ -198,6 +207,7 @@ def _shortlist_candidates(
         total_score = amount_score * 3 + date_score + name_score * 2
         enroll = enrollments.get(inst["enrollment_id"], {})
 
+        same_amt_key = (inst_amount, inst_currency)
         scored_candidates.append({
             "installment": inst,
             "student_info": sinfo,
@@ -206,6 +216,7 @@ def _shortlist_candidates(
             "date_score": date_score,
             "name_score": name_score,
             "total_score": total_score,
+            "same_amount_students": len(_amount_students.get(same_amt_key, set())),
         })
 
     # Sort by total score descending, take top N
@@ -245,7 +256,7 @@ def _ai_match_one(
     cache_key = _cache_key(prompt)
     cached = _read_cache(cache_key)
     if cached is not None:
-        return _parse_ai_response(payment["id"], cached, candidates)
+        return _parse_ai_response(payment["id"], cached, candidates, installments)
 
     # Call the API
     start = time.time()
@@ -258,16 +269,19 @@ def _ai_match_one(
                 "You are a payment-matching assistant for an Indian tutoring company (Educore). "
                 "Given an incoming payment and a shortlist of candidate installments, "
                 "decide which installment(s) the payment belongs to.\n\n"
-                "IMPORTANT RULES:\n"
-                "- A blank payer name is very weak evidence. Say 'unsure' unless there is "
-                "only ONE candidate with an exact amount match.\n"
-                "- Many students have similar common amounts (e.g. ₹1,77,000 or $400). "
-                "Amount alone is NOT enough to match — you need name or date evidence too.\n"
-                "- The payer is usually a PARENT, not the student. Check the 'Known payers' list.\n"
-                "- Be conservative: it is much better to say 'unsure' than to guess wrong. "
-                "A wrong match causes real financial harm.\n"
-                "- Set confidence honestly: 0.9+ only if name matches AND amount is exact. "
-                "0.7-0.8 if evidence is decent but not airtight. Below 0.5 if just guessing.\n\n"
+                "CRITICAL RULES:\n"
+                "1. A blank payer name means NO name evidence. Say 'unsure' unless there is "
+                "exactly ONE candidate in the entire database with this exact amount.\n"
+                "2. Amount alone is NEVER enough to match. Many students share common amounts "
+                "(e.g. ₹1,77,000 or $400). You MUST have name evidence too.\n"
+                "3. The payer is usually a PARENT, not the student. Check 'Known payers'.\n"
+                "4. Be extremely conservative. A wrong confident match causes real financial harm. "
+                "It is 10x better to say 'unsure' than to guess wrong.\n"
+                "5. If a student has MULTIPLE installments with the same amount, you usually "
+                "cannot determine which specific installment this payment covers. Say 'unsure' "
+                "unless there is clear date evidence or other distinguishing information.\n"
+                "6. Confidence guide: 0.95 = exact name match + exact amount + only 1 possibility. "
+                "0.80 = good evidence but some ambiguity. 0.50 = uncertain. Below 0.30 = guessing.\n\n"
                 "Respond ONLY with valid JSON — no markdown, no explanation outside the JSON.\n"
                 "Format: {\"installment_ids\": [...], \"confidence\": 0.0-1.0, \"reason\": \"...\"}\n"
                 "or {\"unsure\": true, \"reason\": \"...\"} if you cannot decide."
@@ -291,7 +305,7 @@ def _ai_match_one(
     _log_call(prompt, output_text, MODEL, input_tokens, output_tokens, latency_ms)
     _write_cache(cache_key, output_text)
 
-    return _parse_ai_response(payment["id"], output_text, candidates)
+    return _parse_ai_response(payment["id"], output_text, candidates, installments)
 
 
 def _build_prompt(payment: dict, candidates: list[dict]) -> str:
@@ -324,8 +338,10 @@ def _build_prompt(payment: dict, candidates: list[dict]) -> str:
         lines.append(f"      Program: {enroll.get('program', '?')} ({enroll.get('fee_model', '?')})")
         lines.append(f"      Amount due: {inst_amount} ({inst['currency']})")
         lines.append(f"      Due date: {inst['due_date'] or '(none)'}")
+        same_amt = cand.get("same_amount_students", "?")
         lines.append(f"      Scores — amount: {cand['amount_score']}, "
                      f"name: {cand['name_score']}, date: {cand['date_score']}")
+        lines.append(f"      (Note: {same_amt} different students have installments with this amount)")
         lines.append("")
 
     lines.append(
@@ -343,6 +359,7 @@ def _parse_ai_response(
     payment_id: int,
     response_text: str,
     candidates: list[dict],
+    all_installments: list[dict] | None = None,
 ) -> MatchPrediction:
     """Parse the LLM's JSON response into a MatchPrediction."""
     try:
@@ -390,32 +407,6 @@ def _parse_ai_response(
             reason=f"no_valid_ids_in_response: {reason}",
         )
 
-    # FIFO correction: if the AI picked an installment but the same student
-    # has an earlier-due installment with the same amount, prefer the earlier one.
-    if len(inst_ids) == 1:
-        chosen_inst = next((c["installment"] for c in candidates
-                           if c["installment"]["id"] == inst_ids[0]), None)
-        if chosen_inst:
-            same_student_earlier = [
-                c for c in candidates
-                if c["installment"]["student_id"] == chosen_inst["student_id"]
-                and c["installment"]["amount_due_paise"] == chosen_inst["amount_due_paise"]
-                and c["installment"]["currency"] == chosen_inst["currency"]
-                and c["installment"]["id"] != chosen_inst["id"]
-            ]
-            if same_student_earlier:
-                # Sort by due date, pick earliest
-                all_options = same_student_earlier + [
-                    c for c in candidates if c["installment"]["id"] == inst_ids[0]
-                ]
-                all_options.sort(
-                    key=lambda c: c["installment"].get("due_date") or "9999-12-31"
-                )
-                earliest_id = all_options[0]["installment"]["id"]
-                if earliest_id != inst_ids[0]:
-                    inst_ids = [earliest_id]
-                    reason += " (FIFO: picked earliest due date for same student)"
-
     # Calibrate confidence: LLMs tend to be overconfident.
     # Cross-check with the code-computed scores from shortlisting.
     chosen_cands = [c for c in candidates if c["installment"]["id"] in inst_ids]
@@ -423,22 +414,40 @@ def _parse_ai_response(
         best = chosen_cands[0]
         name_score = best["name_score"]
         amount_score = best["amount_score"]
+        same_amount_students = best.get("same_amount_students", 999)
 
-        # Strong evidence: exact amount + strong name match
+        # Determine evidence-based confidence cap
         if amount_score >= 90 and name_score >= 80:
-            confidence = min(ai_confidence, 0.90)
-        # Good evidence: exact amount + decent name match
+            cap = 0.95
         elif amount_score >= 90 and name_score >= 60:
-            confidence = min(ai_confidence, 0.82)
-        # Moderate: exact amount, weak name signal
+            cap = 0.85
         elif amount_score >= 90 and name_score >= 40:
-            confidence = min(ai_confidence, 0.65)
-        # Weak: amount matches but no/poor name signal
+            cap = 0.65
         elif amount_score >= 90:
-            confidence = min(ai_confidence, 0.40)
-        # Inexact amount match
+            cap = 0.40
         else:
-            confidence = min(ai_confidence, 0.30)
+            cap = 0.30
+
+        # Safety: many students share the amount → lower cap
+        from agents.matching_rules import MAX_STUDENTS_FOR_HIGH
+        if same_amount_students > MAX_STUDENTS_FOR_HIGH:
+            cap = min(cap, 0.85)
+
+        # Safety: same-student multi-installment → lower cap
+        # (can't reliably pick which installment since generator assigns randomly)
+        # Check ALL installments (not just shortlisted) for this student+amount
+        if len(inst_ids) == 1 and all_installments:
+            chosen_inst = best["installment"]
+            same_student_same_amount = sum(
+                1 for inst in all_installments
+                if inst["student_id"] == chosen_inst["student_id"]
+                and inst["amount_due_paise"] == chosen_inst["amount_due_paise"]
+                and inst["currency"] == chosen_inst["currency"]
+            )
+            if same_student_same_amount > 1:
+                cap = min(cap, 0.85)
+
+        confidence = min(ai_confidence, cap)
     else:
         confidence = min(ai_confidence, 0.50)
 
