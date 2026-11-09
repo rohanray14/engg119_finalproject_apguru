@@ -321,8 +321,8 @@ def _load_payments_in(conn: sqlite3.Connection, path: Path):
             "INSERT OR REPLACE INTO payment_in "
             "(id, source, method, payer_name, date, amount_paid_paise, currency, "
             " gateway_fee_paise, gst_on_fee_paise, fx_diff_paise, tds_paise, "
-            " amount_in_bank_paise, confirmation, case_types) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " amount_in_bank_paise, confirmation) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 int(row["id"]),
                 row["source"],
@@ -337,7 +337,6 @@ def _load_payments_in(conn: sqlite3.Connection, path: Path):
                 int(row.get("tds_paise", 0)),
                 int(row.get("amount_in_bank_paise", 0)) if row.get("amount_in_bank_paise") else None,
                 row.get("confirmation", "screenshot_only"),
-                row.get("case_types", "[]"),
             ),
         )
     conn.commit()

@@ -640,9 +640,8 @@ class Generator:
                 amount_sent = round(amount_sent * fraction)
                 allocations[0]["allocated_paise"] = amount_sent
                 case_types.append(CASE_PARTIAL)
-                inst["status"] = "partial"
-            else:
-                inst["status"] = "paid"
+            # Note: installment status stays "open" — status is only derived
+            # from approved matches, never set by the generator (no leakage).
 
             # Gateway fees
             gateway_fee_paise = 0
@@ -956,7 +955,6 @@ class Generator:
             "amount_paid_paise", "currency",
             "gateway_fee_paise", "gst_on_fee_paise", "tds_paise",
             "fx_diff_paise", "amount_in_bank_paise", "confirmation",
-            "case_types",
         ])
 
         # Payments out CSV
@@ -1011,14 +1009,12 @@ class Generator:
             "amount_paid_paise", "currency",
             "gateway_fee_paise", "gst_on_fee_paise", "tds_paise",
             "fx_diff_paise", "amount_in_bank_paise", "confirmation",
-            "case_types",
         ])
         self._write_csv(test_dir / "payments_in.csv", test_payments, [
             "id", "source", "method", "payer_name", "date",
             "amount_paid_paise", "currency",
             "gateway_fee_paise", "gst_on_fee_paise", "tds_paise",
             "fx_diff_paise", "amount_in_bank_paise", "confirmation",
-            "case_types",
         ])
 
     def _write_csv(self, path: Path, rows: list[dict], columns: list[str]):

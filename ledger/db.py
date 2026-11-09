@@ -63,8 +63,7 @@ CREATE TABLE IF NOT EXISTS payment_in (
     tds_paise           INTEGER NOT NULL DEFAULT 0,
     amount_in_bank_paise INTEGER,
     confirmation        TEXT NOT NULL DEFAULT 'screenshot_only'
-                        CHECK(confirmation IN ('screenshot_only','seen_by_gateway','in_bank')),
-    case_types          TEXT DEFAULT '[]'         -- JSON list (for eval)
+                        CHECK(confirmation IN ('screenshot_only','seen_by_gateway','in_bank'))
 );
 
 CREATE TABLE IF NOT EXISTS match_result (

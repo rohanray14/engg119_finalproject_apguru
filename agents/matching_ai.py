@@ -53,10 +53,12 @@ CACHE_DIR = LOGS_DIR / "cache"
 # Config
 # ---------------------------------------------------------------------------
 
-MODEL = "claude-sonnet-4-6"
-MAX_CANDIDATES = 5
-DATE_WINDOW_DAYS = 60
-AMOUNT_TOLERANCE_PCT = 0.20   # ±20% to catch GST/fees/TDS differences
+from config import CONFIG
+
+MODEL = CONFIG.model
+MAX_CANDIDATES = CONFIG.matching.max_candidates
+DATE_WINDOW_DAYS = CONFIG.matching.date_window_days
+AMOUNT_TOLERANCE_PCT = CONFIG.matching.amount_tolerance_pct
 NAME_MIN_SCORE = 30           # lower bar for shortlisting (AI will judge)
 HIGH_CONF_RULES = 0.90        # rules matches above this skip AI
 AI_DEFAULT_CONFIDENCE = 0.85  # confidence assigned to AI "match" decisions
@@ -253,11 +255,21 @@ def _ai_match_one(
             max_tokens=1024,
             messages=[{"role": "user", "content": prompt}],
             system=(
-                "You are a payment-matching assistant for an Indian tutoring company. "
+                "You are a payment-matching assistant for an Indian tutoring company (Educore). "
                 "Given an incoming payment and a shortlist of candidate installments, "
-                "decide which installment(s) the payment belongs to. "
-                "Respond ONLY with valid JSON — no markdown, no explanation outside the JSON. "
-                "Format: {\"installment_ids\": [...], \"confidence\": 0.0-1.0, \"reason\": \"...\"} "
+                "decide which installment(s) the payment belongs to.\n\n"
+                "IMPORTANT RULES:\n"
+                "- A blank payer name is very weak evidence. Say 'unsure' unless there is "
+                "only ONE candidate with an exact amount match.\n"
+                "- Many students have similar common amounts (e.g. ₹1,77,000 or $400). "
+                "Amount alone is NOT enough to match — you need name or date evidence too.\n"
+                "- The payer is usually a PARENT, not the student. Check the 'Known payers' list.\n"
+                "- Be conservative: it is much better to say 'unsure' than to guess wrong. "
+                "A wrong match causes real financial harm.\n"
+                "- Set confidence honestly: 0.9+ only if name matches AND amount is exact. "
+                "0.7-0.8 if evidence is decent but not airtight. Below 0.5 if just guessing.\n\n"
+                "Respond ONLY with valid JSON — no markdown, no explanation outside the JSON.\n"
+                "Format: {\"installment_ids\": [...], \"confidence\": 0.0-1.0, \"reason\": \"...\"}\n"
                 "or {\"unsure\": true, \"reason\": \"...\"} if you cannot decide."
             ),
         )
@@ -362,7 +374,7 @@ def _parse_ai_response(
         )
 
     inst_ids = data.get("installment_ids", [])
-    confidence = float(data.get("confidence", AI_DEFAULT_CONFIDENCE))
+    ai_confidence = float(data.get("confidence", AI_DEFAULT_CONFIDENCE))
     reason = data.get("reason", "")
 
     # Validate that returned IDs are in our candidate list
@@ -378,10 +390,62 @@ def _parse_ai_response(
             reason=f"no_valid_ids_in_response: {reason}",
         )
 
+    # FIFO correction: if the AI picked an installment but the same student
+    # has an earlier-due installment with the same amount, prefer the earlier one.
+    if len(inst_ids) == 1:
+        chosen_inst = next((c["installment"] for c in candidates
+                           if c["installment"]["id"] == inst_ids[0]), None)
+        if chosen_inst:
+            same_student_earlier = [
+                c for c in candidates
+                if c["installment"]["student_id"] == chosen_inst["student_id"]
+                and c["installment"]["amount_due_paise"] == chosen_inst["amount_due_paise"]
+                and c["installment"]["currency"] == chosen_inst["currency"]
+                and c["installment"]["id"] != chosen_inst["id"]
+            ]
+            if same_student_earlier:
+                # Sort by due date, pick earliest
+                all_options = same_student_earlier + [
+                    c for c in candidates if c["installment"]["id"] == inst_ids[0]
+                ]
+                all_options.sort(
+                    key=lambda c: c["installment"].get("due_date") or "9999-12-31"
+                )
+                earliest_id = all_options[0]["installment"]["id"]
+                if earliest_id != inst_ids[0]:
+                    inst_ids = [earliest_id]
+                    reason += " (FIFO: picked earliest due date for same student)"
+
+    # Calibrate confidence: LLMs tend to be overconfident.
+    # Cross-check with the code-computed scores from shortlisting.
+    chosen_cands = [c for c in candidates if c["installment"]["id"] in inst_ids]
+    if chosen_cands:
+        best = chosen_cands[0]
+        name_score = best["name_score"]
+        amount_score = best["amount_score"]
+
+        # Strong evidence: exact amount + strong name match
+        if amount_score >= 90 and name_score >= 80:
+            confidence = min(ai_confidence, 0.90)
+        # Good evidence: exact amount + decent name match
+        elif amount_score >= 90 and name_score >= 60:
+            confidence = min(ai_confidence, 0.82)
+        # Moderate: exact amount, weak name signal
+        elif amount_score >= 90 and name_score >= 40:
+            confidence = min(ai_confidence, 0.65)
+        # Weak: amount matches but no/poor name signal
+        elif amount_score >= 90:
+            confidence = min(ai_confidence, 0.40)
+        # Inexact amount match
+        else:
+            confidence = min(ai_confidence, 0.30)
+    else:
+        confidence = min(ai_confidence, 0.50)
+
     return MatchPrediction(
         payment_id=payment_id,
         installment_ids=inst_ids,
-        confidence=min(confidence, 1.0),
+        confidence=confidence,
         method="ai",
         reason=reason,
     )
@@ -493,7 +557,7 @@ def _parse_iso_date(val: str | None) -> date | None:
 def _get_payments(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute(
         "SELECT id, source, method, payer_name, date, "
-        "amount_paid_paise, currency, case_types "
+        "amount_paid_paise, currency "
         "FROM payment_in"
     ).fetchall()
     return [dict(r) for r in rows]

@@ -90,6 +90,7 @@ with left:
 # ── Right side: detail ──
 row = pending[st.session_state.selected_idx]
 allocs = json.loads(row['allocations']) if row['allocations'] else []
+insts = []  # populated below if allocs exist
 
 with right:
     # Bank statement card

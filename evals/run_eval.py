@@ -63,16 +63,15 @@ def _load_safety_cases(conn, safety_path: Path):
             "INSERT OR REPLACE INTO payment_in "
             "(id, source, method, payer_name, date, amount_paid_paise, currency, "
             " gateway_fee_paise, gst_on_fee_paise, fx_diff_paise, tds_paise, "
-            " amount_in_bank_paise, confirmation, case_types) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " amount_in_bank_paise, confirmation) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (p["id"], p["source"], p.get("method"),
              p.get("payer_name"), p.get("date"),
              p["amount_paid_paise"], p["currency"],
              p.get("gateway_fee_paise", 0), p.get("gst_on_fee_paise", 0),
              p.get("fx_diff_paise", 0), p.get("tds_paise", 0),
              p.get("amount_in_bank_paise", 0),
-             p.get("confirmation", "screenshot_only"),
-             json.dumps(p.get("case_types", []))),
+             p.get("confirmation", "screenshot_only")),
         )
     conn.commit()
     return cases["answers"]
@@ -254,12 +253,14 @@ def main():
                        help="Agent to evaluate (matching=rules only, matching_ai=rules+AI)")
     parser.add_argument("--split", default="dev", choices=["dev", "test", "safety"],
                        help="Data split to evaluate on")
-    parser.add_argument("--threshold", type=float, default=0.8,
-                       help="Confidence threshold for auto-match")
+    parser.add_argument("--threshold", type=float, default=None,
+                       help="Confidence threshold for auto-match (default: from config.py)")
     args = parser.parse_args()
 
+    from config import CONFIG
+    threshold = args.threshold if args.threshold is not None else CONFIG.matching.auto_match_threshold
     report = run_matching_eval(
-        split=args.split, threshold=args.threshold, agent=args.agent,
+        split=args.split, threshold=threshold, agent=args.agent,
     )
 
     print_report(report)

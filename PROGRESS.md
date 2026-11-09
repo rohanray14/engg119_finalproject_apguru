@@ -1,7 +1,7 @@
 # Overnight Production-Hardening Progress
 
 ## Phase 0: Make the evals honest
-- [ ] Sibling tag on 100% — model families explicitly
+- [x] Sibling tag on 100% — model families explicitly (100% → 10.75%)
 - [ ] Label leakage — remove case_types from operational table
 - [ ] Identifiability ceiling — oracle analysis
 - [ ] Threshold mismatch — single config value

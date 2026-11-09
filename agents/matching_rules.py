@@ -34,11 +34,13 @@ from evals.scoring import MatchPrediction
 # Config
 # ---------------------------------------------------------------------------
 
-DATE_WINDOW_DAYS = 90
-NAME_THRESHOLD = 70       # fuzzy ratio threshold (0–100)
-HIGH_CONFIDENCE = 0.95
+from config import CONFIG
+
+DATE_WINDOW_DAYS = CONFIG.matching.date_window_days
+NAME_THRESHOLD = CONFIG.matching.name_threshold
+HIGH_CONFIDENCE = CONFIG.matching.auto_match_threshold
 MEDIUM_CONFIDENCE = 0.85
-LOW_CONFIDENCE = 0.50
+LOW_CONFIDENCE = CONFIG.matching.review_threshold
 
 
 # ---------------------------------------------------------------------------
@@ -314,7 +316,7 @@ def _name_score(payer_name: str, student_info: dict) -> int:
 def _get_payments(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute(
         "SELECT id, source, method, payer_name, date, "
-        "amount_paid_paise, currency, case_types "
+        "amount_paid_paise, currency "
         "FROM payment_in"
     ).fetchall()
     return [dict(r) for r in rows]
