@@ -32,7 +32,9 @@ any non-trivial task.
 
 - Python 3.11+, Pydantic models, SQLite ledger (via `sqlite3` or SQLModel)
 - Anthropic API for LLM calls (structured JSON output); `rapidfuzz` for name similarity
-- Streamlit for the UI
+- Streamlit for the prototype UI (`app/`)
+- FastAPI for the production API (`api/`), Clerk auth, Postgres (Neon) in production;
+  `ledger/pg.py` lets the same code run on SQLite and Postgres. Deploy: `docs/DEPLOY.md`
 - pytest for unit tests; `evals/run_eval.py` for scored evals
 
 ## Folder layout
@@ -44,7 +46,8 @@ agents/      matching_rules.py, matching_ai.py, reminders.py, commissions.py, ri
 evals/       run_eval.py, scoring.py, safety_cases.json
 results/     one JSON/Markdown report per eval run
 logs/        LLM call logs + cache
-app/         Streamlit app (Home.py + pages/)
+app/         Streamlit prototype (Home.py + pages/)
+api/         FastAPI production API (routers/, auth.py, seed.py)
 tests/       pytest unit tests
 experiments.md   one line per eval run: version | change | precision | coverage | wrong | notes
 ```
@@ -56,6 +59,8 @@ python data/generate.py --seed 42          # fake data + answer keys
 pytest                                      # unit tests (must pass before any commit)
 python evals/run_eval.py --agent matching --split dev
 streamlit run app/Home.py
+make api                                    # FastAPI locally, Clerk bypassed
+TEST_POSTGRES_URL=... pytest                # same tests on Postgres
 ```
 
 ## How to work

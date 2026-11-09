@@ -1,4 +1,4 @@
-.PHONY: data test eval eval-agents app lint clean ci
+.PHONY: data test test-pg eval eval-agents app api seed lint clean ci
 
 data:
 	python data/generate.py --seed 42
@@ -15,6 +15,17 @@ eval-agents:
 
 app:
 	streamlit run app/Home.py
+
+# API for local development: Clerk is bypassed, SQLite file in data/.
+api:
+	AUTH_DEV_BYPASS=1 uvicorn api.main:app --reload --port 8000
+
+seed:
+	python -m api.seed --reset
+
+# Same tests against Postgres, e.g. TEST_POSTGRES_URL=postgresql://localhost/ledger_test make test-pg
+test-pg:
+	TEST_POSTGRES_URL=$${TEST_POSTGRES_URL:?set TEST_POSTGRES_URL} python -m pytest --tb=short -q
 
 lint:
 	ruff check --select E,F,W .

@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, overnight/*]
+    branches: [main, overnight/*, production/*]
   pull_request:
     branches: [main]
 
@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -e ".[dev]"
+          pip install -e ".[dev,api]"
 
       - name: Generate test data
         run: python data/generate.py --seed 42
@@ -32,8 +32,43 @@ jobs:
           ruff check --select E,F,W .
         continue-on-error: true
 
-      - name: Run tests
+      - name: Run tests (SQLite)
         run: pytest --tb=short -q
 
       - name: Run agent evals
         run: python evals/eval_agents.py --all
+
+  test-postgres:
+    # Same suite against real Postgres, the production database.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ledger_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev,api]"
+
+      - name: Run tests (Postgres)
+        env:
+          TEST_POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/ledger_test
+        run: pytest --tb=short -q
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f Dockerfile.api -t finance-desk-api .

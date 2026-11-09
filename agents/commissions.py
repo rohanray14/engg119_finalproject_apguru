@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 
@@ -100,10 +100,14 @@ def parse_terms(terms_text: str) -> ParsedRule:
 
 def compute_commissions(
     conn: sqlite3.Connection,
+    commit: bool = True,
 ) -> list[CommissionCalc]:
     """Compute commissions for all counselors based on matched payments.
 
     Only processes payments that have been matched (auto or approved).
+    A rule the finance lead set by hand (``parsed_rule`` with
+    ``"set_by": "human"``) takes precedence over the rule parsed from the
+    terms text.  Pass ``commit=False`` to run inside the caller's transaction.
     """
     counselors = _get_counselors(conn)
     matched_payments = _get_matched_payments(conn)
@@ -112,16 +116,19 @@ def compute_commissions(
     results: list[CommissionCalc] = []
 
     for c in counselors:
-        rule = parse_terms(c["terms_text"])
+        rule = human_rule(c.get("parsed_rule"))
+        if rule is None:
+            rule = parse_terms(c["terms_text"])
+            if rule.rate <= 0:
+                continue
+            # Store parsed rule back
+            conn.execute(
+                "UPDATE counselor SET parsed_rule = ? WHERE id = ?",
+                (json.dumps({"rate": rule.rate, "scope": rule.scope,
+                             "city": rule.city, "split": rule.split}), c["id"]),
+            )
         if rule.rate <= 0:
             continue
-
-        # Store parsed rule back
-        conn.execute(
-            "UPDATE counselor SET parsed_rule = ? WHERE id = ?",
-            (json.dumps({"rate": rule.rate, "scope": rule.scope,
-                         "city": rule.city, "split": rule.split}), c["id"]),
-        )
 
         for mp in matched_payments:
             student_id = mp["student_id"]
@@ -153,8 +160,28 @@ def compute_commissions(
                 net_paise=net_paise,
             ))
 
-    conn.commit()
+    if commit:
+        conn.commit()
     return results
+
+
+def human_rule(parsed_rule_json: Optional[str]) -> Optional[ParsedRule]:
+    """Return the finance lead's hand-set rule, if one is stored."""
+    if not parsed_rule_json:
+        return None
+    try:
+        data = json.loads(parsed_rule_json)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(data, dict) or data.get("set_by") != "human":
+        return None
+    return ParsedRule(
+        rate=float(data.get("rate") or 0.0),
+        scope=data.get("scope") or "own_referrals",
+        city=data.get("city"),
+        split=data.get("split"),
+        notes="set by finance lead",
+    )
 
 
 def _get_counselors(conn: sqlite3.Connection) -> list[dict]:

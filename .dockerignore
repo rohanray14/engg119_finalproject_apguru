@@ -1,0 +1,17 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+.venv
+__pycache__
+*.pyc
+real_data/
+logs/
+cache/
+results/
+overnight/
+docs/
+tests/
+*.db
+*.db-*

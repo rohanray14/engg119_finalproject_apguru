@@ -1,0 +1,34 @@
+# Build the API image and deploy it to Cloud Run.
+#   gcloud builds submit --config cloudbuild.yaml \
+#     --substitutions=_REGION=asia-south1,_FRONTEND_URL=https://your-app.vercel.app,_CLERK_ISSUER=https://your-app.clerk.accounts.dev
+substitutions:
+  _REGION: asia-south1
+  _SERVICE: finance-desk-api
+  _REPO: finance-desk
+  _FRONTEND_URL: ""
+  _CLERK_ISSUER: ""
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "Dockerfile.api", "-t", "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$BUILD_ID", "."]
+  - name: gcr.io/cloud-builders/docker
+    args: ["push", "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$BUILD_ID"]
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$BUILD_ID
+      - --region=${_REGION}
+      - --allow-unauthenticated   # the API checks Clerk tokens itself
+      - --min-instances=0         # scale to zero: stays in the free tier
+      - --max-instances=2         # caps cost if something goes wrong
+      - --memory=512Mi
+      - --cpu=1
+      - --concurrency=40
+      - --set-env-vars=ENV=production,CLERK_ISSUER=${_CLERK_ISSUER},CLERK_AUTHORIZED_PARTIES=${_FRONTEND_URL},CORS_ORIGINS=${_FRONTEND_URL}
+      - --set-secrets=DATABASE_URL=finance-desk-database-url:latest
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$BUILD_ID
