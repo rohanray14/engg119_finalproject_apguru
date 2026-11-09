@@ -85,7 +85,7 @@ function AskContent() {
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="p-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Ask</h1>
 
       {/* Chat messages */}
