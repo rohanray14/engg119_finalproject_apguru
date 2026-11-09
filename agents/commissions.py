@@ -67,9 +67,10 @@ def parse_terms(terms_text: str) -> ParsedRule:
         (r"(?:on|for)\s+(\w+)\s+students", "city"),
         (r"(\w+)\s+(?:city|region|area)", "city"),
     ]
+    skip_words = {"all", "my", "own", "the", "new", "each", "every"}
     for pattern, _ in city_patterns:
         m = re.search(pattern, text)
-        if m:
+        if m and m.group(1).lower() not in skip_words:
             scope = "city"
             city = m.group(1).title()
             break

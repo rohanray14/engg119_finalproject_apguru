@@ -162,6 +162,75 @@ def expected_bank_amount(
 
 
 # ---------------------------------------------------------------------------
+# Amount explanation (deduction stories)
+# ---------------------------------------------------------------------------
+
+_PARTIAL_FRACTIONS = [0.50, 0.60, 0.75]
+_TDS_RATE_10PCT = 1000  # 10% in basis points
+
+
+def explain_amount(
+    payment_paise: int,
+    installment_paise: int,
+    gst_applicable: bool = True,
+    tolerance_paise: int = 2,
+) -> list[dict]:
+    """Compute which deduction stories explain the gap between a payment
+    amount and an installment amount.
+
+    Returns a list of explanations, each a dict with:
+      - story: str (e.g. "exact", "tds_10pct", "partial_50pct")
+      - residual_paise: int (unexplained gap, 0 = perfect fit)
+      - score: float (0.0–1.0, higher = better fit)
+    """
+    explanations = []
+
+    # 1. Exact match
+    residual = abs(payment_paise - installment_paise)
+    if residual <= tolerance_paise:
+        explanations.append({
+            "story": "exact",
+            "residual_paise": residual,
+            "score": 1.0,
+        })
+
+    # 2. TDS 10% on pre-GST base
+    # Generator: payer_tds = round(base * 0.10) where base = remove_gst(installment)
+    # amount_sent = installment - payer_tds
+    if gst_applicable:
+        base = remove_gst(installment_paise)
+        payer_tds = round(base * 0.10)
+    else:
+        payer_tds = round(installment_paise * 0.10)
+    tds_adjusted = installment_paise - payer_tds
+    residual = abs(payment_paise - tds_adjusted)
+    if residual <= tolerance_paise:
+        explanations.append({
+            "story": "tds_10pct",
+            "residual_paise": residual,
+            "expected_paise": tds_adjusted,
+            "tds_paise": payer_tds,
+            "score": 0.9,
+        })
+
+    # 3. Partial payment (common fractions)
+    if installment_paise > 0:
+        for frac in _PARTIAL_FRACTIONS:
+            expected = round(installment_paise * frac)
+            residual = abs(payment_paise - expected)
+            if residual <= tolerance_paise:
+                explanations.append({
+                    "story": f"partial_{int(frac*100)}pct",
+                    "residual_paise": residual,
+                    "expected_paise": expected,
+                    "fraction": frac,
+                    "score": 0.8,
+                })
+
+    return explanations
+
+
+# ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 

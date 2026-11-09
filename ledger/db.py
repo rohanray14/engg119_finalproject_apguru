@@ -6,13 +6,16 @@ audit_log table.  All money columns store integer paise.
 
 from __future__ import annotations
 
+import os
 import json
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-DB_PATH = Path(__file__).resolve().parent.parent / "data" / "ledger.db"
+DB_PATH = Path(os.environ.get("DATABASE_URL", str(
+    Path(__file__).resolve().parent.parent / "data" / "ledger.db"
+)))
 
 # ---------------------------------------------------------------------------
 # Schema DDL
@@ -63,8 +66,7 @@ CREATE TABLE IF NOT EXISTS payment_in (
     tds_paise           INTEGER NOT NULL DEFAULT 0,
     amount_in_bank_paise INTEGER,
     confirmation        TEXT NOT NULL DEFAULT 'screenshot_only'
-                        CHECK(confirmation IN ('screenshot_only','seen_by_gateway','in_bank')),
-    case_types          TEXT DEFAULT '[]'         -- JSON list (for eval)
+                        CHECK(confirmation IN ('screenshot_only','seen_by_gateway','in_bank'))
 );
 
 CREATE TABLE IF NOT EXISTS match_result (
@@ -107,6 +109,16 @@ CREATE TABLE IF NOT EXISTS payment_out (
     currency        TEXT NOT NULL DEFAULT 'INR'
 );
 
+CREATE TABLE IF NOT EXISTS bank_statement (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    date            TEXT NOT NULL,                -- ISO date
+    narration       TEXT NOT NULL,
+    credit_paise    INTEGER NOT NULL DEFAULT 0,
+    debit_paise     INTEGER NOT NULL DEFAULT 0,
+    payment_id      INTEGER REFERENCES payment_in(id),  -- linked payment (NULL = unmatched)
+    UNIQUE(date, narration, credit_paise, debit_paise)   -- idempotent ingestion
+);
+
 CREATE TABLE IF NOT EXISTS audit_log (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp       TEXT NOT NULL,                -- ISO datetime
@@ -142,10 +154,28 @@ def log_audit(
     old_value: Optional[str] = None,
     new_value: Optional[str] = None,
 ) -> None:
-    """Insert a row into the audit_log table."""
+    """Insert a row into the audit_log table.
+
+    The audit log is append-only: rows are never updated or deleted.
+    """
     conn.execute(
         "INSERT INTO audit_log (timestamp, actor, action, entity, old_value, new_value) "
         "VALUES (?, ?, ?, ?, ?, ?)",
         (datetime.now(timezone.utc).isoformat(), actor, action, entity, old_value, new_value),
     )
     conn.commit()
+
+
+def verify_audit_integrity(conn: sqlite3.Connection) -> bool:
+    """Verify the audit log has not been tampered with.
+
+    Checks that IDs are sequential with no gaps (append-only invariant).
+    Returns True if integrity holds.
+    """
+    rows = conn.execute(
+        "SELECT id FROM audit_log ORDER BY id"
+    ).fetchall()
+    if not rows:
+        return True
+    ids = [r["id"] for r in rows]
+    return ids == list(range(ids[0], ids[0] + len(ids)))

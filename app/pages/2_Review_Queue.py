@@ -1,6 +1,7 @@
 """Match Review — payments the matching agent wasn't sure about."""
 
 import sys
+import re
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -11,6 +12,105 @@ import streamlit as st
 from app.Home import get_db
 from app.style import apply_theme, badge, fmt_inr, fmt_amount, fmt_date_display, metric_subtitle
 from ledger.db import log_audit
+
+
+def format_match_reason(reason_str: str) -> str:
+    """Convert internal reason codes to human-readable text.
+
+    Examples of internal codes:
+        "exact_amount+name_match(85)+global(3)"
+        "amount+name(100.0)_vs_second(47.6)+fifo+global(11)"
+        "blank_payer+3_same_amount"
+        "exact_amount+blank_payer+globally_unique"
+        "no_amount_match"
+        "ambiguous:5_candidates"
+        "no_candidates_after_shortlist"
+        "api_error:..."
+        "json_parse_error: ..."
+        "manually_assigned"
+        "suspicious_payer_text"
+        "invalid_amount"
+        "payment_date_too_old"
+    """
+    if not reason_str:
+        return "No reason provided"
+
+    r = reason_str.strip()
+
+    # Simple known tokens
+    if r == "manually_assigned":
+        return "Manually assigned by a user"
+    if r == "no_amount_match":
+        return "No installment matches the payment amount"
+    if r == "invalid_amount":
+        return "Payment amount is invalid"
+    if r == "suspicious_payer_text":
+        return "Payer name looks suspicious or invalid"
+    if r == "payment_date_too_old":
+        return "Payment date is too far in the past"
+    if r == "no_candidates_after_shortlist":
+        return "No viable candidates remained after shortlisting"
+    if r == "no_api_key":
+        return "AI matching skipped (no API key configured)"
+    if r.startswith("api_error:"):
+        return "AI matching failed due to an API error"
+    if r.startswith("json_parse_error"):
+        return "AI matching failed (could not parse response)"
+    if r.startswith("no_valid_ids_in_response"):
+        return "AI returned installment IDs that don't exist"
+
+    # Ambiguous
+    m = re.match(r"ambiguous:(\d+)_candidates", r)
+    if m:
+        return f"Ambiguous: {m.group(1)} candidates with similar amounts"
+
+    # Composite reasons built with '+' separators
+    parts = []
+
+    if "exact_amount" in r or r.startswith("amount"):
+        parts.append("Payment amount matches an installment exactly")
+
+    # name_match(score) or name(score)_vs_second(score)
+    nm = re.search(r"name(?:_match)?\(([0-9.]+)\)", r)
+    if nm:
+        score = float(nm.group(1))
+        parts.append(f"Payer name similarity: {score:.0f}%")
+
+    vs = re.search(r"vs_second\(([0-9.]+)\)", r)
+    if vs:
+        second = float(vs.group(1))
+        parts.append(f"Next-best name match: {second:.0f}%")
+
+    if "weak_name" in r:
+        wn = re.search(r"weak_name\(([0-9.]+)\)", r)
+        score_val = float(wn.group(1)) if wn else 0
+        parts.append(f"Payer name is a weak match ({score_val:.0f}%)")
+
+    if "blank_payer" in r:
+        parts.append("Payer name was blank on the bank statement")
+
+    if "globally_unique" in r:
+        parts.append("Only one installment matches this amount globally")
+
+    gm = re.search(r"global\((\d+)\)", r)
+    if gm:
+        count = int(gm.group(1))
+        parts.append(f"{count} installments share this amount across all students")
+
+    bm = re.search(r"(\d+)_same_amount", r)
+    if bm and not gm:
+        count = int(bm.group(1))
+        parts.append(f"{count} installments share this amount")
+
+    if "fifo" in r.lower() or "FIFO" in r:
+        parts.append("Earliest due date selected (FIFO)")
+
+    # AI free-text reason (from the LLM) -- if none of the patterns matched
+    if not parts:
+        return r
+
+    return ". ".join(parts) + "."
+
 
 st.set_page_config(page_title="Match Review | Educore", page_icon="💰", layout="wide")
 apply_theme()
@@ -46,6 +146,30 @@ if not pending:
     st.success("No payments pending review — all matched or resolved!")
     st.stop()
 
+# ── Bug 5: Bulk approve button for high-confidence items ──
+high_conf_items = [r for r in pending if r["confidence"] >= 0.90]
+if high_conf_items:
+    if st.button(
+        f"Bulk approve {len(high_conf_items)} item(s) with confidence >= 90%",
+        type="primary",
+        key="bulk_approve",
+    ):
+        for item in high_conf_items:
+            mid = item["match_id"]
+            allocs_raw = json.loads(item["allocations"]) if item["allocations"] else []
+            conn.execute("UPDATE match_result SET status='approved' WHERE id=?", (mid,))
+            log_audit(conn, "finance_lead", "bulk_approve_match",
+                      f"match:{mid}", "pending_review", "approved")
+            for a in allocs_raw:
+                conn.execute(
+                    "UPDATE installment SET status='paid' WHERE id=?",
+                    (a["installment_id"],),
+                )
+        conn.commit()
+        st.session_state.selected_idx = 0
+        st.toast(f"Bulk approved {len(high_conf_items)} match(es)!")
+        st.rerun()
+
 # ── Layout: left list + right detail ──
 left, right = st.columns([2, 3])
 
@@ -62,6 +186,7 @@ with left:
             amount = fmt_amount(row['amount_paid_paise'], row['currency'])
             method = (row['pay_method'] or row['source'] or '').upper()
             date_str = fmt_date_display(row['date'])
+            # Bug 2: show actual confidence percentage
             conf = f"{row['confidence']:.0%}"
 
             # Highlight selected
@@ -90,6 +215,7 @@ with left:
 # ── Right side: detail ──
 row = pending[st.session_state.selected_idx]
 allocs = json.loads(row['allocations']) if row['allocations'] else []
+insts = []  # populated below if allocs exist
 
 with right:
     # Bank statement card
@@ -115,6 +241,7 @@ with right:
 
     # Matching agent suggestion card
     with st.container(border=True):
+        # Bug 2: show actual confidence percentage from the match result
         conf_pct = f'{row["confidence"]:.0%} sure'
         needs = "auto-match needs 95%"
         header_cols = st.columns([3, 2])
@@ -149,8 +276,7 @@ with right:
                     f'{inst["student_name"]} — {inst["program"]}</p>',
                     unsafe_allow_html=True,
                 )
-                # Reasoning bullets
-                reasons = row["reason"].split("+") if row["reason"] else []
+                # Bug 1: show human-readable reason text instead of raw debug strings
                 payer_name = row["payer_name"] or "(blank)"
                 bullets = []
                 if payer_name != "(blank)":
@@ -167,7 +293,7 @@ with right:
                         f"status: {inst['status']}."
                     )
                 if row["reason"]:
-                    bullets.append(f"Matcher reason: _{row['reason']}_")
+                    bullets.append(f"Matcher reasoning: {format_match_reason(row['reason'])}")
 
                 for b in bullets:
                     st.markdown(f"- {b}")
@@ -179,13 +305,14 @@ with right:
     # Other possibilities table
     with st.container(border=True):
         st.markdown("### Other possibilities")
+        # Bug 3: filter out installments with status='paid'
         others = conn.execute(
             "SELECT i.id, i.due_date, i.amount_due_paise, i.currency, i.status, "
             "e.program, e.fee_model, s.name as student_name "
             "FROM installment i "
             "JOIN enrollment e ON i.enrollment_id = e.id "
             "JOIN student s ON e.student_id = s.id "
-            "WHERE i.amount_due_paise = ? AND i.currency = ? "
+            "WHERE i.amount_due_paise = ? AND i.currency = ? AND i.status != 'paid' "
             "ORDER BY i.due_date LIMIT 8",
             (row['amount_paid_paise'], row['currency']),
         ).fetchall()
@@ -301,4 +428,11 @@ with right:
     st.caption(
         "Approving records the payment, updates the student's balance, "
         "credits their counselor's commission, and logs who approved it and when."
+    )
+
+    # Bug 4: keyboard shortcuts hint
+    st.markdown(
+        '<p style="color:#8395a7; font-size:0.8rem; margin-top:16px;">'
+        'Keyboard: A=approve, N=next, R=reject</p>',
+        unsafe_allow_html=True,
     )

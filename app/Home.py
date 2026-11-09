@@ -15,6 +15,98 @@ DATA_DIR = PROJECT_ROOT / "data"
 _DB_FILE = PROJECT_ROOT / "data" / "_app_ledger.db"
 
 
+def compute_dashboard_stats(conn, as_of: date) -> dict:
+    """Compute all dashboard numbers from one source of truth.
+
+    Returns a dict with keys:
+        total_payments, total_received, confirmed,
+        overdue_count, overdue_amount,
+        unmatched_count, unmatched_amount,
+        suggested_count, needs_review_count, matched_count,
+        forecast_weeks (list of dicts with Week / Scheduled / Less certain)
+    """
+    as_of_iso = as_of.isoformat()
+
+    total_payments = conn.execute("SELECT COUNT(*) FROM payment_in").fetchone()[0]
+    total_received = conn.execute(
+        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in"
+    ).fetchone()[0]
+    confirmed = conn.execute(
+        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE confirmation='in_bank'"
+    ).fetchone()[0]
+
+    # Overdue: open installments whose due_date is before as_of
+    overdue_count = conn.execute(
+        "SELECT COUNT(*) FROM installment WHERE status='open' AND due_date < ?",
+        (as_of_iso,),
+    ).fetchone()[0]
+    overdue_amount = conn.execute(
+        "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment "
+        "WHERE status='open' AND due_date < ?",
+        (as_of_iso,),
+    ).fetchone()[0]
+
+    # Payment match states --------------------------------------------------
+    # unmatched: no match_result row at all
+    unmatched_count = conn.execute(
+        "SELECT COUNT(*) FROM payment_in p "
+        "LEFT JOIN match_result mr ON mr.payment_id = p.id "
+        "WHERE mr.id IS NULL"
+    ).fetchone()[0]
+    unmatched_amount = conn.execute(
+        "SELECT COALESCE(SUM(p.amount_paid_paise), 0) FROM payment_in p "
+        "LEFT JOIN match_result mr ON mr.payment_id = p.id "
+        "WHERE mr.id IS NULL"
+    ).fetchone()[0]
+    # suggested: pending_review WITH allocations (non-empty)
+    suggested_count = conn.execute(
+        "SELECT COUNT(*) FROM match_result "
+        "WHERE status='pending_review' AND allocations != '[]'"
+    ).fetchone()[0]
+    # needs_review: pending_review with empty allocations
+    needs_review_count = conn.execute(
+        "SELECT COUNT(*) FROM match_result "
+        "WHERE status='pending_review' AND allocations = '[]'"
+    ).fetchone()[0]
+    # matched: auto or approved
+    matched_count = conn.execute(
+        "SELECT COUNT(*) FROM match_result WHERE status IN ('auto','approved')"
+    ).fetchone()[0]
+
+    # Cash forecast: actual installment amounts in the next 6 weeks ---------
+    forecast_weeks = []
+    for i in range(6):
+        week_start = as_of + timedelta(weeks=i)
+        week_end = week_start + timedelta(days=6)
+        label = week_start.strftime("%-d %b")
+        scheduled = conn.execute(
+            "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment "
+            "WHERE status IN ('open','partial') AND due_date BETWEEN ? AND ?",
+            (week_start.isoformat(), week_end.isoformat()),
+        ).fetchone()[0]
+        # "Less certain" = apply a haircut for late-paying families
+        likely = int(scheduled * 0.7)
+        forecast_weeks.append({
+            "Week": label,
+            "Scheduled": scheduled / 100,   # convert paise to rupees for display
+            "Less certain": likely / 100,
+        })
+
+    return {
+        "total_payments": total_payments,
+        "total_received": total_received,
+        "confirmed": confirmed,
+        "overdue_count": overdue_count,
+        "overdue_amount": overdue_amount,
+        "unmatched_count": unmatched_count,
+        "unmatched_amount": unmatched_amount,
+        "suggested_count": suggested_count,
+        "needs_review_count": needs_review_count,
+        "matched_count": matched_count,
+        "forecast_weeks": forecast_weeks,
+    }
+
+
 @st.cache_resource
 def get_db():
     """Load data and run matcher (cached across reruns)."""
@@ -58,13 +150,37 @@ def main():
         layout="wide",
     )
 
+    from app.auth import check_auth
+    if not check_auth():
+        st.stop()
+
     from app.style import apply_theme, badge, metric_subtitle, fmt_inr, fmt_amount, fmt_date_display
     apply_theme()
 
-    # Sidebar branding
+    conn = get_db()
+
+    # ── Determine the "as of" date from sidebar ──
+    # Read max due_date from installments to set a sensible default
+    max_date_row = conn.execute(
+        "SELECT MAX(due_date) FROM installment WHERE due_date IS NOT NULL"
+    ).fetchone()
+    if max_date_row and max_date_row[0]:
+        default_as_of = date.fromisoformat(max_date_row[0])
+    else:
+        default_as_of = date(2026, 9, 30)
+
+    # Sidebar branding + date picker
     with st.sidebar:
         st.markdown("## Educore")
         st.caption("Finance Desk")
+        st.markdown("---")
+        as_of = st.date_input(
+            "As-of date",
+            value=default_as_of,
+            min_value=date(2025, 4, 1),
+            max_value=date(2026, 9, 30),
+            help="All overdue / forecast calculations use this date.",
+        )
         st.markdown("---")
         st.markdown(
             '<p style="color:#8395a7; font-size:0.75rem; margin-top:2rem;">'
@@ -75,31 +191,24 @@ def main():
             unsafe_allow_html=True,
         )
 
-    conn = get_db()
+    # ── Compute all stats from one helper ──
+    stats = compute_dashboard_stats(conn, as_of)
 
     # ── Header ──
-    today = date(2025, 11, 5)
-    st.caption(today.strftime("%A, %-d %B"))
+    st.caption(as_of.strftime("%A, %-d %B %Y"))
     st.title("Today")
 
     # ── Briefing card ──
-    total_payments = conn.execute("SELECT COUNT(*) FROM payment_in").fetchone()[0]
-    auto_matched = conn.execute(
-        "SELECT COUNT(*) FROM match_result WHERE status='auto'"
-    ).fetchone()[0]
-    pending_review = conn.execute(
-        "SELECT COUNT(*) FROM match_result WHERE status='pending_review'"
-    ).fetchone()[0]
-    overdue_count = conn.execute(
-        "SELECT COUNT(*) FROM installment WHERE status='overdue'"
-    ).fetchone()[0]
+    auto_matched = stats["matched_count"]
+    pending_review = stats["suggested_count"] + stats["needs_review_count"]
+    overdue_count = stats["overdue_count"]
 
     from agents.risk import scan_risks
-    risk_flags = scan_risks(conn, as_of=today)
+    risk_flags = scan_risks(conn, as_of=as_of)
     high_risk = [f for f in risk_flags if f.severity == "high"]
 
     from agents.reminders import generate_reminders
-    reminders = generate_reminders(conn, as_of=today)
+    reminders = generate_reminders(conn, as_of=as_of)
     overdue_reminders = [r for r in reminders if r.reminder_type == "overdue"]
 
     with st.container(border=True):
@@ -126,46 +235,39 @@ def main():
     st.write("")
 
     # ── Metric cards ──
-    total_received = conn.execute(
-        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in"
-    ).fetchone()[0]
-    confirmed = conn.execute(
-        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE confirmation='in_bank'"
-    ).fetchone()[0]
-
-    waiting = conn.execute(
-        "SELECT COUNT(*) FROM payment_in p "
-        "LEFT JOIN match_result mr ON mr.payment_id = p.id AND mr.status IN ('auto','approved') "
-        "WHERE mr.id IS NULL"
-    ).fetchone()[0]
-    waiting_amount = conn.execute(
-        "SELECT COALESCE(SUM(p.amount_paid_paise), 0) FROM payment_in p "
-        "LEFT JOIN match_result mr ON mr.payment_id = p.id AND mr.status IN ('auto','approved') "
-        "WHERE mr.id IS NULL"
-    ).fetchone()[0]
-
-    overdue_amount = conn.execute(
-        "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment WHERE status='overdue'"
-    ).fetchone()[0]
-
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Received this month", fmt_inr(total_received))
-        st.markdown(metric_subtitle(f"{fmt_inr(confirmed)} confirmed in bank"), unsafe_allow_html=True)
+        st.metric("Received (total)", fmt_inr(stats["total_received"]))
+        st.markdown(metric_subtitle(f"{fmt_inr(stats['confirmed'])} confirmed in bank"), unsafe_allow_html=True)
     with col2:
-        st.metric("Waiting for a match", str(waiting))
-        st.markdown(metric_subtitle(f"{fmt_inr(waiting_amount)} · oldest 9 days"), unsafe_allow_html=True)
+        st.metric("Unmatched", str(stats["unmatched_count"]))
+        st.markdown(metric_subtitle(f"{fmt_inr(stats['unmatched_amount'])} with no match"), unsafe_allow_html=True)
     with col3:
         st.metric("Installments overdue", str(overdue_count))
         st.markdown(
             f'<p style="color:#e74c3c; font-size:0.8rem; margin-top:-8px;">'
-            f'{fmt_inr(overdue_amount)} outstanding</p>',
+            f'{fmt_inr(stats["overdue_amount"])} outstanding</p>',
             unsafe_allow_html=True,
         )
     with col4:
         counselor_count = conn.execute("SELECT COUNT(DISTINCT id) FROM counselor").fetchone()[0]
         st.metric("Commissions ready", "—")
         st.markdown(metric_subtitle(f"{counselor_count} counselors · after 2% TDS"), unsafe_allow_html=True)
+
+    st.write("")
+
+    # ── Match-state summary ──
+    with st.container(border=True):
+        st.markdown("### Payment match states")
+        s1, s2, s3, s4 = st.columns(4)
+        s1.metric("Unmatched", stats["unmatched_count"])
+        s1.caption("No match attempted yet")
+        s2.metric("Suggested", stats["suggested_count"])
+        s2.caption("AI/rules suggested allocations — review needed")
+        s3.metric("Needs review", stats["needs_review_count"])
+        s3.caption("Low-confidence or no allocations — manual review")
+        s4.metric("Matched", stats["matched_count"])
+        s4.caption("Auto-matched or human-approved")
 
     st.write("")
 
@@ -230,20 +332,8 @@ def main():
             st.markdown("### Expected cash, next 6 weeks")
             st.caption("From installments already scheduled, adjusted for how late families usually pay")
 
-            # Generate a simple forecast chart
-            import random
-            random.seed(42)
-            weeks = []
-            base = today
-            for i in range(6):
-                week_start = base + timedelta(weeks=i)
-                label = week_start.strftime("%-d %b")
-                scheduled = random.randint(800_000, 2_200_000)
-                likely = int(scheduled * random.uniform(0.5, 0.85))
-                weeks.append({"Week": label, "Scheduled": scheduled, "Less certain": likely})
-
             import pandas as pd
-            df = pd.DataFrame(weeks)
+            df = pd.DataFrame(stats["forecast_weeks"])
             df = df.set_index("Week")
             st.bar_chart(df, color=["#1a6b5a", "#b2dfdb"])
 

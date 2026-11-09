@@ -25,12 +25,15 @@ class CopilotAnswer:
 # Question patterns → handlers
 _PATTERNS = [
     (r"(?:how much|total).*(?:received|collected|income)", "total_received"),
-    (r"(?:how much|total).*(?:paid out|spent|outgoing|expenses)", "total_paid_out"),
-    (r"(?:how many|count).*(?:payment|transaction).*(?:in|received)", "count_payments"),
-    (r"(?:how many).*student", "count_students"),
+    (r"(?:how much|total).*(?:paid out|spent|outgoing|expenses?)", "total_paid_out"),
+    (r"(?:how much).*(?:spend|spent)", "total_paid_out"),
+    (r"(?:what are).*(?:expenses?|outgoing)", "total_paid_out"),
     (r"(?:how many).*overdue", "count_overdue"),
+    (r"(?:how many|count).*(?:payment|transaction)", "count_payments"),
+    (r"(?:how many).*student", "count_students"),
     (r"(?:who|which).*(?:owe|outstanding|unpaid|balance)", "who_owes"),
     (r"(?:who|which).*(?:paid|payment).*(?:most|largest|biggest|highest)", "largest_payments"),
+    (r"(?:biggest|largest|highest).*(?:payment|transaction)", "largest_payments"),
     (r"(?:unmatched|not matched|pending)", "unmatched_payments"),
     (r"(?:commission|counselor).*(?:total|earned|due|owed)", "commission_totals"),
     (r"(?:payment|transaction).*(?:for|from|by)\s+(.+)", "payments_for"),

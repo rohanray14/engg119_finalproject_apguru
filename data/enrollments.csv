@@ -1,246 +1,249 @@
 id,student_id,program,fee_model,total_fee_paise,currency,gst_applicable
-1,1001,IB Math,hourly,4130000,INR,True
-2,1002,AMC,package,27848000,INR,True
-3,1003,GRE,package,14160000,INR,True
-4,1004,AMC,package,180000,USD,False
-5,1004,A Level Chemistry,hourly,150000,AED,False
-6,1005,SAT,package,480000,AED,False
-7,1006,GMAT,package,14160000,INR,True
-8,1007,SAT,package,27848000,INR,True
-9,1008,GMAT,package,15000000,INR,True
-10,1009,IB Math,hourly,11800000,INR,True
-11,1010,SAT,package,5900000,INR,True
-12,1011,TMUA,package,17700000,INR,True
-13,1012,IB Chemistry,hourly,40000,USD,False
-14,1013,GMAT,package,23600000,INR,True
-15,1014,GRE,package,150000,AED,False
-16,1015,AMC,package,15000000,INR,True
-17,1016,A Level Chemistry,hourly,5900000,INR,True
-18,1017,IGCSE Math,hourly,11800000,INR,True
-19,1018,A Level Chemistry,hourly,11800000,INR,True
-20,1019,IB Math,hourly,150000,AED,False
-21,1020,A Level Math,hourly,4130000,INR,True
-22,1020,A Level Math,hourly,11800000,INR,True
-23,1021,IB Economics,hourly,40000,USD,False
-24,1021,SAT,package,480000,AED,False
-25,1022,AMC,package,14160000,INR,True
-26,1023,IB Economics,hourly,40000,USD,False
-27,1024,AP,package,14160000,INR,True
-28,1025,IGCSE Physics,hourly,40000,USD,False
-29,1025,GRE,package,40000,USD,False
-30,1026,IB Physics,hourly,5900000,INR,True
-31,1026,GRE,package,14160000,INR,True
-32,1027,SAT,package,5900000,INR,True
-33,1028,IGCSE Math,hourly,11800000,INR,True
-34,1028,SAT,package,11800000,INR,True
-35,1029,TMUA,package,17700000,INR,True
-36,1030,A Level Math,hourly,11800000,INR,True
-37,1031,A Level Physics,hourly,4130000,INR,True
-38,1031,GMAT,package,13924000,INR,True
-39,1032,TMUA,package,11800000,INR,True
-40,1032,GMAT,package,17700000,INR,True
-41,1033,SAT,package,27848000,INR,True
-42,1034,A Level Math,hourly,40000,USD,False
-43,1035,AMC,package,23600000,INR,True
-44,1036,GRE,package,24780000,INR,True
-45,1037,IB Physics,hourly,40000,USD,False
-46,1037,GMAT,package,480000,AED,False
-47,1038,AP,package,14160000,INR,True
-48,1039,TMUA,package,24780000,INR,True
-49,1040,IB Chemistry,hourly,4130000,INR,True
-50,1041,SAT,package,900000,AED,False
-51,1042,A Level Physics,hourly,40000,USD,False
-52,1043,IB Economics,hourly,11800000,INR,True
-53,1044,SAT,package,260000,USD,False
-54,1045,IGCSE Math,hourly,11800000,INR,True
-55,1046,IGCSE Math,hourly,5900000,INR,True
-56,1047,AP,package,13924000,INR,True
-57,1048,GRE,package,150000,AED,False
-58,1049,AMC,package,11800000,INR,True
-59,1050,IB Economics,hourly,40000,USD,False
-60,1051,GMAT,package,260000,USD,False
-61,1052,TMUA,package,24780000,INR,True
-62,1053,SAT,package,140000,USD,False
-63,1053,A Level Physics,hourly,150000,AED,False
-64,1054,TMUA,package,17700000,INR,True
-65,1055,IB Physics,hourly,11800000,INR,True
-66,1056,IGCSE Physics,hourly,150000,AED,False
-67,1057,SAT,package,900000,AED,False
-68,1058,GMAT,package,13924000,INR,True
-69,1059,SAT,package,5900000,INR,True
-70,1060,AP,package,14160000,INR,True
-71,1061,A Level Physics,hourly,5900000,INR,True
-72,1061,IB Economics,hourly,11800000,INR,True
-73,1062,AMC,package,180000,USD,False
-74,1063,IGCSE Physics,hourly,150000,AED,False
-75,1063,IB Economics,hourly,150000,AED,False
-76,1064,GRE,package,22420000,INR,True
-77,1065,IB Physics,hourly,40000,USD,False
-78,1066,TMUA,package,13924000,INR,True
-79,1067,A Level Chemistry,hourly,11800000,INR,True
-80,1068,AP,package,150000,AED,False
-81,1069,AP,package,24780000,INR,True
-82,1069,IB Math,hourly,4130000,INR,True
-83,1070,AMC,package,24780000,INR,True
-84,1071,GRE,package,150000,AED,False
-85,1072,IB Physics,hourly,11800000,INR,True
-86,1073,AMC,package,13924000,INR,True
-87,1074,GMAT,package,24780000,INR,True
-88,1075,IB Economics,hourly,4130000,INR,True
-89,1076,GRE,package,480000,AED,False
-90,1077,IB Physics,hourly,150000,AED,False
-91,1078,GMAT,package,17700000,INR,True
-92,1078,TMUA,package,5900000,INR,True
-93,1079,TMUA,package,27848000,INR,True
-94,1080,A Level Chemistry,hourly,11800000,INR,True
-95,1081,A Level Math,hourly,40000,USD,False
-96,1082,AMC,package,150000,AED,False
-97,1083,AP,package,11800000,INR,True
-98,1083,IB Physics,hourly,4130000,INR,True
-99,1084,SAT,package,22420000,INR,True
-100,1085,TMUA,package,27848000,INR,True
-101,1086,IB Physics,hourly,40000,USD,False
-102,1086,TMUA,package,900000,AED,False
-103,1087,IGCSE Math,hourly,40000,USD,False
-104,1088,IGCSE Math,hourly,11800000,INR,True
-105,1089,TMUA,package,4130000,INR,True
-106,1089,SAT,package,24780000,INR,True
-107,1090,TMUA,package,22420000,INR,True
-108,1091,GRE,package,27848000,INR,True
-109,1091,A Level Math,hourly,11800000,INR,True
-110,1092,SAT,package,15000000,INR,True
-111,1093,SAT,package,22420000,INR,True
-112,1094,A Level Physics,hourly,150000,AED,False
-113,1095,IB Physics,hourly,40000,USD,False
-114,1096,IB Physics,hourly,11800000,INR,True
-115,1097,IGCSE Physics,hourly,40000,USD,False
-116,1098,IB Chemistry,hourly,4130000,INR,True
-117,1099,GRE,package,4130000,INR,True
-118,1100,AP,package,5900000,INR,True
-119,1100,A Level Chemistry,hourly,5900000,INR,True
-120,1101,A Level Math,hourly,4130000,INR,True
-121,1102,IGCSE Physics,hourly,40000,USD,False
-122,1103,AP,package,480000,AED,False
-123,1103,GMAT,package,140000,USD,False
-124,1104,A Level Physics,hourly,40000,USD,False
-125,1105,AP,package,13924000,INR,True
-126,1106,GMAT,package,150000,AED,False
-127,1106,TMUA,package,900000,AED,False
-128,1107,SAT,package,24780000,INR,True
-129,1107,GRE,package,4130000,INR,True
-130,1108,IB Chemistry,hourly,40000,USD,False
-131,1109,GMAT,package,13924000,INR,True
-132,1110,IB Chemistry,hourly,5900000,INR,True
-133,1111,SAT,package,11800000,INR,True
-134,1112,GMAT,package,140000,USD,False
-135,1113,IGCSE Math,hourly,11800000,INR,True
-136,1113,AP,package,11800000,INR,True
-137,1114,GMAT,package,13924000,INR,True
-138,1114,A Level Math,hourly,5900000,INR,True
-139,1115,GMAT,package,15000000,INR,True
-140,1116,IGCSE Physics,hourly,40000,USD,False
-141,1117,A Level Physics,hourly,40000,USD,False
-142,1118,GMAT,package,27848000,INR,True
-143,1119,GRE,package,13924000,INR,True
-144,1120,A Level Physics,hourly,5900000,INR,True
-145,1120,IGCSE Math,hourly,5900000,INR,True
-146,1121,TMUA,package,4130000,INR,True
-147,1122,AMC,package,5900000,INR,True
-148,1123,SAT,package,150000,AED,False
-149,1124,GRE,package,480000,AED,False
-150,1125,AMC,package,4130000,INR,True
-151,1126,GRE,package,14160000,INR,True
-152,1126,TMUA,package,13924000,INR,True
-153,1127,IB Math,hourly,5900000,INR,True
-154,1128,IGCSE Physics,hourly,11800000,INR,True
-155,1129,IB Economics,hourly,11800000,INR,True
-156,1129,GMAT,package,22420000,INR,True
-157,1130,A Level Physics,hourly,4130000,INR,True
-158,1131,IB Economics,hourly,11800000,INR,True
-159,1132,A Level Math,hourly,40000,USD,False
-160,1132,A Level Math,hourly,40000,USD,False
-161,1133,A Level Physics,hourly,150000,AED,False
-162,1133,IB Economics,hourly,40000,USD,False
-163,1134,SAT,package,180000,USD,False
-164,1135,IGCSE Physics,hourly,11800000,INR,True
-165,1136,IB Chemistry,hourly,11800000,INR,True
-166,1137,AP,package,260000,USD,False
-167,1138,GRE,package,150000,AED,False
-168,1138,IB Physics,hourly,40000,USD,False
-169,1139,A Level Physics,hourly,4130000,INR,True
-170,1140,A Level Physics,hourly,4130000,INR,True
-171,1141,AMC,package,4130000,INR,True
-172,1142,IB Chemistry,hourly,4130000,INR,True
-173,1143,IB Economics,hourly,4130000,INR,True
-174,1144,A Level Chemistry,hourly,5900000,INR,True
-175,1145,TMUA,package,23600000,INR,True
-176,1146,IB Physics,hourly,40000,USD,False
-177,1146,SAT,package,150000,AED,False
-178,1147,SAT,package,13924000,INR,True
-179,1148,GMAT,package,14160000,INR,True
-180,1149,A Level Math,hourly,150000,AED,False
-181,1150,IB Physics,hourly,150000,AED,False
-182,1151,AMC,package,23600000,INR,True
-183,1151,GMAT,package,24780000,INR,True
-184,1152,AP,package,27848000,INR,True
-185,1153,IGCSE Physics,hourly,5900000,INR,True
-186,1154,IGCSE Physics,hourly,5900000,INR,True
-187,1155,TMUA,package,22420000,INR,True
-188,1156,GMAT,package,240000,USD,False
-189,1156,IB Economics,hourly,40000,USD,False
-190,1157,IB Physics,hourly,40000,USD,False
-191,1158,AP,package,480000,AED,False
-192,1159,GRE,package,27848000,INR,True
-193,1160,GRE,package,15000000,INR,True
-194,1160,A Level Chemistry,hourly,5900000,INR,True
-195,1161,IB Chemistry,hourly,11800000,INR,True
-196,1162,A Level Math,hourly,4130000,INR,True
-197,1163,GMAT,package,15000000,INR,True
-198,1164,IGCSE Math,hourly,11800000,INR,True
-199,1164,AP,package,11800000,INR,True
-200,1165,A Level Chemistry,hourly,4130000,INR,True
-201,1166,GRE,package,180000,USD,False
-202,1167,A Level Physics,hourly,40000,USD,False
-203,1168,SAT,package,140000,USD,False
-204,1168,SAT,package,150000,AED,False
-205,1169,GMAT,package,140000,USD,False
-206,1170,IB Chemistry,hourly,11800000,INR,True
-207,1170,AMC,package,4130000,INR,True
-208,1171,IGCSE Physics,hourly,5900000,INR,True
-209,1172,AMC,package,480000,AED,False
-210,1172,TMUA,package,900000,AED,False
-211,1173,IB Economics,hourly,150000,AED,False
-212,1174,GRE,package,260000,USD,False
-213,1175,A Level Math,hourly,11800000,INR,True
-214,1176,IB Physics,hourly,11800000,INR,True
-215,1177,SAT,package,27848000,INR,True
-216,1178,IB Math,hourly,150000,AED,False
-217,1179,TMUA,package,13924000,INR,True
-218,1180,TMUA,package,150000,AED,False
-219,1181,SAT,package,11800000,INR,True
-220,1182,TMUA,package,27848000,INR,True
-221,1183,GRE,package,11800000,INR,True
-222,1183,IGCSE Math,hourly,11800000,INR,True
-223,1184,AMC,package,17700000,INR,True
-224,1185,AMC,package,14160000,INR,True
-225,1186,GMAT,package,13924000,INR,True
-226,1187,TMUA,package,17700000,INR,True
-227,1188,A Level Chemistry,hourly,150000,AED,False
-228,1188,TMUA,package,240000,USD,False
-229,1189,IB Chemistry,hourly,150000,AED,False
-230,1189,A Level Chemistry,hourly,40000,USD,False
-231,1190,AMC,package,22420000,INR,True
-232,1190,IGCSE Physics,hourly,5900000,INR,True
-233,1191,AP,package,5900000,INR,True
-234,1192,AP,package,180000,USD,False
-235,1193,IGCSE Physics,hourly,11800000,INR,True
-236,1194,IGCSE Physics,hourly,4130000,INR,True
-237,1195,AMC,package,5900000,INR,True
-238,1196,GMAT,package,4130000,INR,True
-239,1197,AMC,package,40000,USD,False
-240,1198,IB Math,hourly,150000,AED,False
-241,1198,A Level Math,hourly,40000,USD,False
-242,1199,A Level Physics,hourly,11800000,INR,True
-243,1199,SAT,package,4130000,INR,True
-244,1200,SAT,package,15000000,INR,True
-245,1200,A Level Chemistry,hourly,5900000,INR,True
+1,1001,IB Chemistry,hourly,4130000,INR,True
+2,1002,IB Physics,hourly,4130000,INR,True
+3,1003,AMC,package,140000,USD,False
+4,1004,AMC,package,23600000,INR,True
+5,1005,IB Chemistry,hourly,5900000,INR,True
+6,1006,AMC,package,17700000,INR,True
+7,1006,SAT,package,22420000,INR,True
+8,1007,TMUA,package,140000,USD,False
+9,1008,IB Economics,hourly,150000,AED,False
+10,1008,AP,package,480000,AED,False
+11,1009,AP,package,480000,AED,False
+12,1010,GMAT,package,22420000,INR,True
+13,1011,IB Physics,hourly,5900000,INR,True
+14,1012,IGCSE Math,hourly,11800000,INR,True
+15,1012,GRE,package,11800000,INR,True
+16,1013,GRE,package,180000,USD,False
+17,1014,AP,package,40000,USD,False
+18,1015,IB Physics,hourly,5900000,INR,True
+19,1016,AP,package,23600000,INR,True
+20,1017,AP,package,480000,AED,False
+21,1017,IGCSE Math,hourly,150000,AED,False
+22,1018,AP,package,23600000,INR,True
+23,1019,A Level Math,hourly,5900000,INR,True
+24,1020,A Level Math,hourly,150000,AED,False
+25,1021,AMC,package,4130000,INR,True
+26,1022,IB Math,hourly,4130000,INR,True
+27,1023,AMC,package,15000000,INR,True
+28,1024,GRE,package,4130000,INR,True
+29,1024,IB Physics,hourly,11800000,INR,True
+30,1025,A Level Physics,hourly,4130000,INR,True
+31,1026,TMUA,package,5900000,INR,True
+32,1026,AP,package,23600000,INR,True
+33,1027,AMC,package,27848000,INR,True
+34,1028,GRE,package,14160000,INR,True
+35,1028,A Level Physics,hourly,5900000,INR,True
+36,1029,GRE,package,5900000,INR,True
+37,1030,AMC,package,23600000,INR,True
+38,1030,AP,package,11800000,INR,True
+39,1031,TMUA,package,40000,USD,False
+40,1032,IB Economics,hourly,11800000,INR,True
+41,1033,SAT,package,260000,USD,False
+42,1034,AP,package,11800000,INR,True
+43,1034,AP,package,14160000,INR,True
+44,1035,SAT,package,5900000,INR,True
+45,1036,GRE,package,27848000,INR,True
+46,1037,A Level Physics,hourly,40000,USD,False
+47,1037,AP,package,180000,USD,False
+48,1038,A Level Chemistry,hourly,5900000,INR,True
+49,1039,IB Math,hourly,4130000,INR,True
+50,1039,A Level Physics,hourly,11800000,INR,True
+51,1040,SAT,package,150000,AED,False
+52,1040,AMC,package,180000,USD,False
+53,1041,IGCSE Math,hourly,11800000,INR,True
+54,1042,AP,package,4130000,INR,True
+55,1043,SAT,package,15000000,INR,True
+56,1043,SAT,package,5900000,INR,True
+57,1044,IGCSE Physics,hourly,11800000,INR,True
+58,1045,SAT,package,900000,AED,False
+59,1046,TMUA,package,27848000,INR,True
+60,1047,GRE,package,17700000,INR,True
+61,1048,A Level Physics,hourly,5900000,INR,True
+62,1048,IB Physics,hourly,4130000,INR,True
+63,1049,A Level Physics,hourly,150000,AED,False
+64,1049,AMC,package,260000,USD,False
+65,1050,AMC,package,180000,USD,False
+66,1051,IB Physics,hourly,40000,USD,False
+67,1052,GRE,package,900000,AED,False
+68,1053,GRE,package,11800000,INR,True
+69,1054,IB Physics,hourly,4130000,INR,True
+70,1055,A Level Chemistry,hourly,5900000,INR,True
+71,1056,IB Physics,hourly,11800000,INR,True
+72,1056,IGCSE Physics,hourly,4130000,INR,True
+73,1057,GMAT,package,260000,USD,False
+74,1057,AP,package,900000,AED,False
+75,1058,AMC,package,17700000,INR,True
+76,1059,IGCSE Math,hourly,5900000,INR,True
+77,1059,A Level Math,hourly,11800000,INR,True
+78,1060,GMAT,package,24780000,INR,True
+79,1061,SAT,package,140000,USD,False
+80,1062,GMAT,package,900000,AED,False
+81,1062,GRE,package,480000,AED,False
+82,1063,SAT,package,11800000,INR,True
+83,1064,A Level Math,hourly,40000,USD,False
+84,1065,SAT,package,15000000,INR,True
+85,1065,IGCSE Math,hourly,5900000,INR,True
+86,1066,IB Math,hourly,4130000,INR,True
+87,1067,GMAT,package,4130000,INR,True
+88,1068,GRE,package,14160000,INR,True
+89,1069,AMC,package,150000,AED,False
+90,1070,IB Physics,hourly,4130000,INR,True
+91,1071,SAT,package,22420000,INR,True
+92,1072,GMAT,package,17700000,INR,True
+93,1073,TMUA,package,5900000,INR,True
+94,1074,IB Physics,hourly,5900000,INR,True
+95,1074,IGCSE Math,hourly,5900000,INR,True
+96,1075,GRE,package,22420000,INR,True
+97,1076,IB Economics,hourly,40000,USD,False
+98,1077,GRE,package,150000,AED,False
+99,1078,A Level Physics,hourly,4130000,INR,True
+100,1079,IB Math,hourly,11800000,INR,True
+101,1080,IB Physics,hourly,4130000,INR,True
+102,1081,GRE,package,13924000,INR,True
+103,1082,GRE,package,480000,AED,False
+104,1083,GRE,package,15000000,INR,True
+105,1084,A Level Chemistry,hourly,11800000,INR,True
+106,1085,IB Physics,hourly,11800000,INR,True
+107,1086,TMUA,package,17700000,INR,True
+108,1086,SAT,package,22420000,INR,True
+109,1087,A Level Math,hourly,5900000,INR,True
+110,1088,IB Chemistry,hourly,11800000,INR,True
+111,1089,A Level Math,hourly,5900000,INR,True
+112,1090,GRE,package,22420000,INR,True
+113,1091,IB Economics,hourly,4130000,INR,True
+114,1092,TMUA,package,4130000,INR,True
+115,1092,GRE,package,5900000,INR,True
+116,1093,AMC,package,24780000,INR,True
+117,1094,GMAT,package,22420000,INR,True
+118,1095,GMAT,package,140000,USD,False
+119,1096,SAT,package,24780000,INR,True
+120,1096,GRE,package,4130000,INR,True
+121,1097,GMAT,package,15000000,INR,True
+122,1098,GRE,package,17700000,INR,True
+123,1098,GRE,package,11800000,INR,True
+124,1099,IGCSE Physics,hourly,11800000,INR,True
+125,1100,TMUA,package,27848000,INR,True
+126,1101,TMUA,package,260000,USD,False
+127,1102,IGCSE Physics,hourly,40000,USD,False
+128,1103,SAT,package,14160000,INR,True
+129,1104,GMAT,package,24780000,INR,True
+130,1105,IGCSE Math,hourly,11800000,INR,True
+131,1105,TMUA,package,27848000,INR,True
+132,1106,GRE,package,17700000,INR,True
+133,1106,GRE,package,27848000,INR,True
+134,1107,A Level Physics,hourly,11800000,INR,True
+135,1108,GRE,package,13924000,INR,True
+136,1109,IGCSE Physics,hourly,5900000,INR,True
+137,1110,AP,package,140000,USD,False
+138,1111,GMAT,package,27848000,INR,True
+139,1112,IB Chemistry,hourly,5900000,INR,True
+140,1113,GRE,package,17700000,INR,True
+141,1114,GMAT,package,480000,AED,False
+142,1114,AP,package,480000,AED,False
+143,1115,A Level Math,hourly,5900000,INR,True
+144,1116,IGCSE Physics,hourly,5900000,INR,True
+145,1117,IGCSE Math,hourly,11800000,INR,True
+146,1117,IGCSE Math,hourly,5900000,INR,True
+147,1118,IB Economics,hourly,11800000,INR,True
+148,1118,GMAT,package,22420000,INR,True
+149,1119,GMAT,package,5900000,INR,True
+150,1120,IB Economics,hourly,11800000,INR,True
+151,1121,IGCSE Physics,hourly,150000,AED,False
+152,1122,SAT,package,17700000,INR,True
+153,1123,IB Physics,hourly,4130000,INR,True
+154,1123,IB Math,hourly,4130000,INR,True
+155,1124,IB Math,hourly,4130000,INR,True
+156,1125,GMAT,package,27848000,INR,True
+157,1126,A Level Math,hourly,4130000,INR,True
+158,1127,GMAT,package,15000000,INR,True
+159,1128,IB Physics,hourly,4130000,INR,True
+160,1129,IB Economics,hourly,5900000,INR,True
+161,1129,AMC,package,14160000,INR,True
+162,1130,IGCSE Physics,hourly,5900000,INR,True
+163,1130,IB Chemistry,hourly,4130000,INR,True
+164,1131,IGCSE Physics,hourly,40000,USD,False
+165,1132,IB Math,hourly,11800000,INR,True
+166,1132,IB Math,hourly,4130000,INR,True
+167,1133,A Level Physics,hourly,11800000,INR,True
+168,1134,A Level Chemistry,hourly,4130000,INR,True
+169,1135,GRE,package,23600000,INR,True
+170,1135,IB Physics,hourly,5900000,INR,True
+171,1136,IB Physics,hourly,11800000,INR,True
+172,1137,SAT,package,140000,USD,False
+173,1137,GRE,package,150000,AED,False
+174,1138,AP,package,480000,AED,False
+175,1139,AP,package,900000,AED,False
+176,1140,AMC,package,5900000,INR,True
+177,1141,IB Math,hourly,5900000,INR,True
+178,1141,GMAT,package,4130000,INR,True
+179,1142,SAT,package,22420000,INR,True
+180,1143,IGCSE Physics,hourly,5900000,INR,True
+181,1144,IGCSE Math,hourly,11800000,INR,True
+182,1144,IGCSE Physics,hourly,5900000,INR,True
+183,1145,IB Economics,hourly,5900000,INR,True
+184,1146,TMUA,package,240000,USD,False
+185,1147,AP,package,480000,AED,False
+186,1147,GRE,package,480000,AED,False
+187,1148,TMUA,package,5900000,INR,True
+188,1149,AMC,package,5900000,INR,True
+189,1150,A Level Physics,hourly,5900000,INR,True
+190,1151,TMUA,package,180000,USD,False
+191,1152,IB Physics,hourly,11800000,INR,True
+192,1153,TMUA,package,27848000,INR,True
+193,1154,TMUA,package,27848000,INR,True
+194,1155,AMC,package,17700000,INR,True
+195,1156,IB Economics,hourly,40000,USD,False
+196,1157,A Level Physics,hourly,11800000,INR,True
+197,1158,IB Economics,hourly,150000,AED,False
+198,1159,AMC,package,27848000,INR,True
+199,1160,GRE,package,15000000,INR,True
+200,1161,A Level Math,hourly,5900000,INR,True
+201,1161,A Level Math,hourly,5900000,INR,True
+202,1162,IB Physics,hourly,150000,AED,False
+203,1162,IB Physics,hourly,150000,AED,False
+204,1163,IB Math,hourly,4130000,INR,True
+205,1164,IGCSE Math,hourly,4130000,INR,True
+206,1164,SAT,package,22420000,INR,True
+207,1165,AP,package,24780000,INR,True
+208,1166,AMC,package,15000000,INR,True
+209,1167,IB Chemistry,hourly,5900000,INR,True
+210,1168,IB Economics,hourly,40000,USD,False
+211,1169,IB Economics,hourly,5900000,INR,True
+212,1169,GMAT,package,23600000,INR,True
+213,1170,GMAT,package,23600000,INR,True
+214,1170,A Level Math,hourly,11800000,INR,True
+215,1171,A Level Chemistry,hourly,5900000,INR,True
+216,1172,IB Physics,hourly,5900000,INR,True
+217,1173,GMAT,package,11800000,INR,True
+218,1174,IB Physics,hourly,5900000,INR,True
+219,1175,SAT,package,27848000,INR,True
+220,1176,IB Math,hourly,11800000,INR,True
+221,1177,IGCSE Math,hourly,4130000,INR,True
+222,1178,IB Math,hourly,5900000,INR,True
+223,1179,GMAT,package,4130000,INR,True
+224,1180,IB Math,hourly,150000,AED,False
+225,1181,GRE,package,480000,AED,False
+226,1181,GMAT,package,180000,USD,False
+227,1182,IB Physics,hourly,4130000,INR,True
+228,1183,IGCSE Math,hourly,11800000,INR,True
+229,1184,TMUA,package,5900000,INR,True
+230,1184,TMUA,package,23600000,INR,True
+231,1185,GMAT,package,11800000,INR,True
+232,1185,SAT,package,4130000,INR,True
+233,1186,A Level Math,hourly,5900000,INR,True
+234,1187,A Level Physics,hourly,5900000,INR,True
+235,1188,IGCSE Physics,hourly,11800000,INR,True
+236,1189,AP,package,23600000,INR,True
+237,1190,GRE,package,900000,AED,False
+238,1191,TMUA,package,17700000,INR,True
+239,1192,IGCSE Physics,hourly,11800000,INR,True
+240,1192,AMC,package,15000000,INR,True
+241,1193,GRE,package,260000,USD,False
+242,1194,A Level Math,hourly,150000,AED,False
+243,1195,IB Physics,hourly,150000,AED,False
+244,1196,AP,package,14160000,INR,True
+245,1197,AMC,package,15000000,INR,True
+246,1198,IB Chemistry,hourly,4130000,INR,True
+247,1199,SAT,package,22420000,INR,True
+248,1200,IGCSE Math,hourly,5900000,INR,True

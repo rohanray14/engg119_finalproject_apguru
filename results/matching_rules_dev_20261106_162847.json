@@ -1,0 +1,117 @@
+{
+  "timestamp": "2026-11-06T16:28:47.975353+00:00",
+  "agent": "matching_rules",
+  "split": "dev",
+  "threshold": 0.8,
+  "total_predictions": 400,
+  "summary": {
+    "total": 271,
+    "attempted": 5,
+    "correct": 5,
+    "wrong_confident": 0,
+    "skipped": 266,
+    "precision": 1.0,
+    "coverage": 0.0185
+  },
+  "case_type_table": [
+    {
+      "case_type": "blank_payer",
+      "total": 156,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "company_payer",
+      "total": 4,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "company_tds",
+      "total": 2,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "duplicate_amount",
+      "total": 241,
+      "attempted": 2,
+      "correct": 2,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 0.0083
+    },
+    {
+      "case_type": "foreign",
+      "total": 96,
+      "attempted": 2,
+      "correct": 2,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 0.0208
+    },
+    {
+      "case_type": "fuzzy_name",
+      "total": 108,
+      "attempted": 5,
+      "correct": 5,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 0.0463
+    },
+    {
+      "case_type": "gateway_fees",
+      "total": 225,
+      "attempted": 5,
+      "correct": 5,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 0.0222
+    },
+    {
+      "case_type": "hourly_topup",
+      "total": 143,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "partial",
+      "total": 9,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "siblings",
+      "total": 271,
+      "attempted": 5,
+      "correct": 5,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 0.0185
+    },
+    {
+      "case_type": "split_payment",
+      "total": 14,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    }
+  ]
+}

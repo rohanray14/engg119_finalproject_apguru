@@ -1,0 +1,347 @@
+{
+  "description": "Commission eval: parse_terms accuracy + payout math exactness",
+  "cases": [
+    {
+      "id": 1,
+      "terms_text": "10% commission on all referrals",
+      "expected_rate": 0.10,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 2,
+      "terms_text": "20% commission",
+      "expected_rate": 0.20,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 3,
+      "terms_text": "15% on Mumbai students",
+      "expected_rate": 0.15,
+      "expected_scope": "city",
+      "expected_city": "Mumbai",
+      "expected_split": null
+    },
+    {
+      "id": 4,
+      "terms_text": "10% split 50/50 with Amit",
+      "expected_rate": 0.10,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": 0.5
+    },
+    {
+      "id": 5,
+      "terms_text": "20% split 60/40 with partner",
+      "expected_rate": 0.20,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": 0.6
+    },
+    {
+      "id": 6,
+      "terms_text": "",
+      "expected_rate": 0.0,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 7,
+      "terms_text": "commission to be discussed",
+      "expected_rate": 0.0,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 8,
+      "terms_text": "7.5% commission on all referrals",
+      "expected_rate": 0.075,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 9,
+      "terms_text": "10% for Delhi students",
+      "expected_rate": 0.10,
+      "expected_scope": "city",
+      "expected_city": "Delhi",
+      "expected_split": null
+    },
+    {
+      "id": 10,
+      "terms_text": "10% split with Raj",
+      "expected_rate": 0.10,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": 0.5
+    },
+    {
+      "id": 11,
+      "terms_text": "5% commission",
+      "expected_rate": 0.05,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 12,
+      "terms_text": "25% on Chennai students",
+      "expected_rate": 0.25,
+      "expected_scope": "city",
+      "expected_city": "Chennai",
+      "expected_split": null
+    },
+    {
+      "id": 13,
+      "terms_text": "12.5% commission on all referrals",
+      "expected_rate": 0.125,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 14,
+      "terms_text": "8% split 70/30 with co-counselor",
+      "expected_rate": 0.08,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": 0.7
+    },
+    {
+      "id": 15,
+      "terms_text": "15% for Bangalore students",
+      "expected_rate": 0.15,
+      "expected_scope": "city",
+      "expected_city": "Bangalore",
+      "expected_split": null
+    },
+    {
+      "id": 16,
+      "terms_text": "3% commission on all students",
+      "expected_rate": 0.03,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 17,
+      "terms_text": "18% on Hyderabad students",
+      "expected_rate": 0.18,
+      "expected_scope": "city",
+      "expected_city": "Hyderabad",
+      "expected_split": null
+    },
+    {
+      "id": 18,
+      "terms_text": "no commission applicable",
+      "expected_rate": 0.0,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 19,
+      "terms_text": "6% split 40/60 with manager",
+      "expected_rate": 0.06,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": 0.4
+    },
+    {
+      "id": 20,
+      "terms_text": "11% for Pune students",
+      "expected_rate": 0.11,
+      "expected_scope": "city",
+      "expected_city": "Pune",
+      "expected_split": null
+    },
+    {
+      "id": 21,
+      "terms_text": "9.5% commission",
+      "expected_rate": 0.095,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 22,
+      "terms_text": "14% on Kolkata students",
+      "expected_rate": 0.14,
+      "expected_scope": "city",
+      "expected_city": "Kolkata",
+      "expected_split": null
+    },
+    {
+      "id": 23,
+      "terms_text": "10% split 80/20 with assistant",
+      "expected_rate": 0.10,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": 0.8
+    },
+    {
+      "id": 24,
+      "terms_text": "22% commission on all referrals",
+      "expected_rate": 0.22,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 25,
+      "terms_text": "   ",
+      "expected_rate": 0.0,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 26,
+      "terms_text": "flat fee per student",
+      "expected_rate": 0.0,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 27,
+      "terms_text": "30% on Jaipur students",
+      "expected_rate": 0.30,
+      "expected_scope": "city",
+      "expected_city": "Jaipur",
+      "expected_split": null
+    },
+    {
+      "id": 28,
+      "terms_text": "16% split 50/50 with team lead",
+      "expected_rate": 0.16,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": 0.5
+    },
+    {
+      "id": 29,
+      "terms_text": "2% commission on all referrals",
+      "expected_rate": 0.02,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    },
+    {
+      "id": 30,
+      "terms_text": "100% commission",
+      "expected_rate": 1.0,
+      "expected_scope": "own_referrals",
+      "expected_city": null,
+      "expected_split": null
+    }
+  ],
+  "payout_cases": [
+    {
+      "id": 1,
+      "description": "10% on 100000 paise, no split",
+      "base_paise": 100000,
+      "rate": 0.10,
+      "split": null,
+      "expected_commission_paise": 10000,
+      "expected_tds_paise": 200,
+      "expected_net_paise": 9800
+    },
+    {
+      "id": 2,
+      "description": "20% on 500000 paise, no split",
+      "base_paise": 500000,
+      "rate": 0.20,
+      "split": null,
+      "expected_commission_paise": 100000,
+      "expected_tds_paise": 2000,
+      "expected_net_paise": 98000
+    },
+    {
+      "id": 3,
+      "description": "10% on 200000 paise, 50/50 split",
+      "base_paise": 200000,
+      "rate": 0.10,
+      "split": 0.5,
+      "expected_commission_paise": 10000,
+      "expected_tds_paise": 200,
+      "expected_net_paise": 9800
+    },
+    {
+      "id": 4,
+      "description": "15% on 1000000 paise, no split",
+      "base_paise": 1000000,
+      "rate": 0.15,
+      "split": null,
+      "expected_commission_paise": 150000,
+      "expected_tds_paise": 3000,
+      "expected_net_paise": 147000
+    },
+    {
+      "id": 5,
+      "description": "8% on 300000 paise, 70/30 split",
+      "base_paise": 300000,
+      "rate": 0.08,
+      "split": 0.7,
+      "expected_commission_paise": 16800,
+      "expected_tds_paise": 336,
+      "expected_net_paise": 16464
+    },
+    {
+      "id": 6,
+      "description": "25% on 80000 paise, no split",
+      "base_paise": 80000,
+      "rate": 0.25,
+      "split": null,
+      "expected_commission_paise": 20000,
+      "expected_tds_paise": 400,
+      "expected_net_paise": 19600
+    },
+    {
+      "id": 7,
+      "description": "5% on 10000000 paise (₹100k), no split",
+      "base_paise": 10000000,
+      "rate": 0.05,
+      "split": null,
+      "expected_commission_paise": 500000,
+      "expected_tds_paise": 10000,
+      "expected_net_paise": 490000
+    },
+    {
+      "id": 8,
+      "description": "12% on 250000 paise, 60/40 split",
+      "base_paise": 250000,
+      "rate": 0.12,
+      "split": 0.6,
+      "expected_commission_paise": 18000,
+      "expected_tds_paise": 360,
+      "expected_net_paise": 17640
+    },
+    {
+      "id": 9,
+      "description": "7.5% on 400000 paise, no split",
+      "base_paise": 400000,
+      "rate": 0.075,
+      "split": null,
+      "expected_commission_paise": 30000,
+      "expected_tds_paise": 600,
+      "expected_net_paise": 29400
+    },
+    {
+      "id": 10,
+      "description": "0% rate on 500000 paise",
+      "base_paise": 500000,
+      "rate": 0.0,
+      "split": null,
+      "expected_commission_paise": 0,
+      "expected_tds_paise": 0,
+      "expected_net_paise": 0
+    }
+  ]
+}

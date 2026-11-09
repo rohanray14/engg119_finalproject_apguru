@@ -1,0 +1,113 @@
+{
+  "timestamp": "2026-11-09T07:59:55.240660+00:00",
+  "git_sha": "78b893b",
+  "agent": "matching_rules",
+  "model": "n/a",
+  "split": "test",
+  "threshold": 0.95,
+  "data_hash": "b1faa5a53a6e2f76",
+  "total_predictions": 400,
+  "latency_ms": 279,
+  "cost_estimate_usd": 0.0,
+  "summary": {
+    "total": 120,
+    "attempted": 4,
+    "correct": 4,
+    "wrong_confident": 0,
+    "skipped": 116,
+    "precision": 1.0,
+    "coverage": 0.0333
+  },
+  "case_type_table": [
+    {
+      "case_type": "blank_payer",
+      "total": 61,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "company_payer",
+      "total": 5,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "company_tds",
+      "total": 4,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "duplicate_amount",
+      "total": 111,
+      "attempted": 2,
+      "correct": 2,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 0.018
+    },
+    {
+      "case_type": "foreign",
+      "total": 31,
+      "attempted": 3,
+      "correct": 3,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 0.0968
+    },
+    {
+      "case_type": "fuzzy_name",
+      "total": 52,
+      "attempted": 4,
+      "correct": 4,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 0.0769
+    },
+    {
+      "case_type": "gateway_fees",
+      "total": 107,
+      "attempted": 4,
+      "correct": 4,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 0.0374
+    },
+    {
+      "case_type": "hourly_topup",
+      "total": 63,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "partial",
+      "total": 5,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "siblings",
+      "total": 14,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    }
+  ]
+}
