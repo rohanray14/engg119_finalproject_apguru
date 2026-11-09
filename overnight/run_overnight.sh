@@ -11,7 +11,7 @@ git checkout -B overnight/production-hardening origin/main 2>/dev/null || git ch
 
 for i in $(seq 1 10); do
   echo "=== attempt $i  $(date) ===" | tee -a logs/overnight/runner.log
-  claude -p "$(cat OVERNIGHT.md)" \
+  claude -p "$(cat overnight/OVERNIGHT.md)" \
     --dangerously-skip-permissions \
     --max-turns 250 \
     > "logs/overnight/attempt_$i.log" 2>&1

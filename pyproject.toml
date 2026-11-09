@@ -27,6 +27,9 @@ api = [
     "pyjwt[crypto]>=2.9,<3",
 ]
 
+[tool.setuptools.packages.find]
+include = ["ledger*", "agents*", "api*", "evals*"]
+
 [tool.ruff]
 target-version = "py311"
 line-length = 120

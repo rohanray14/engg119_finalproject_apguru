@@ -1,0 +1,204 @@
+"use client";
+
+import { useState } from "react";
+import useSWR from "swr";
+import { apiFetch } from "@/lib/api";
+import { formatMoney } from "@/lib/format";
+import { useAppUser } from "@/app/providers";
+import StatCard from "@/components/stat-card";
+
+interface CounselorAmount { currency: string; earned_paise: number; tds_paise: number; net_paise: number; lines: number }
+interface Counselor {
+  id: number; name: string; terms_text: string;
+  rule: { rate: number; rate_bps: number; scope: string; city: string | null; split: number | null; source: string };
+  status: string;
+  amounts: CounselorAmount[];
+}
+interface CommissionsData {
+  totals: { currency: string; earned_paise: number; tds_paise: number; net_paise: number; counselors: number; payable_paise: number }[];
+  needs_rate: number;
+  counselors: Counselor[];
+  approved_payouts: { id: number; approved_at: string; actor: string; currency: string; total_net_paise: number }[];
+}
+
+function fetcher<T>(path: string) { return apiFetch<T>(path); }
+
+export default function CommissionsPage() {
+  const { user } = useAppUser();
+  const canApprove = user?.can_approve ?? false;
+  const { data, mutate, isLoading } = useSWR<CommissionsData>("/commissions", fetcher);
+  const [acting, setActing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [rateEdit, setRateEdit] = useState<number | null>(null);
+  const [rateValue, setRateValue] = useState(1000);
+
+  if (isLoading || !data) {
+    return <div className="p-8"><div className="animate-pulse h-64 bg-gray-200 rounded" /></div>;
+  }
+
+  const inr = data.totals.find((t) => t.currency === "INR");
+
+  async function handlePayout(currency: string, payable: number) {
+    setActing(true);
+    setError(null);
+    try {
+      await apiFetch("/commissions/payout/approve", {
+        method: "POST",
+        body: { currency, expected_payable_paise: payable },
+      });
+      mutate();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setActing(false);
+    }
+  }
+
+  async function handleSetRate(counselorId: number) {
+    setActing(true);
+    setError(null);
+    try {
+      await apiFetch(`/commissions/counselors/${counselorId}/rule`, {
+        method: "POST",
+        body: { rate_bps: rateValue },
+      });
+      setRateEdit(null);
+      mutate();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setActing(false);
+    }
+  }
+
+  function ruleText(c: Counselor): string {
+    const r = c.rule;
+    if (r.rate <= 0) return r.source === "none" ? "No terms" : "Rate not stated";
+    let text = `${(r.rate * 100).toFixed(0)}% x fees`;
+    if (r.scope === "city" && r.city) text += ` from students in ${r.city}`;
+    else if (r.scope === "own_referrals") text += " from students they referred";
+    if (r.split) text += `, split ${(r.split * 100).toFixed(0)}%/${((1 - r.split) * 100).toFixed(0)}%`;
+    return text;
+  }
+
+  return (
+    <div className="p-8">
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Commissions</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Calculated only on fees that have reached the bank. Unmatched payments are held back.
+          </p>
+        </div>
+        {canApprove && inr && inr.payable_paise > 0 && (
+          <button
+            onClick={() => handlePayout("INR", inr.payable_paise)}
+            disabled={acting}
+            className="px-5 py-2.5 text-sm font-medium text-white rounded-md disabled:opacity-50"
+            style={{ backgroundColor: "var(--accent)" }}
+          >
+            {acting ? "Approving..." : `Approve payout · ${formatMoney(inr.payable_paise, "INR")}`}
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-sm text-red-700">{error}</div>
+      )}
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatCard label="Commission earned" value={inr ? formatMoney(inr.earned_paise, "INR") : "—"} />
+        <StatCard label="TDS withheld (2%)" value={inr ? formatMoney(inr.tds_paise, "INR") : "—"} />
+        <StatCard label="Net to pay" value={inr ? formatMoney(inr.net_paise, "INR") : "—"} />
+        <StatCard
+          label="Needs rate set"
+          value={String(data.needs_rate)}
+          sub="counselors without a parsed rate"
+        />
+      </div>
+
+      {/* Counselors table */}
+      <div className="bg-white rounded-lg border p-6 mb-6" style={{ borderColor: "var(--card-border)" }}>
+        <h3 className="font-bold text-gray-900 mb-4">Counselors</h3>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-gray-500 border-b">
+              <th className="pb-2 font-medium">Counselor</th>
+              <th className="pb-2 font-medium">Terms as written</th>
+              <th className="pb-2 font-medium">Rule the agent read</th>
+              <th className="pb-2 font-medium text-right">Commission</th>
+              <th className="pb-2 font-medium text-right">Net after TDS</th>
+              <th className="pb-2 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {data.counselors.map((c) => {
+              const amt = c.amounts.find((a) => a.currency === "INR");
+              return (
+                <tr key={c.id}>
+                  <td className="py-3 font-medium text-gray-900">{c.name}</td>
+                  <td className="py-3 text-gray-600 italic max-w-[200px] truncate">
+                    {c.terms_text ? `"${c.terms_text}"` : "—"}
+                  </td>
+                  <td className="py-3 text-gray-700">{ruleText(c)}</td>
+                  <td className="py-3 text-right">{amt && amt.earned_paise > 0 ? formatMoney(amt.earned_paise, "INR") : "—"}</td>
+                  <td className="py-3 text-right font-medium">{amt && amt.net_paise > 0 ? formatMoney(amt.net_paise, "INR") : "—"}</td>
+                  <td className="py-3">
+                    {c.status === "ready" && (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Ready</span>
+                    )}
+                    {c.status === "needs_rate" && canApprove && (
+                      <button
+                        onClick={() => { setRateEdit(c.id); setRateValue(1000); }}
+                        className="text-xs px-2 py-1 rounded border border-orange-300 text-orange-700 hover:bg-orange-50"
+                      >
+                        Set the rate
+                      </button>
+                    )}
+                    {c.status === "needs_rate" && !canApprove && (
+                      <span className="text-xs text-orange-600">Needs rate</span>
+                    )}
+                    {c.status === "no_fees" && <span className="text-xs text-gray-400">—</span>}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* Rate edit panel */}
+        {rateEdit && (
+          <div className="mt-4 border rounded-lg p-4 bg-gray-50" style={{ borderColor: "var(--card-border)" }}>
+            <div className="text-sm font-medium text-gray-900 mb-2">
+              Set commission rate for {data.counselors.find((c) => c.id === rateEdit)?.name}
+            </div>
+            <div className="flex items-center gap-3">
+              <label className="text-sm text-gray-600">Rate (%)</label>
+              <input
+                type="number" min={1} max={50} step={1}
+                value={rateValue / 100}
+                onChange={(e) => setRateValue(Math.round(Number(e.target.value) * 100))}
+                className="w-24 text-sm border border-gray-300 rounded-md px-2 py-1"
+              />
+              <button onClick={() => handleSetRate(rateEdit)} disabled={acting}
+                className="px-3 py-1 text-sm font-medium text-white rounded-md disabled:opacity-50"
+                style={{ backgroundColor: "var(--accent)" }}>
+                Save
+              </button>
+              <button onClick={() => setRateEdit(null)}
+                className="px-3 py-1 text-sm text-gray-600 border border-gray-300 rounded-md">
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        <p className="mt-4 text-xs text-gray-400">
+          The agent only turns written terms into a rule. The amounts, the 2% TDS and
+          refund deductions are calculated by code, and each rule is saved once you confirm it.
+        </p>
+      </div>
+    </div>
+  );
+}
