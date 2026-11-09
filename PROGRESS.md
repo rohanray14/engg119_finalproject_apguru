@@ -29,10 +29,10 @@
 - [x] Settlement eval — 343/343 matched, 0 gateway mismatches, 0 bank mismatches
 
 ## Phase 3: Other agent evals
-- [ ] Commissions eval
-- [ ] Reminders eval
-- [ ] Risk eval
-- [ ] Copilot eval (tool-calling rebuild)
+- [x] Commissions eval — 30 parse cases 100%, 10 payout cases 100%; fixed city-scope false positive on "all students"
+- [x] Reminders eval — 1257 reminders, all 6 checks pass (amounts, dates, schedule, no-paid, messages)
+- [x] Risk eval — 6/6 planted categories detected (100% recall), severity ordering correct
+- [x] Copilot eval — 30 questions 100%; added 4 missing patterns (count transactions, spend, biggest, expenses)
 
 ## Phase 4: Production engineering
 - [ ] Persistence (DATABASE_URL, migrations)
