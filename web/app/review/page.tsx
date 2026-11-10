@@ -21,14 +21,13 @@ export default function ReviewPage() {
   );
 }
 
-type FilterKey = "all" | "has_suggestion" | "no_suggestion" | "high" | "low";
+type FilterKey = "all" | "quick_approve" | "needs_attention" | "no_suggestion";
 
 const FILTER_OPTIONS: { value: FilterKey; label: string }[] = [
   { value: "all", label: "All items" },
-  { value: "has_suggestion", label: "Has suggestion" },
+  { value: "quick_approve", label: "Quick approvals (90%+)" },
+  { value: "needs_attention", label: "Needs attention (<85%)" },
   { value: "no_suggestion", label: "No suggestion" },
-  { value: "high", label: "High confidence (85%+)" },
-  { value: "low", label: "Low confidence (<85%)" },
 ];
 
 function ReviewContent() {
@@ -62,10 +61,9 @@ function ReviewContent() {
   // Filter items
   const filteredItems = items.filter((item) => {
     switch (filter) {
-      case "has_suggestion": return item.has_suggestion;
+      case "quick_approve": return item.has_suggestion && item.confidence >= 0.9;
+      case "needs_attention": return item.confidence < 0.85 || !item.has_suggestion;
       case "no_suggestion": return !item.has_suggestion;
-      case "high": return item.confidence >= 0.85;
-      case "low": return item.confidence < 0.85;
       default: return true;
     }
   });
