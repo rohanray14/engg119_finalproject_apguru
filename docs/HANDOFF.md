@@ -46,10 +46,13 @@ until the new site replaces it.
    deletes an audit row, and Postgres now blocks the delete itself. It still runs
    unchanged on SQLite, and a Postgres test proves the delete is refused.
    **Needs the owner's OK** (CLAUDE.md rule 5).
-2. On the dev split, the rules matcher makes **2 confident wrong matches** at 0.95. This
-   was already true before the rebuild (experiments.md v13). Fix it before real data goes in.
-3. **Foreign-currency payments aren't in the dashboard's monthly totals**, which count
-   INR only. Adding them needs FX conversion in code.
+2. ~~On the dev split, the rules matcher makes **2 confident wrong matches** at 0.95.~~
+   **Fixed** (experiments.md v16): non-exact amounts capped at MEDIUM, MAX_STUDENTS 5→4,
+   name-collision check. Dev: 100% precision, 0 wrong. Safety: 0/25 violations (also
+   fixed 4 pre-existing violations).
+3. ~~**Foreign-currency payments aren't in the dashboard's monthly totals.**~~
+   **Fixed:** both `api/routers/dashboard.py` and `app/Home.py` now FX-convert all
+   currencies to INR using `ledger/money.py:fx_convert`. Adds ~26% to totals.
 4. **City-scoped commission rules are rejected** because the commission math doesn't
    apply scope yet. Implement it, or keep rejecting it.
 5. **Data from before the rebuild:** matches created by the prototype recorded
