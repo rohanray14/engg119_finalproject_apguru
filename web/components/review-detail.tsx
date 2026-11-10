@@ -10,11 +10,73 @@ interface Props {
   canApprove: boolean;
   onDecision: () => void;
   onSkip?: () => void;
+  queuePosition?: number;
+  queueTotal?: number;
 }
 
-export default function ReviewDetail({ detail, canApprove, onDecision, onSkip }: Props) {
+// ---------------------------------------------------------------------------
+// Reason tags: parse raw reason codes into visual tags
+// ---------------------------------------------------------------------------
+
+type TagColor = "green" | "amber" | "red" | "gray" | "blue";
+
+function parseReasonTags(reason: string | null): { label: string; color: TagColor }[] {
+  if (!reason) return [];
+  const tags: { label: string; color: TagColor }[] = [];
+
+  if (reason.includes("exact_amount") || /^amount\+/.test(reason)) {
+    tags.push({ label: "Exact amount", color: "green" });
+  }
+  if (reason.includes("remaining_")) {
+    tags.push({ label: "Remaining balance", color: "blue" });
+  }
+
+  const nm = reason.match(/(?:^|[+])name\(([0-9.]+)\)/);
+  if (nm) {
+    const score = Math.round(parseFloat(nm[1]));
+    tags.push({ label: `Name ${score}%`, color: score >= 80 ? "green" : "amber" });
+  }
+  const wn = reason.match(/weak_name\(([0-9.]+)\)/);
+  if (wn) {
+    const score = Math.round(parseFloat(wn[1]));
+    tags.push({ label: `Weak name ${score}%`, color: "red" });
+  }
+
+  const gl = reason.match(/global\((\d+)\)/);
+  if (gl) {
+    const count = parseInt(gl[1]);
+    tags.push({ label: `${count} share amount`, color: count <= 5 ? "gray" : "amber" });
+  }
+  const st = reason.match(/students\((\d+)\)/);
+  if (st) {
+    const count = parseInt(st[1]);
+    tags.push({ label: `${count} students`, color: count <= 5 ? "gray" : "amber" });
+  }
+
+  if (reason.includes("fifo")) tags.push({ label: "FIFO", color: "gray" });
+  if (reason.includes("blank_payer")) tags.push({ label: "Blank payer", color: "amber" });
+  if (reason.includes("globally_unique")) tags.push({ label: "Unique amount", color: "green" });
+  if (reason.includes("same_student")) tags.push({ label: "Same student", color: "green" });
+
+  return tags;
+}
+
+const TAG_STYLES: Record<TagColor, { bg: string; text: string }> = {
+  green: { bg: "#dcfce7", text: "#166534" },
+  amber: { bg: "#fef3c7", text: "#92400e" },
+  red: { bg: "#fee2e2", text: "#991b1b" },
+  gray: { bg: "#f3f4f6", text: "#374151" },
+  blue: { bg: "#dbeafe", text: "#1e40af" },
+};
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, queuePosition, queueTotal }: Props) {
   const [acting, setActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState<string | null>(null); // "approved" | "rejected" | "assigned"
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Installment[]>([]);
   const [searching, setSearching] = useState(false);
@@ -34,11 +96,14 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip }:
     return true;
   });
 
+  const reasonTags = parseReasonTags(detail.reason);
+
   // Reset search when detail changes
   useEffect(() => {
     setSearchQuery("");
     setSearchResults([]);
     setError(null);
+    setShowSuccess(null);
   }, [detail.match_id]);
 
   // Debounced search
@@ -64,12 +129,20 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip }:
     return () => clearTimeout(searchTimer.current);
   }, [searchQuery, detail.match_id]);
 
+  function succeedThen(label: string) {
+    setShowSuccess(label);
+    setTimeout(() => {
+      setShowSuccess(null);
+      onDecision();
+    }, 700);
+  }
+
   async function handleApprove() {
     setActing(true);
     setError(null);
     try {
       await apiFetch(`/review/${detail.match_id}/approve`, { method: "POST" });
-      onDecision();
+      succeedThen("approved");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed");
     } finally {
@@ -85,7 +158,7 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip }:
         method: "POST",
         body: { reason: "not_a_fee", note: "" },
       });
-      onDecision();
+      succeedThen("rejected");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed");
     } finally {
@@ -101,7 +174,7 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip }:
         method: "POST",
         body: { installment_id: installmentId },
       });
-      onDecision();
+      succeedThen("assigned");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed");
     } finally {
@@ -118,11 +191,44 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip }:
   const assignCandidates = searchQuery.length >= 2 ? searchResults : dedupedOthers;
 
   return (
-    <div className="space-y-4">
-      {/* Bank statement card */}
-      <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-        <div className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">
-          From the bank statement
+    <div className="space-y-4 relative">
+      {/* Success overlay */}
+      {showSuccess && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/80 rounded-lg animate-fade-in">
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{
+              backgroundColor: showSuccess === "rejected" ? "#fee2e2" : "#dcfce7",
+            }}>
+              {showSuccess === "rejected" ? (
+                <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <span className="text-sm font-medium capitalize" style={{
+              color: showSuccess === "rejected" ? "#991b1b" : "#166534",
+            }}>
+              {showSuccess === "approved" ? "Approved" : showSuccess === "assigned" ? "Assigned" : "Rejected"}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Sticky payment header */}
+      <div className="bg-white rounded-lg border p-5 sticky top-0 z-10" style={{ borderColor: "var(--card-border)" }}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-xs font-bold uppercase tracking-wider text-gray-500">
+            From the bank statement
+          </div>
+          {queuePosition != null && queueTotal != null && (
+            <span className="text-xs text-gray-400 font-medium">
+              {queuePosition} of {queueTotal}
+            </span>
+          )}
         </div>
         <div className="flex items-start justify-between">
           <div className="text-3xl font-bold text-gray-900">
@@ -132,9 +238,13 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip }:
             <div>{formatDate(p.date)} · {p.method || p.source}</div>
           </div>
         </div>
-        {p.payer_name && (
+        {p.payer_name ? (
           <div className="mt-3 px-3 py-2 bg-gray-100 rounded text-sm font-mono text-gray-700">
             {p.payer_name}
+          </div>
+        ) : (
+          <div className="mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded text-sm text-amber-700">
+            No payer name on bank statement
           </div>
         )}
         {(p.gateway_fee_paise > 0 || p.tds_paise > 0) && (
@@ -190,15 +300,16 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip }:
                   </span>
                 )}
               </div>
-              {detail.reason_text && (
-                <ul className="mt-3 space-y-1.5 text-sm text-gray-700">
-                  {detail.reason_text.split(". ").filter(Boolean).map((r, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="mt-1.5 w-1 h-1 rounded-full bg-gray-400 shrink-0" />
-                      {r.replace(/\.$/, "")}
-                    </li>
+              {/* Reason tags */}
+              {reasonTags.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {reasonTags.map((tag, i) => (
+                    <span key={i} className="text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={{ backgroundColor: TAG_STYLES[tag.color].bg, color: TAG_STYLES[tag.color].text }}>
+                      {tag.label}
+                    </span>
                   ))}
-                </ul>
+                </div>
               )}
               <div className="mt-3 text-xs text-gray-500">
                 Remaining: {formatMoney(inst.remaining_paise, inst.currency)}

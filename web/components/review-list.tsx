@@ -15,6 +15,7 @@ export default function ReviewList({ items, selectedId, onSelect }: Props) {
       <div className="divide-y" style={{ borderColor: "var(--card-border)" }}>
         {items.map((item) => {
           const active = item.match_id === selectedId;
+          const noPayer = !item.payment.payer_name;
           return (
             <button
               key={item.match_id}
@@ -25,8 +26,15 @@ export default function ReviewList({ items, selectedId, onSelect }: Props) {
               style={active ? { borderLeftColor: "var(--accent)" } : undefined}
             >
               <div className="flex items-start justify-between">
-                <div className="font-medium text-sm text-gray-900 truncate">
-                  {item.payment.payer_name || "Unknown payer"}
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="font-medium text-sm text-gray-900 truncate">
+                    {item.payment.payer_name || "Unknown payer"}
+                  </span>
+                  {noPayer && (
+                    <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-200 font-medium">
+                      no payer
+                    </span>
+                  )}
                 </div>
                 <div className="text-sm font-semibold text-gray-900 whitespace-nowrap ml-2">
                   {formatMoney(item.payment.amount_paid_paise, item.payment.currency)}
@@ -38,7 +46,11 @@ export default function ReviewList({ items, selectedId, onSelect }: Props) {
                 </div>
               )}
               <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-500">
-                <span>{item.payment.method || item.payment.source}</span>
+                <span className="px-1.5 py-0.5 rounded font-medium" style={{
+                  backgroundColor: item.method === "ai" ? "#ede9fe" : "#f3f4f6",
+                  color: item.method === "ai" ? "#6d28d9" : "#6b7280",
+                  fontSize: "10px",
+                }}>{item.method === "ai" ? "AI" : "rules"}</span>
                 <span>·</span>
                 <span>{formatDate(item.payment.date)}</span>
                 <span>·</span>

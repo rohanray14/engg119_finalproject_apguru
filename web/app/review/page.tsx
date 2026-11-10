@@ -21,6 +21,16 @@ export default function ReviewPage() {
   );
 }
 
+type FilterKey = "all" | "has_suggestion" | "no_suggestion" | "high" | "low";
+
+const FILTER_OPTIONS: { value: FilterKey; label: string }[] = [
+  { value: "all", label: "All items" },
+  { value: "has_suggestion", label: "Has suggestion" },
+  { value: "no_suggestion", label: "No suggestion" },
+  { value: "high", label: "High confidence (85%+)" },
+  { value: "low", label: "Low confidence (<85%)" },
+];
+
 function ReviewContent() {
   const { user } = useAppUser();
   const canApprove = user?.can_approve ?? false;
@@ -36,6 +46,7 @@ function ReviewContent() {
   const [bulkActing, setBulkActing] = useState(false);
   const [bulkResult, setBulkResult] = useState<BulkResult | null>(null);
   const [reviewedCount, setReviewedCount] = useState(0);
+  const [filter, setFilter] = useState<FilterKey>("all");
 
   // Read ?id= from URL (e.g. linked from Payments page)
   useEffect(() => {
@@ -46,9 +57,21 @@ function ReviewContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // Auto-select first item when queue loads
   const items = queue?.items ?? [];
-  const activeId = selectedId ?? items[0]?.match_id ?? null;
+
+  // Filter items
+  const filteredItems = items.filter((item) => {
+    switch (filter) {
+      case "has_suggestion": return item.has_suggestion;
+      case "no_suggestion": return !item.has_suggestion;
+      case "high": return item.confidence >= 0.85;
+      case "low": return item.confidence < 0.85;
+      default: return true;
+    }
+  });
+
+  // Auto-select first filtered item
+  const activeId = selectedId ?? filteredItems[0]?.match_id ?? null;
 
   const { data: detail, mutate: mutateDetail } = useSWR<ReviewDetailType>(
     activeId ? `/review/${activeId}` : null,
@@ -63,11 +86,14 @@ function ReviewContent() {
   }, [mutateQueue, mutateDetail]);
 
   const handleSkip = useCallback(() => {
-    if (!activeId || items.length === 0) return;
-    const idx = items.findIndex((i) => i.match_id === activeId);
-    const next = items[idx + 1] ?? items[0];
+    if (!activeId || filteredItems.length === 0) return;
+    const idx = filteredItems.findIndex((i) => i.match_id === activeId);
+    const next = filteredItems[idx + 1] ?? filteredItems[0];
     if (next && next.match_id !== activeId) setSelectedId(next.match_id);
-  }, [activeId, items]);
+  }, [activeId, filteredItems]);
+
+  // Queue position
+  const activeIndex = filteredItems.findIndex((i) => i.match_id === activeId);
 
   const eligibleForBulk = items.filter(
     (i) => i.has_suggestion && i.confidence >= (queue?.bulk_approve_min_confidence ?? 0.9)
@@ -85,6 +111,7 @@ function ReviewContent() {
       });
       setBulkResult(result);
       setBulkSelected(new Set());
+      setReviewedCount((c) => c + result.approved.length);
       mutateQueue();
     } catch (e: unknown) {
       setBulkResult(null);
@@ -202,44 +229,68 @@ function ReviewContent() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: payment list */}
-          <div className="lg:col-span-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-            <div className="space-y-0">
-              {items.map((item) => {
-                const active = item.match_id === activeId;
-                const eligible = item.has_suggestion && item.confidence >= (queue?.bulk_approve_min_confidence ?? 0.9);
-                return (
-                  <div key={item.match_id} className="flex items-center gap-2"
-                    ref={active ? (el) => { el?.scrollIntoView({ block: "nearest", behavior: "smooth" }); } : undefined}>
-                    {canApprove && eligible && (
-                      <input
-                        type="checkbox"
-                        checked={bulkSelected.has(item.match_id)}
-                        onChange={() => toggleBulk(item.match_id)}
-                        className="shrink-0 rounded"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    )}
-                    <div className="flex-1">
-                      <ReviewList
-                        items={[item]}
-                        selectedId={active ? item.match_id : null}
-                        onSelect={setSelectedId}
-                      />
+          <div className="lg:col-span-4">
+            {/* Filter dropdown */}
+            <div className="mb-3 flex items-center gap-2">
+              <select
+                value={filter}
+                onChange={(e) => { setFilter(e.target.value as FilterKey); setSelectedId(null); }}
+                className="text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300"
+              >
+                {FILTER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <span className="text-xs text-gray-400">
+                {filteredItems.length} of {items.length}
+              </span>
+            </div>
+            <div className="max-h-[calc(100vh-260px)] overflow-y-auto">
+              <div className="space-y-0">
+                {filteredItems.map((item) => {
+                  const active = item.match_id === activeId;
+                  const eligible = item.has_suggestion && item.confidence >= (queue?.bulk_approve_min_confidence ?? 0.9);
+                  return (
+                    <div key={item.match_id} className="flex items-center gap-2"
+                      ref={active ? (el) => { el?.scrollIntoView({ block: "nearest", behavior: "smooth" }); } : undefined}>
+                      {canApprove && eligible && (
+                        <input
+                          type="checkbox"
+                          checked={bulkSelected.has(item.match_id)}
+                          onChange={() => toggleBulk(item.match_id)}
+                          className="shrink-0 rounded"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      )}
+                      <div className="flex-1">
+                        <ReviewList
+                          items={[item]}
+                          selectedId={active ? item.match_id : null}
+                          onSelect={setSelectedId}
+                        />
+                      </div>
                     </div>
+                  );
+                })}
+                {filteredItems.length === 0 && (
+                  <div className="text-sm text-gray-500 text-center py-8">
+                    No items match this filter.
                   </div>
-                );
-              })}
+                )}
+              </div>
             </div>
           </div>
 
           {/* Right: detail */}
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-8 max-h-[calc(100vh-200px)] overflow-y-auto">
             {detail ? (
               <ReviewDetailComponent
                 detail={detail}
                 canApprove={canApprove}
                 onDecision={handleDecision}
                 onSkip={handleSkip}
+                queuePosition={activeIndex >= 0 ? activeIndex + 1 : undefined}
+                queueTotal={filteredItems.length}
               />
             ) : (
               <div className="bg-white rounded-lg border p-12 text-center" style={{ borderColor: "var(--card-border)" }}>
