@@ -52,7 +52,7 @@ if not all_rows:
     st.stop()
 
 
-# ── Build monthly spend by category ─────────────────────────────────
+# ── Date range ───────────────────────────────────────────────────────
 
 min_date = date.fromisoformat(
     conn.execute("SELECT MIN(date) FROM payment_out").fetchone()[0]
@@ -61,9 +61,43 @@ max_date = date.fromisoformat(
     conn.execute("SELECT MAX(date) FROM payment_out").fetchone()[0]
 )
 
+# Build month options for the slider
+_all_months = []
+_cursor = min_date.replace(day=1)
+_end_month = max_date.replace(day=1)
+while _cursor <= _end_month:
+    _all_months.append(_cursor)
+    _cursor = _add_months(_cursor, 1)
+
+st.title("Money out")
+st.caption("Spend trends, burn rate, and runway projections.")
+
+if len(_all_months) > 1:
+    range_start, range_end = st.select_slider(
+        "Month range",
+        options=_all_months,
+        value=(_all_months[0], _all_months[-1]),
+        format_func=lambda d: d.strftime("%b %Y"),
+    )
+else:
+    range_start = range_end = _all_months[0]
+
+# Effective date window
+filter_start = range_start
+_, filter_end = _month_range(range_end)
+
+# Filter rows to selected range
+all_rows = [r for r in all_rows if filter_start.isoformat() <= r["date"] <= filter_end.isoformat()]
+
+if not all_rows:
+    st.info("No payments in the selected range.")
+    st.stop()
+
+# ── Build monthly spend by category ─────────────────────────────────
+
 monthly_totals = []  # [{month_label, month_date, cat1, cat2, ..., total}]
-cursor = min_date.replace(day=1)
-end = max_date.replace(day=1)
+cursor = range_start
+end = range_end
 
 while cursor <= end:
     m_start, m_end = _month_range(cursor)
@@ -104,14 +138,12 @@ else:
     prev_month_spend = 0
     mom_delta = 0
 
-# Compare to money in
+# Compare to money in (within same date range)
 total_received = conn.execute(
-    "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in"
+    "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE date BETWEEN ? AND ?",
+    (filter_start.isoformat(), filter_end.isoformat()),
 ).fetchone()[0]
 spend_ratio = (total_spent / total_received * 100) if total_received > 0 else 0
-
-st.title("Money out")
-st.caption("Spend trends, burn rate, and runway projections.")
 
 st.write("")
 
@@ -162,7 +194,8 @@ with right:
         st.caption("All-time breakdown")
         categories = conn.execute(
             "SELECT category, COUNT(*) as count, SUM(amount_paise) as total "
-            "FROM payment_out GROUP BY category ORDER BY total DESC"
+            "FROM payment_out WHERE date BETWEEN ? AND ? GROUP BY category ORDER BY total DESC",
+            (filter_start.isoformat(), filter_end.isoformat()),
         ).fetchall()
         for c in categories:
             pct = c["total"] / total_spent * 100 if total_spent > 0 else 0
@@ -189,7 +222,7 @@ with st.container(border=True):
 
     # Monthly inflow data
     inflow_months = []
-    cursor = min_date.replace(day=1)
+    cursor = range_start
     while cursor <= end:
         m_start, m_end = _month_range(cursor)
         received = conn.execute(
@@ -327,8 +360,8 @@ with st.container(border=True):
     with col2:
         curr_filter = st.selectbox("Currency", ["All", "INR", "USD", "AED", "GBP"])
 
-    query = "SELECT * FROM payment_out WHERE 1=1"
-    params: list = []
+    query = "SELECT * FROM payment_out WHERE date BETWEEN ? AND ?"
+    params: list = [filter_start.isoformat(), filter_end.isoformat()]
     if cat_filter != "All":
         query += " AND category = ?"
         params.append(cat_filter)
