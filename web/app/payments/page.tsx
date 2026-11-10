@@ -166,7 +166,7 @@ export default function PaymentsPage() {
                   <th className="px-4 py-3 font-medium">Payer</th>
                   <th className="px-4 py-3 font-medium text-right">Amount</th>
                   <th className="px-4 py-3 font-medium text-right">Deductions</th>
-                  <th className="px-4 py-3 font-medium text-right">In Bank</th>
+                  <th className="px-4 py-3 font-medium text-right" title="Amount received in bank, converted to INR">In Bank (₹)</th>
                   <th className="px-4 py-3 font-medium">Method</th>
                   <th className="px-4 py-3 font-medium">Confirmation</th>
                   <th className="px-4 py-3 font-medium">Match</th>
@@ -232,6 +232,9 @@ export default function PaymentsPage() {
               </tbody>
             </table>
           </div>
+          <p className="text-xs text-gray-400 mt-2">
+            &ldquo;In Bank&rdquo; shows the amount received after gateway fees, GST, and FX conversion — always in INR (₹).
+          </p>
         </>
       )}
     </div>
