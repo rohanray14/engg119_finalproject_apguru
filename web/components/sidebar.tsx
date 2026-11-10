@@ -56,11 +56,6 @@ export default function Sidebar() {
       items: [
         { href: "/reminders", label: "Reminders" },
         { href: "/risk", label: "Risk" },
-      ],
-    },
-    {
-      heading: "Tools",
-      items: [
         { href: "/audit", label: "Audit log" },
       ],
     },
