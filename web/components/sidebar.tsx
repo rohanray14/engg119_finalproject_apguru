@@ -61,7 +61,6 @@ export default function Sidebar() {
     {
       heading: "Tools",
       items: [
-        { href: "/ask", label: "Ask" },
         { href: "/audit", label: "Audit log" },
       ],
     },

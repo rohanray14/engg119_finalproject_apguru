@@ -8,6 +8,7 @@ import type { Dashboard, Meta } from "@/lib/types";
 import StatCard from "@/components/stat-card";
 import ForecastChart from "@/components/forecast-chart";
 import DecisionList from "@/components/decision-list";
+import AskPanel from "@/components/ask-panel";
 
 function fetcher<T>(path: string) {
   return apiFetch<T>(path);
@@ -97,8 +98,8 @@ export default function TodayPage() {
         <p className="text-gray-800 leading-relaxed">
           {briefParts.join(". ")}.
         </p>
-        <div className="flex gap-3 mt-4">
-          {dash.matching.pending_total > 0 && (
+        {dash.matching.pending_total > 0 && (
+          <div className="mt-4">
             <Link
               href="/review"
               className="px-4 py-2 text-sm font-medium text-white rounded-md"
@@ -106,14 +107,8 @@ export default function TodayPage() {
             >
               Review {dash.matching.pending_total} payments
             </Link>
-          )}
-          <Link
-            href="/ask"
-            className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            Ask a follow-up
-          </Link>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Stat cards */}
@@ -159,33 +154,8 @@ export default function TodayPage() {
         </div>
       </div>
 
-      {/* Ask bar */}
-      <div className="bg-white rounded-lg border p-4 flex items-center gap-3"
-        style={{ borderColor: "var(--card-border)" }}>
-        <span className="text-sm font-medium text-gray-500">Ask</span>
-        <input
-          type="text"
-          placeholder="e.g. Which families still owe us for November?"
-          className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && e.currentTarget.value.trim()) {
-              window.location.href = `/ask?q=${encodeURIComponent(e.currentTarget.value)}`;
-            }
-          }}
-        />
-        <button
-          className="px-4 py-2 text-sm font-medium text-white rounded-md"
-          style={{ backgroundColor: "var(--sidebar-bg)" }}
-          onClick={(e) => {
-            const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
-            if (input.value.trim()) {
-              window.location.href = `/ask?q=${encodeURIComponent(input.value)}`;
-            }
-          }}
-        >
-          Ask
-        </button>
-      </div>
+      {/* Ask */}
+      <AskPanel />
     </div>
   );
 }
