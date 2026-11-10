@@ -90,6 +90,12 @@ export default function StudentProfile({ studentId, onBack }: Props) {
     p.match_status === "approved" || p.match_status === "auto" ? sum + p.amount_paid_paise : sum, 0);
   const mainCurrency = student.enrollments[0]?.currency ?? "INR";
 
+  // Next due date: earliest open/overdue installment with a due date
+  const nextDue = student.enrollments
+    .flatMap((e) => e.installments)
+    .filter((i) => i.remaining_paise > 0 && i.due_date)
+    .sort((a, b) => (a.due_date! > b.due_date! ? 1 : -1))[0];
+
   return (
     <div>
       <button onClick={onBack} className="text-sm hover:underline" style={{ color: "var(--accent)" }}>
@@ -109,7 +115,7 @@ export default function StudentProfile({ studentId, onBack }: Props) {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
           <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Total fees</div>
           <div className="text-xl font-bold text-gray-900 mt-1">{formatMoney(totalFee, mainCurrency)}</div>
@@ -123,6 +129,15 @@ export default function StudentProfile({ studentId, onBack }: Props) {
           <div className={`text-xl font-bold mt-1 ${totalOwed > 0 ? "text-red-600" : "text-green-600"}`}>
             {totalOwed > 0 ? formatMoney(totalOwed, mainCurrency) : "Paid up"}
           </div>
+        </div>
+        <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
+          <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Next due</div>
+          <div className="text-xl font-bold text-gray-900 mt-1">
+            {nextDue ? formatDate(nextDue.due_date!) : "—"}
+          </div>
+          {nextDue && (
+            <div className="text-xs text-gray-500 mt-1">{formatMoney(nextDue.remaining_paise, nextDue.currency)}</div>
+          )}
         </div>
       </div>
 
