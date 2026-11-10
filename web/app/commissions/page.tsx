@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
 import { useAppUser } from "@/app/providers";
 import StatCard from "@/components/stat-card";
+import CounselorProfile from "@/components/counselor-profile";
 
 interface CounselorAmount { currency: string; earned_paise: number; tds_paise: number; net_paise: number; lines: number }
 interface Counselor {
@@ -24,16 +26,40 @@ interface CommissionsData {
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
 export default function CommissionsPage() {
+  return (
+    <Suspense fallback={<div className="p-8"><div className="animate-pulse h-64 bg-gray-200 rounded" /></div>}>
+      <CommissionsContent />
+    </Suspense>
+  );
+}
+
+function CommissionsContent() {
   const { user } = useAppUser();
   const canApprove = user?.can_approve ?? false;
+  const searchParams = useSearchParams();
   const { data, mutate, isLoading } = useSWR<CommissionsData>("/commissions", fetcher);
   const [acting, setActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rateEdit, setRateEdit] = useState<number | null>(null);
   const [rateValue, setRateValue] = useState(1000);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const id = searchParams.get("id");
+    if (id) setSelectedId(Number(id));
+  }, [searchParams]);
 
   if (isLoading || !data) {
     return <div className="p-8"><div className="animate-pulse h-64 bg-gray-200 rounded" /></div>;
+  }
+
+  // Show counselor profile view
+  if (selectedId !== null) {
+    return (
+      <div className="p-8">
+        <CounselorProfile counselorId={selectedId} onBack={() => setSelectedId(null)} />
+      </div>
+    );
   }
 
   const inr = data.totals.find((t) => t.currency === "INR");
@@ -137,7 +163,8 @@ export default function CommissionsPage() {
               const amt = c.amounts.find((a) => a.currency === "INR");
               return (
                 <tr key={c.id}>
-                  <td className="py-3 font-medium text-gray-900">{c.name}</td>
+                  <td className="py-3 font-medium cursor-pointer hover:underline" style={{ color: "var(--accent)" }}
+                    onClick={() => setSelectedId(c.id)}>{c.name}</td>
                   <td className="py-3 text-gray-600 italic max-w-[200px] truncate">
                     {c.terms_text ? `"${c.terms_text}"` : "—"}
                   </td>

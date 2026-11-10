@@ -140,6 +140,61 @@ def statement(counselor_id: int, conn=Depends(get_conn), user: User = Depends(cu
             "net_by_currency": [{"currency": k, "net_paise": v} for k, v in sorted(net.items())]}
 
 
+@router.get("/counselors/{counselor_id}")
+def get_counselor(counselor_id: int, conn=Depends(get_conn), user: User = Depends(current_user)):
+    c = conn.execute("SELECT * FROM counselor WHERE id = ?", (counselor_id,)).fetchone()
+    if c is None:
+        raise not_found("Counselor")
+    rule = _rule_view(c)
+
+    # Students this counselor referred
+    students = []
+    for s in conn.execute("SELECT id, name, city, country, counselor_ids FROM student ORDER BY name").fetchall():
+        try:
+            cids = json.loads(s["counselor_ids"]) if s["counselor_ids"] else []
+        except (json.JSONDecodeError, TypeError):
+            cids = []
+        if counselor_id in [int(x) for x in cids]:
+            students.append({"id": s["id"], "name": s["name"], "city": s["city"], "country": s["country"]})
+
+    # Commission lines
+    lines = [dict(r) for r in conn.execute(
+        "SELECT cl.id, cl.payment_id, p.date, p.payer_name, cl.currency, cl.base_paise, cl.rate, "
+        "cl.commission_paise, cl.tds_paise, cl.net_paise "
+        "FROM commission_line cl JOIN payment_in p ON p.id = cl.payment_id "
+        "WHERE cl.counselor_id = ? ORDER BY p.date DESC, cl.id DESC",
+        (counselor_id,)).fetchall()]
+
+    # Totals by currency
+    totals: dict[str, dict] = {}
+    for line in lines:
+        t = totals.setdefault(line["currency"], {"earned_paise": 0, "tds_paise": 0, "net_paise": 0, "lines": 0})
+        t["earned_paise"] += line["commission_paise"]
+        t["tds_paise"] += line["tds_paise"]
+        t["net_paise"] += line["net_paise"]
+        t["lines"] += 1
+
+    # Payout history for this counselor
+    payouts = [dict(r) for r in conn.execute(
+        "SELECT pa.id, pa.approved_at, pa.actor, pal.currency, SUM(pal.net_paise) AS net_paise "
+        "FROM payout_approval_line pal JOIN payout_approval pa ON pa.id = pal.payout_id "
+        "WHERE pal.counselor_id = ? GROUP BY pa.id, pal.currency ORDER BY pa.id DESC",
+        (counselor_id,)).fetchall()]
+    total_paid_out: dict[str, int] = {}
+    for p in payouts:
+        total_paid_out[p["currency"]] = total_paid_out.get(p["currency"], 0) + p["net_paise"]
+
+    return {
+        "id": c["id"], "name": c["name"], "terms_text": c["terms_text"] or "",
+        "rule": rule,
+        "students": students,
+        "commission_lines": lines,
+        "totals": [{"currency": k, **v} for k, v in sorted(totals.items())],
+        "payouts": payouts,
+        "total_paid_out": [{"currency": k, "net_paise": v} for k, v in sorted(total_paid_out.items())],
+    }
+
+
 class RuleBody(BaseModel):
     rate_bps: int = Field(..., gt=0, le=5000, description="Commission rate in basis points (1000 = 10%)")
     # Only "own_referrals" is applied by the commission calculation today.

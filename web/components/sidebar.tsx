@@ -104,7 +104,7 @@ export default function Sidebar() {
                 </span>
                 <svg
                   className="w-3 h-3 transition-transform"
-                  style={{ color: "var(--sidebar-text)", opacity: 0.5, transform: open[section.heading] ? "rotate(0deg)" : "rotate(-90deg)" }}
+                  style={{ color: "var(--sidebar-text)", opacity: 0.5, transform: open[section.heading] ? "rotate(180deg)" : "rotate(0deg)" }}
                   fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
