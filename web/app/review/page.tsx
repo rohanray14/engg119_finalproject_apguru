@@ -122,6 +122,20 @@ function ReviewContent() {
           Payments the matching agent wasn&apos;t sure about.
           {queue && ` ${queue.auto_matched_count} others were matched automatically.`}
         </p>
+        {queue && queue.auto_matched_count > 0 && items.length > 0 && (
+          <div className="mt-3">
+            <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+              <span>{queue.auto_matched_count} auto-matched</span>
+              <span>{items.length} need review</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="h-2 rounded-full" style={{
+                width: `${Math.round((queue.auto_matched_count / (queue.auto_matched_count + items.length)) * 100)}%`,
+                backgroundColor: "var(--accent)",
+              }} />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bulk approve bar */}

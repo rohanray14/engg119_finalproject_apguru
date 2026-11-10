@@ -52,15 +52,17 @@ def match_all(conn: sqlite3.Connection) -> list[MatchPrediction]:
     Uses global assignment: processes payments by confidence (highest first)
     to prevent double-claiming installments.
     """
+    from ledger.balances import remaining_by_installment
     payments = _get_payments(conn)
     installments = _get_installments(conn)
     student_names = _get_student_names(conn)
     enrollments = _get_enrollments(conn)
+    remaining = remaining_by_installment(conn)
 
     # First pass: score all payments independently
     raw_predictions: list[MatchPrediction] = []
     for pay in payments:
-        pred = _match_one(pay, installments, student_names, enrollments)
+        pred = _match_one(pay, installments, student_names, enrollments, remaining)
         if pred:
             raw_predictions.append(pred)
 
@@ -124,6 +126,7 @@ def _match_one(
     installments: list[dict],
     student_names: dict[int, dict],
     enrollments: dict[int, dict],
+    remaining: dict[int, int] | None = None,
 ) -> Optional[MatchPrediction]:
     """Try to match a single payment to installment(s)."""
     pay_amount = payment["amount_paid_paise"]
@@ -174,7 +177,7 @@ def _match_one(
             )
 
     # Step 1: Find candidates with amount explanations
-    candidates = _find_candidates(pay_amount, pay_currency, installments, enrollments)
+    candidates = _find_candidates(pay_amount, pay_currency, installments, enrollments, remaining)
 
     if not candidates:
         return MatchPrediction(
@@ -223,10 +226,12 @@ def _find_candidates(
     pay_currency: str,
     installments: list[dict],
     enrollments: dict[int, dict],
+    remaining: dict[int, int] | None = None,
 ) -> list[dict]:
     """Find candidate installments using amount explanations.
 
-    Tries exact match, TDS-adjusted, and partial matching.
+    Tries exact match, TDS-adjusted, and partial matching against
+    both the full installment amount and the remaining balance.
     """
     candidates: list[dict] = []
 
@@ -248,6 +253,19 @@ def _find_candidates(
             pay_amount, inst_amount,
             gst_applicable=gst_applicable,
         )
+
+        # Also check against remaining balance (for partial payment follow-ups)
+        if remaining is not None:
+            rem = remaining.get(inst["id"], inst_amount)
+            if rem != inst_amount and rem > 0:
+                rem_explanations = explain_amount(
+                    pay_amount, rem,
+                    gst_applicable=gst_applicable,
+                )
+                for expl in rem_explanations:
+                    expl["story"] = f"remaining_{expl['story']}"
+                    expl["score"] = max(expl["score"] - 0.05, 0.0)  # slightly lower than full match
+                    explanations.append(expl)
 
         for expl in explanations:
             candidates.append({

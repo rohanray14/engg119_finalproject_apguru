@@ -32,6 +32,11 @@ export default function ReviewList({ items, selectedId, onSelect }: Props) {
                   {formatMoney(item.payment.amount_paid_paise, item.payment.currency)}
                 </div>
               </div>
+              {item.suggested_student && (
+                <div className="text-xs mt-0.5" style={{ color: "var(--accent)" }}>
+                  → {item.suggested_student}
+                </div>
+              )}
               <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-500">
                 <span>{item.payment.method || item.payment.source}</span>
                 <span>·</span>
@@ -43,11 +48,6 @@ export default function ReviewList({ items, selectedId, onSelect }: Props) {
           );
         })}
       </div>
-      {items.length > 5 && (
-        <div className="px-4 py-2 text-xs text-gray-500 border-t" style={{ borderColor: "var(--card-border)" }}>
-          + {items.length - 5} more
-        </div>
-      )}
     </div>
   );
 }

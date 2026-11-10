@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ReviewDetail as ReviewDetailType, Installment } from "@/lib/types";
+import type { ReviewDetail as ReviewDetailType } from "@/lib/types";
 import { formatMoney, formatDate, formatConfidence } from "@/lib/format";
 import { apiFetch } from "@/lib/api";
 
@@ -14,7 +14,6 @@ interface Props {
 export default function ReviewDetail({ detail, canApprove, onDecision }: Props) {
   const [acting, setActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [assigning, setAssigning] = useState(false);
 
   const p = detail.payment;
   const suggested = detail.suggested_installments;
@@ -64,7 +63,6 @@ export default function ReviewDetail({ detail, canApprove, onDecision }: Props) 
       setError(e instanceof Error ? e.message : "Failed");
     } finally {
       setActing(false);
-      setAssigning(false);
     }
   }
 
@@ -144,20 +142,44 @@ export default function ReviewDetail({ detail, canApprove, onDecision }: Props) 
           <div className="mt-3 text-xs text-gray-400">
             The amount check and the balance are calculated by the rules engine, not the AI.
           </div>
+
+          {/* Action buttons right under suggestion */}
+          {canApprove && detail.status === "pending_review" && (
+            <div className="flex gap-3 mt-4 pt-4 border-t" style={{ borderColor: "var(--card-border)" }}>
+              <button
+                onClick={handleApprove}
+                disabled={acting}
+                className="px-5 py-2.5 text-sm font-medium text-white rounded-md disabled:opacity-50"
+                style={{ backgroundColor: "var(--accent)" }}
+              >
+                {acting ? "Approving..." : `Approve: ${suggested[0]?.student_name || "suggestion"}`}
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={acting}
+                className="px-5 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              >
+                Not a fee payment
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Other candidates */}
+      {/* Other candidates — always show assign buttons */}
       {(others.length > 0 || suggested.length > 0) && (
         <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-          <h4 className="font-bold text-gray-900 mb-3">Other possibilities</h4>
+          <h4 className="font-bold text-gray-900 mb-1">Other possibilities</h4>
+          <p className="text-xs text-gray-400 mb-3">Click &ldquo;Assign&rdquo; to link this payment to a different student instead.</p>
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-gray-500 border-b" style={{ borderColor: "var(--card-border)" }}>
                 <th className="pb-2 font-medium">Student</th>
                 <th className="pb-2 font-medium">What&apos;s due</th>
                 <th className="pb-2 font-medium">Amount fits?</th>
-                {assigning && <th className="pb-2 font-medium" />}
+                {canApprove && detail.status === "pending_review" && (
+                  <th className="pb-2 font-medium" />
+                )}
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: "var(--card-border)" }}>
@@ -180,16 +202,18 @@ export default function ReviewDetail({ detail, canApprove, onDecision }: Props) 
                         </span>
                       )}
                     </td>
-                    {assigning && (
-                      <td className="py-2">
-                        {!isSuggested && (
+                    {canApprove && detail.status === "pending_review" && (
+                      <td className="py-2 text-right">
+                        {!isSuggested ? (
                           <button
                             onClick={() => handleAssign(inst.installment_id)}
                             disabled={acting}
-                            className="text-xs px-2 py-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+                            className="text-xs px-3 py-1.5 rounded font-medium border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
                           >
                             Assign
                           </button>
+                        ) : (
+                          <span className="text-xs text-gray-400">suggested</span>
                         )}
                       </td>
                     )}
@@ -205,36 +229,6 @@ export default function ReviewDetail({ detail, canApprove, onDecision }: Props) 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
           {error}
-        </div>
-      )}
-
-      {/* Actions */}
-      {canApprove && detail.status === "pending_review" && (
-        <div className="flex gap-3">
-          {detail.has_suggestion && (
-            <button
-              onClick={handleApprove}
-              disabled={acting}
-              className="px-5 py-2.5 text-sm font-medium text-white rounded-md disabled:opacity-50"
-              style={{ backgroundColor: "var(--accent)" }}
-            >
-              {acting ? "Approving..." : `Approve: ${suggested[0]?.student_name || "suggestion"}`}
-            </button>
-          )}
-          <button
-            onClick={() => setAssigning(!assigning)}
-            disabled={acting}
-            className="px-5 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-          >
-            Pick a different student
-          </button>
-          <button
-            onClick={handleReject}
-            disabled={acting}
-            className="px-5 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-          >
-            Not a fee payment
-          </button>
         </div>
       )}
 

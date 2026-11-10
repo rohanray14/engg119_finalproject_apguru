@@ -391,25 +391,29 @@ export default function PaymentsPage() {
               <div className="text-xs text-gray-400">{activeFilters > 0 ? "matching filters" : "total"}</div>
             </div>
             {stats.reviewCount > 0 && (
-              <div className="bg-amber-50 rounded-lg border border-amber-200 px-4 py-3">
+              <Link href="/review"
+                className="bg-amber-50 rounded-lg border border-amber-200 px-4 py-3 hover:border-amber-400 transition-colors block">
                 <div className="text-xs text-amber-700">Needs review</div>
                 <div className="text-lg font-bold text-amber-800">{stats.reviewCount}</div>
-                <div className="text-xs text-amber-600">waiting for you</div>
-              </div>
+                <div className="text-xs text-amber-600">waiting for you →</div>
+              </Link>
             )}
             {stats.unmatchedCount > 0 && (
-              <div className="bg-white rounded-lg border px-4 py-3" style={{ borderColor: "var(--card-border)" }}>
+              <button onClick={() => { clearAll(); setMatch("unmatched"); }}
+                className={`text-left rounded-lg border px-4 py-3 hover:border-gray-400 transition-colors ${match === "unmatched" ? "ring-2 ring-gray-300" : ""}`}
+                style={{ borderColor: "var(--card-border)" }}>
                 <div className="text-xs text-gray-500">Unmatched</div>
                 <div className="text-lg font-bold text-gray-900">{stats.unmatchedCount}</div>
-                <div className="text-xs text-gray-400">{stats.blankCount > 0 ? `${stats.blankCount} with no payer name` : "no student linked"}</div>
-              </div>
+                <div className="text-xs text-gray-400">{stats.blankCount > 0 ? `${stats.blankCount} with no payer name` : "no student linked"} →</div>
+              </button>
             )}
             {stats.screenshotCount > 0 && (
-              <div className="bg-red-50 rounded-lg border border-red-200 px-4 py-3">
+              <button onClick={() => { clearAll(); setConfirmation("screenshot_only"); }}
+                className={`text-left bg-red-50 rounded-lg border border-red-200 px-4 py-3 hover:border-red-400 transition-colors ${confirmation === "screenshot_only" ? "ring-2 ring-red-300" : ""}`}>
                 <div className="text-xs text-red-700">Unverified</div>
                 <div className="text-lg font-bold text-red-800">{stats.screenshotCount}</div>
-                <div className="text-xs text-red-600">screenshot only — not confirmed</div>
-              </div>
+                <div className="text-xs text-red-600">screenshot only — not confirmed →</div>
+              </button>
             )}
           </div>
 

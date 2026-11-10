@@ -58,8 +58,17 @@ def _match_row(conn, match_id: int):
     return row
 
 
-def _summary(row) -> dict:
+def _summary(row, conn=None) -> dict:
     allocs = parse_allocations(row["allocations"])
+    suggested_student = None
+    if allocs and conn is not None:
+        iid = int(allocs[0]["installment_id"])
+        s = conn.execute(
+            "SELECT s.name FROM installment i JOIN enrollment e ON i.enrollment_id = e.id "
+            "JOIN student s ON e.student_id = s.id WHERE i.id = ?", (iid,)
+        ).fetchone()
+        if s:
+            suggested_student = s["name"]
     return {
         "match_id": row["match_id"],
         "status": row["status"],
@@ -68,6 +77,7 @@ def _summary(row) -> dict:
         "reason": row["reason"],
         "reason_text": format_match_reason(row["reason"] or ""),
         "has_suggestion": bool(allocs),
+        "suggested_student": suggested_student,
         "payment": {k: row[k] for k in (
             "payment_id", "payer_name", "amount_paid_paise", "currency", "date", "source", "method",
             "gateway_fee_paise", "gst_on_fee_paise", "fx_diff_paise", "tds_paise",
@@ -89,7 +99,7 @@ def list_queue(conn=Depends(get_conn), user: User = Depends(current_user)):
         "auto_matched_count": auto_count,
         "auto_match_threshold": CONFIG.matching.auto_match_threshold,
         "bulk_approve_min_confidence": BULK_MIN_CONFIDENCE,
-        "items": [_summary(r) for r in rows],
+        "items": [_summary(r, conn) for r in rows],
     }
 
 

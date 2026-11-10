@@ -101,6 +101,7 @@ export interface ReviewItem {
   reason: string | null;
   reason_text: string;
   has_suggestion: boolean;
+  suggested_student: string | null;
   payment: Payment;
 }
 
