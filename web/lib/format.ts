@@ -52,3 +52,36 @@ export function formatDateLong(iso: string): string {
 export function formatConfidence(c: number): string {
   return `${Math.round(c * 100)}%`;
 }
+
+/** Normalize city names to a canonical display form */
+const CITY_MAP: Record<string, string> = {
+  Bengaluru: "Bangalore", Bangalore: "Bangalore", Blore: "Bangalore",
+  Bombay: "Mumbai", Mumbai: "Mumbai",
+  Calcutta: "Kolkata", Kolkata: "Kolkata",
+  Madras: "Chennai", Chennai: "Chennai",
+  DXB: "Dubai", Dubai: "Dubai", dubai: "Dubai",
+};
+
+export function displayCity(raw: string | null | undefined): string {
+  if (!raw) return "";
+  return CITY_MAP[raw] ?? raw;
+}
+
+/** Normalize country names to a canonical display form */
+const COUNTRY_MAP: Record<string, string> = {
+  IN: "India", India: "India",
+  US: "USA", USA: "USA", "United States": "USA",
+  UK: "UK", "United Kingdom": "UK",
+  UAE: "UAE", "United Arab Emirates": "UAE", "U.A.E": "UAE",
+  SG: "Singapore", Singapore: "Singapore",
+};
+
+export function displayCountry(raw: string | null | undefined): string {
+  if (!raw) return "";
+  return COUNTRY_MAP[raw] ?? raw;
+}
+
+/** Format city + country into a display string */
+export function displayLocation(city: string | null | undefined, country: string | null | undefined): string {
+  return [displayCity(city), displayCountry(country)].filter(Boolean).join(", ") || "—";
+}

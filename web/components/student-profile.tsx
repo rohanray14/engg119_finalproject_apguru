@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { formatMoney, formatDate } from "@/lib/format";
+import { formatMoney, formatDate, displayLocation } from "@/lib/format";
 
 interface Installment {
   id: number; due_date: string | null; amount_due_paise: number; currency: string; status: string; remaining_paise: number;
@@ -22,16 +22,6 @@ interface StudentData {
 }
 
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
-
-const countryMap: Record<string, string> = {
-  IN: "India", India: "India", US: "USA", USA: "USA", UK: "UK",
-  UAE: "UAE", SG: "Singapore", Singapore: "Singapore",
-};
-const cityMap: Record<string, string> = {
-  Bengaluru: "Bangalore", Bangalore: "Bangalore", Bombay: "Mumbai", Mumbai: "Mumbai",
-  Calcutta: "Kolkata", Kolkata: "Kolkata", Madras: "Chennai", Chennai: "Chennai",
-  DXB: "Dubai", Dubai: "Dubai",
-};
 
 function statusColor(status: string) {
   switch (status) {
@@ -78,10 +68,7 @@ export default function StudentProfile({ studentId, onBack }: Props) {
     );
   }
 
-  const location = [
-    cityMap[student.city ?? ""] ?? student.city,
-    countryMap[student.country ?? ""] ?? student.country,
-  ].filter(Boolean).join(", ") || "No location";
+  const location = displayLocation(student.city, student.country);
 
   const totalOwed = student.enrollments.reduce((sum, e) =>
     sum + e.installments.reduce((s, i) => s + i.remaining_paise, 0), 0);

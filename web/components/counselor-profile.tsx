@@ -3,7 +3,7 @@
 import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { formatMoney, formatDate } from "@/lib/format";
+import { formatMoney, formatDate, displayLocation } from "@/lib/format";
 
 interface StudentEnrollment {
   program: string; fee_model: string; total_fee_paise: number; currency: string;
@@ -108,7 +108,7 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
           <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Students referred</div>
           <div className="text-xl font-bold text-gray-900 mt-1">{counselor.students.length}</div>
@@ -125,18 +125,17 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
             {inr ? formatMoney(inr.tds_paise, "INR") : "—"}
           </div>
         </div>
-        <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Paid out</div>
-          <div className="text-xl font-bold text-gray-900 mt-1">
-            {paidOut > 0 ? formatMoney(paidOut, "INR") : "—"}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
+        <Link href="/commissions"
+          className="bg-white rounded-lg border p-4 hover:border-red-300 transition-colors"
+          style={{ borderColor: "var(--card-border)" }}>
           <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Still owed</div>
           <div className={`text-xl font-bold mt-1 ${netOwed > 0 ? "text-red-600" : "text-green-600"}`}>
             {netOwed > 0 ? formatMoney(netOwed, "INR") : "Settled"}
           </div>
-        </div>
+          {netOwed > 0 && (
+            <div className="text-xs mt-1" style={{ color: "var(--accent)" }}>Go to payout &rarr;</div>
+          )}
+        </Link>
       </div>
 
       {/* Referred students */}
@@ -148,20 +147,20 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
         {counselor.students.length === 0 ? (
           <p className="text-sm text-gray-500">No students linked to this counselor.</p>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full text-sm table-fixed">
             <thead>
               <tr className="text-left text-xs text-gray-500 border-b" style={{ borderColor: "var(--card-border)" }}>
-                <th className="pb-2 font-medium">Student</th>
-                <th className="pb-2 font-medium">Location</th>
-                <th className="pb-2 font-medium">Program</th>
-                <th className="pb-2 font-medium">Type</th>
-                <th className="pb-2 font-medium text-right">Total fee</th>
-                <th className="pb-2 font-medium">Enrolled around</th>
+                <th className="pb-2 font-medium w-[18%]">Student</th>
+                <th className="pb-2 font-medium w-[18%]">Location</th>
+                <th className="pb-2 font-medium w-[16%]">Program</th>
+                <th className="pb-2 font-medium w-[10%]">Type</th>
+                <th className="pb-2 font-medium text-right w-[16%]">Total fee</th>
+                <th className="pb-2 font-medium w-[22%] pl-6">Enrolled around</th>
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: "var(--card-border)" }}>
               {counselor.students.map((s) => {
-                const location = [s.city, s.country].filter(Boolean).join(", ") || "—";
+                const location = displayLocation(s.city, s.country);
                 if (s.enrollments.length === 0) {
                   return (
                     <tr key={s.id}>
@@ -193,7 +192,7 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                       </span>
                     </td>
                     <td className="py-2.5 text-right font-medium">{formatMoney(e.total_fee_paise, e.currency)}</td>
-                    <td className="py-2.5 text-gray-600">{e.enrolled_around ? formatDate(e.enrolled_around) : "—"}</td>
+                    <td className="py-2.5 text-gray-600 pl-6">{e.enrolled_around ? formatDate(e.enrolled_around) : "—"}</td>
                   </tr>
                 ));
               })}
