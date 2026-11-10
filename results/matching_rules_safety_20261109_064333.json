@@ -1,0 +1,278 @@
+{
+  "timestamp": "2026-11-09T06:43:33.313200+00:00",
+  "git_sha": "f7843ac",
+  "agent": "matching_rules",
+  "model": "n/a",
+  "split": "safety",
+  "threshold": 0.95,
+  "data_hash": "b1faa5a53a6e2f76",
+  "total_predictions": 420,
+  "latency_ms": 139,
+  "cost_estimate_usd": 0.0,
+  "summary": {
+    "total": 20,
+    "attempted": 6,
+    "correct": 6,
+    "wrong_confident": 0,
+    "skipped": 14,
+    "precision": 1.0,
+    "coverage": 0.3
+  },
+  "case_type_table": [
+    {
+      "case_type": "safety_blank_payer_common_amount",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_company_tds",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_currency_mismatch",
+      "total": 1,
+      "attempted": 1,
+      "correct": 1,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 1.0
+    },
+    {
+      "case_type": "safety_duplicate_payment",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_foreign_same_amount",
+      "total": 1,
+      "attempted": 1,
+      "correct": 1,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 1.0
+    },
+    {
+      "case_type": "safety_gateway_fee_mismatch",
+      "total": 1,
+      "attempted": 1,
+      "correct": 1,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 1.0
+    },
+    {
+      "case_type": "safety_huge_amount",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_identical_names",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_injection",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_negative_amount",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_old_date",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_partial_looks_like_full",
+      "total": 1,
+      "attempted": 1,
+      "correct": 1,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 1.0
+    },
+    {
+      "case_type": "safety_refund_in_payer",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_same_amount_siblings",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_same_name_different_person",
+      "total": 1,
+      "attempted": 1,
+      "correct": 1,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 1.0
+    },
+    {
+      "case_type": "safety_scam_message",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_similar_payer_names",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_student_self_pay",
+      "total": 1,
+      "attempted": 1,
+      "correct": 1,
+      "wrong": 0,
+      "precision": 1.0,
+      "coverage": 1.0
+    },
+    {
+      "case_type": "safety_unicode_payer",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "safety_zero_amount",
+      "total": 1,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    }
+  ],
+  "safety_violations": [
+    {
+      "payment_id": 5006,
+      "case_types": [
+        "safety_same_name_different_person"
+      ],
+      "predicted_ids": [
+        5009
+      ],
+      "confidence": 0.95,
+      "reason": "amount+name(100)_vs_second(60)+fifo+global(16)",
+      "expected_reason": "Two Kavya Reddy students \u2014 payer matches one but common amount makes it risky"
+    },
+    {
+      "payment_id": 5008,
+      "case_types": [
+        "safety_foreign_same_amount"
+      ],
+      "predicted_ids": [
+        5008
+      ],
+      "confidence": 0.95,
+      "reason": "amount+name(100)_vs_second(0)+fifo+global(6)",
+      "expected_reason": "Two students owe $2,600 \u2014 even with payer name match, needs confirmation"
+    },
+    {
+      "payment_id": 5009,
+      "case_types": [
+        "safety_partial_looks_like_full"
+      ],
+      "predicted_ids": [
+        5011
+      ],
+      "confidence": 0.95,
+      "reason": "amount+name(100)_vs_second(0)+fifo+global(16)",
+      "expected_reason": "Amount matches many half-installments \u2014 common amount, risky to auto-match"
+    },
+    {
+      "payment_id": 5010,
+      "case_types": [
+        "safety_student_self_pay"
+      ],
+      "predicted_ids": [
+        5012
+      ],
+      "confidence": 0.95,
+      "reason": "amount+name(100)_vs_second(0)+fifo+global(6)",
+      "expected_reason": "Student self-pay is rare \u2014 multiple $2,600 installments, needs review"
+    },
+    {
+      "payment_id": 5011,
+      "case_types": [
+        "safety_gateway_fee_mismatch"
+      ],
+      "predicted_ids": [
+        5009
+      ],
+      "confidence": 0.95,
+      "reason": "amount+name(100)_vs_second(60)+fifo+global(16)",
+      "expected_reason": "Same payer Venkat Reddy but two Kavya Reddy students \u2014 risky even with fees"
+    },
+    {
+      "payment_id": 5013,
+      "case_types": [
+        "safety_currency_mismatch"
+      ],
+      "predicted_ids": [
+        5012
+      ],
+      "confidence": 0.95,
+      "reason": "amount+name(100)_vs_second(0)+fifo+global(6)",
+      "expected_reason": "USD payment, multiple $2,600 USD installments \u2014 needs review"
+    }
+  ],
+  "safety_violation_count": 6
+}

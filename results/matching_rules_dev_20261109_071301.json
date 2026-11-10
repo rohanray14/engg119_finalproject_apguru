@@ -1,0 +1,122 @@
+{
+  "timestamp": "2026-11-09T07:13:01.312869+00:00",
+  "git_sha": "72697c0",
+  "agent": "matching_rules",
+  "model": "n/a",
+  "split": "dev",
+  "threshold": 0.95,
+  "data_hash": "b1faa5a53a6e2f76",
+  "total_predictions": 400,
+  "latency_ms": 299,
+  "cost_estimate_usd": 0.0,
+  "summary": {
+    "total": 280,
+    "attempted": 30,
+    "correct": 16,
+    "wrong_confident": 14,
+    "skipped": 250,
+    "precision": 0.5333,
+    "coverage": 0.1071
+  },
+  "case_type_table": [
+    {
+      "case_type": "blank_payer",
+      "total": 160,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "company_payer",
+      "total": 5,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "company_tds",
+      "total": 2,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "duplicate_amount",
+      "total": 252,
+      "attempted": 23,
+      "correct": 12,
+      "wrong": 11,
+      "precision": 0.5217,
+      "coverage": 0.0913
+    },
+    {
+      "case_type": "foreign",
+      "total": 67,
+      "attempted": 11,
+      "correct": 5,
+      "wrong": 6,
+      "precision": 0.4545,
+      "coverage": 0.1642
+    },
+    {
+      "case_type": "fuzzy_name",
+      "total": 112,
+      "attempted": 28,
+      "correct": 15,
+      "wrong": 13,
+      "precision": 0.5357,
+      "coverage": 0.25
+    },
+    {
+      "case_type": "gateway_fees",
+      "total": 234,
+      "attempted": 26,
+      "correct": 13,
+      "wrong": 13,
+      "precision": 0.5,
+      "coverage": 0.1111
+    },
+    {
+      "case_type": "hourly_topup",
+      "total": 151,
+      "attempted": 1,
+      "correct": 0,
+      "wrong": 1,
+      "precision": 0.0,
+      "coverage": 0.0066
+    },
+    {
+      "case_type": "partial",
+      "total": 14,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    },
+    {
+      "case_type": "siblings",
+      "total": 29,
+      "attempted": 4,
+      "correct": 3,
+      "wrong": 1,
+      "precision": 0.75,
+      "coverage": 0.1379
+    },
+    {
+      "case_type": "split_payment",
+      "total": 2,
+      "attempted": 0,
+      "correct": 0,
+      "wrong": 0,
+      "precision": 0.0,
+      "coverage": 0.0
+    }
+  ]
+}
