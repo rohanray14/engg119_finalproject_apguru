@@ -21,10 +21,13 @@ interface Message {
 
 const suggestions = [
   "Which families still owe us?",
-  "How much did we receive this month?",
+  "How much total received?",
   "What is our cash position?",
-  "Who are the largest payers?",
+  "Who paid the largest amount?",
   "How many installments are overdue?",
+  "How many unmatched payments?",
+  "What are the total expenses?",
+  "Expense breakdown by category",
 ];
 
 export default function AskPage() {

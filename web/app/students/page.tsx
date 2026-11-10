@@ -78,8 +78,7 @@ export default function StudentsPage() {
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b bg-gray-50">
               <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">City</th>
-              <th className="px-4 py-3 font-medium">Country</th>
+              <th className="px-4 py-3 font-medium">Location</th>
               <th className="px-4 py-3 font-medium text-right">Owed</th>
               <th className="px-4 py-3 font-medium">Next due</th>
               <th className="px-4 py-3 font-medium">Enrollments</th>
@@ -92,8 +91,9 @@ export default function StudentsPage() {
                 className={`cursor-pointer hover:bg-gray-50 ${selectedId === s.id ? "bg-blue-50" : ""}`}
                 onClick={() => setSelectedId(s.id)}>
                 <td className="px-4 py-2.5 font-medium text-gray-900">{s.name}</td>
-                <td className="px-4 py-2.5 text-gray-600">{displayCity(s.city)}</td>
-                <td className="px-4 py-2.5 text-gray-600">{displayCountry(s.country)}</td>
+                <td className="px-4 py-2.5 text-gray-600">
+                  {[displayCity(s.city), displayCountry(s.country)].filter(v => v !== "—").join(", ") || "—"}
+                </td>
                 <td className="px-4 py-2.5 text-right">
                   {s.owed.length > 0
                     ? s.owed.map((o) => formatMoney(o.amount_paise, o.currency)).join(", ")

@@ -33,21 +33,49 @@ export default function RiskPage() {
       <h1 className="text-3xl font-bold text-gray-900 mb-1">Risk flags</h1>
       <p className="text-sm text-gray-500 mb-6">Automatically detected issues that may need attention.</p>
 
+      {/* Severity explanation */}
+      <div className="bg-white rounded-lg border p-4 mb-6" style={{ borderColor: "var(--card-border)" }}>
+        <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">How severity is determined</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+          <div className="flex items-start gap-2">
+            <span className="px-2 py-0.5 rounded text-xs font-bold uppercase shrink-0"
+              style={{ backgroundColor: "#fee2e2", color: "#991b1b" }}>HIGH</span>
+            <span className="text-gray-600">Overdue &gt;90 days, unverified large payments (&ge;₹5L), duplicate payments, suspicious payer names</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="px-2 py-0.5 rounded text-xs font-bold uppercase shrink-0"
+              style={{ backgroundColor: "#fef3c7", color: "#92400e" }}>MEDIUM</span>
+            <span className="text-gray-600">Overdue 30–90 days, payments unmatched &gt;14 days, unusually large payments (&gt;3x typical)</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="px-2 py-0.5 rounded text-xs font-bold uppercase shrink-0"
+              style={{ backgroundColor: "#dcfce7", color: "#166534" }}>LOW</span>
+            <span className="text-gray-600">Minor inconsistencies or data quality issues worth noting</span>
+          </div>
+        </div>
+      </div>
+
       {data && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
             <div className="text-sm text-gray-500">Total flags</div>
             <div className="text-2xl font-bold">{data.counts.high + data.counts.medium + data.counts.low}</div>
           </div>
-          <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-            <div className="text-sm text-gray-500">High severity</div>
+          <div className="bg-white rounded-lg border p-4 cursor-pointer hover:ring-2 hover:ring-red-200"
+            style={{ borderColor: "var(--card-border)" }}
+            onClick={() => setSeverity(severity === "high" ? "" : "high")}>
+            <div className="text-sm text-gray-500">High · &gt;90 days</div>
             <div className="text-2xl font-bold text-red-600">{data.counts.high}</div>
           </div>
-          <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-            <div className="text-sm text-gray-500">Medium</div>
+          <div className="bg-white rounded-lg border p-4 cursor-pointer hover:ring-2 hover:ring-orange-200"
+            style={{ borderColor: "var(--card-border)" }}
+            onClick={() => setSeverity(severity === "medium" ? "" : "medium")}>
+            <div className="text-sm text-gray-500">Medium · 30–90 days</div>
             <div className="text-2xl font-bold text-orange-600">{data.counts.medium}</div>
           </div>
-          <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
+          <div className="bg-white rounded-lg border p-4 cursor-pointer hover:ring-2 hover:ring-green-200"
+            style={{ borderColor: "var(--card-border)" }}
+            onClick={() => setSeverity(severity === "low" ? "" : "low")}>
             <div className="text-sm text-gray-500">Low</div>
             <div className="text-2xl font-bold text-green-600">{data.counts.low}</div>
           </div>
