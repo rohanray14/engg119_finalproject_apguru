@@ -18,6 +18,7 @@ interface PaymentLink {
 interface StudentData {
   id: number; name: string; city: string | null; country: string | null;
   aliases: string[]; payer_aliases: string[];
+  parent_name: string | null; parent_phone: string | null; parent_email: string | null;
   enrollments: Enrollment[]; payments: PaymentLink[];
 }
 
@@ -98,6 +99,27 @@ export default function StudentProfile({ studentId, onBack }: Props) {
         )}
         {student.payer_aliases.length > 0 && (
           <p className="text-xs text-gray-400">Known payers: {student.payer_aliases.join(", ")}</p>
+        )}
+        {/* Contact info */}
+        {(student.parent_name || student.parent_phone || student.parent_email) && (
+          <div className="mt-3 flex items-center gap-4 text-sm">
+            {student.parent_name && (
+              <span className="text-gray-600">
+                <span className="text-gray-400 text-xs uppercase tracking-wider mr-1">Parent:</span>
+                {student.parent_name}
+              </span>
+            )}
+            {student.parent_phone && (
+              <a href={`tel:${student.parent_phone}`} className="hover:underline" style={{ color: "var(--accent)" }}>
+                {student.parent_phone}
+              </a>
+            )}
+            {student.parent_email && (
+              <a href={`mailto:${student.parent_email}`} className="hover:underline" style={{ color: "var(--accent)" }}>
+                {student.parent_email}
+              </a>
+            )}
+          </div>
         )}
       </div>
 

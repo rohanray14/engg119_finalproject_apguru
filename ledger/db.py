@@ -35,7 +35,10 @@ CREATE TABLE IF NOT EXISTS student (
     city            TEXT,
     country         TEXT,
     counselor_ids   TEXT DEFAULT '[]',       -- JSON list of ints
-    payer_aliases   TEXT DEFAULT '[]'        -- JSON list
+    payer_aliases   TEXT DEFAULT '[]',       -- JSON list
+    parent_name     TEXT,
+    parent_phone    TEXT,
+    parent_email    TEXT
 );
 
 CREATE TABLE IF NOT EXISTS enrollment (

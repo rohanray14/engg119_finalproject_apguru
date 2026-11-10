@@ -161,6 +161,9 @@ def get_student(student_id: int, conn=Depends(get_conn), user: User = Depends(cu
     return {
         "id": s["id"], "name": s["name"], "city": s["city"], "country": s["country"],
         "aliases": _json_list(s["aliases"]), "payer_aliases": _json_list(s["payer_aliases"]),
+        "parent_name": s["parent_name"] or None,
+        "parent_phone": s["parent_phone"] or None,
+        "parent_email": s["parent_email"] or None,
         "enrollments": enrollments, "payments": payments,
     }
 

@@ -250,8 +250,8 @@ def _read_csv(path: Path) -> list[dict]:
 def _load_students(conn: sqlite3.Connection, path: Path):
     for row in _read_csv(path):
         conn.execute(
-            "INSERT OR REPLACE INTO student (id, name, aliases, city, country, counselor_ids, payer_aliases) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT OR REPLACE INTO student (id, name, aliases, city, country, counselor_ids, payer_aliases, parent_name, parent_phone, parent_email) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 int(row["id"]),
                 normalize_name(row["name"]),
@@ -260,6 +260,9 @@ def _load_students(conn: sqlite3.Connection, path: Path):
                 row.get("country", ""),
                 row.get("counselor_ids", "[]"),
                 row.get("payer_aliases", "[]"),
+                row.get("parent_name", ""),
+                row.get("parent_phone", ""),
+                row.get("parent_email", ""),
             ),
         )
     conn.commit()

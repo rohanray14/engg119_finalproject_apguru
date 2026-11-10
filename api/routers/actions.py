@@ -311,10 +311,21 @@ def reminders(
         items = [r for r in items if not r.needs_approval]
     elif approval == "needs_approval":
         items = [r for r in items if r.needs_approval]
+    # Build student contact lookup
+    student_contact = {}
+    for s in conn.execute("SELECT id, parent_name, parent_phone, parent_email FROM student").fetchall():
+        student_contact[s["id"]] = {
+            "parent_name": s["parent_name"] or "", "parent_phone": s["parent_phone"] or "",
+            "parent_email": s["parent_email"] or "",
+        }
     out = []
     for r in items:
         d = vars(r).copy()
         d["approved"] = (f"installment:{r.installment_id}", r.reminder_type) in approved
+        contact = student_contact.get(r.student_id, {})
+        d["parent_name"] = contact.get("parent_name", "")
+        d["parent_phone"] = contact.get("parent_phone", "")
+        d["parent_email"] = contact.get("parent_email", "")
         out.append(d)
     return {"as_of": as_of, "counts": counts, "items": out}
 

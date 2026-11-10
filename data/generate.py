@@ -493,6 +493,13 @@ class Generator:
                         used_names.add(name)
                         break
 
+                # Generate parent contact info
+                phone_prefix = "+91 " if not is_overseas else self.rng.choice(["+971 ", "+1 ", "+44 ", "+65 "])
+                phone = phone_prefix + "".join(str(self.rng.randint(0, 9)) for _ in range(10))
+                email_name = parent_name.lower().replace(" ", ".").replace("'", "")
+                email_domain = self.rng.choice(["gmail.com", "yahoo.com", "outlook.com", "hotmail.com"])
+                email = f"{email_name}@{email_domain}"
+
                 student = {
                     "id": sid, "name": name,
                     "aliases": [_messy_name(self.rng, name)],
@@ -500,6 +507,8 @@ class Generator:
                     "_raw_city": city,
                     "counselor_ids": list(counselor_ids),  # copy so city_all can append
                     "parent_name": parent_name,
+                    "parent_phone": phone,
+                    "parent_email": email,
                     "payer_aliases": [parent_name],
                     "is_overseas": is_overseas,
                     "family_id": fid,
@@ -994,7 +1003,8 @@ class Generator:
 
         # Students CSV
         self._write_csv(out_dir / "students.csv", self.students, [
-            "id", "name", "aliases", "city", "country", "counselor_ids", "payer_aliases",
+            "id", "name", "aliases", "city", "country", "counselor_ids",
+            "payer_aliases", "parent_name", "parent_phone", "parent_email",
         ])
 
         # Enrollments CSV
