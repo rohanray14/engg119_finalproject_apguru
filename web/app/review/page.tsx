@@ -35,6 +35,7 @@ function ReviewContent() {
   const [bulkSelected, setBulkSelected] = useState<Set<number>>(new Set());
   const [bulkActing, setBulkActing] = useState(false);
   const [bulkResult, setBulkResult] = useState<BulkResult | null>(null);
+  const [reviewedCount, setReviewedCount] = useState(0);
 
   // Read ?id= from URL (e.g. linked from Payments page)
   useEffect(() => {
@@ -58,7 +59,15 @@ function ReviewContent() {
     mutateQueue();
     mutateDetail();
     setSelectedId(null);
+    setReviewedCount((c) => c + 1);
   }, [mutateQueue, mutateDetail]);
+
+  const handleSkip = useCallback(() => {
+    if (!activeId || items.length === 0) return;
+    const idx = items.findIndex((i) => i.match_id === activeId);
+    const next = items[idx + 1] ?? items[0];
+    if (next && next.match_id !== activeId) setSelectedId(next.match_id);
+  }, [activeId, items]);
 
   const eligibleForBulk = items.filter(
     (i) => i.has_suggestion && i.confidence >= (queue?.bulk_approve_min_confidence ?? 0.9)
@@ -118,10 +127,17 @@ function ReviewContent() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Match review</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Payments the matching agent wasn&apos;t sure about.
-          {queue && ` ${queue.auto_matched_count} others were matched automatically.`}
-        </p>
+        <div className="flex items-center gap-3 mt-1">
+          <p className="text-sm text-gray-500">
+            Payments the matching agent wasn&apos;t sure about.
+            {queue && ` ${queue.auto_matched_count} others were matched automatically.`}
+          </p>
+          {reviewedCount > 0 && (
+            <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: "#dcfce7", color: "#166534" }}>
+              {reviewedCount} reviewed this session
+            </span>
+          )}
+        </div>
         {queue && queue.auto_matched_count > 0 && items.length > 0 && (
           <div className="mt-3">
             <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
@@ -223,6 +239,7 @@ function ReviewContent() {
                 detail={detail}
                 canApprove={canApprove}
                 onDecision={handleDecision}
+                onSkip={handleSkip}
               />
             ) : (
               <div className="bg-white rounded-lg border p-12 text-center" style={{ borderColor: "var(--card-border)" }}>

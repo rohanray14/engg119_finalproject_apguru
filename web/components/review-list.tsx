@@ -42,7 +42,10 @@ export default function ReviewList({ items, selectedId, onSelect }: Props) {
                 <span>·</span>
                 <span>{formatDate(item.payment.date)}</span>
                 <span>·</span>
-                <span>{formatConfidence(item.confidence)} sure</span>
+                <span className="px-1.5 py-0.5 rounded text-xs font-medium" style={{
+                  backgroundColor: item.confidence >= 0.9 ? "#dcfce7" : item.confidence >= 0.8 ? "#fef3c7" : "#fee2e2",
+                  color: item.confidence >= 0.9 ? "#166534" : item.confidence >= 0.8 ? "#92400e" : "#991b1b",
+                }}>{formatConfidence(item.confidence)}</span>
               </div>
             </button>
           );

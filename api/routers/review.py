@@ -103,6 +103,24 @@ def list_queue(conn=Depends(get_conn), user: User = Depends(current_user)):
     }
 
 
+@router.get("/{match_id}/search-students")
+def search_students(match_id: int, q: str = "", conn=Depends(get_conn), user: User = Depends(current_user)):
+    """Search for students to manually assign a payment to."""
+    row = _match_row(conn, match_id)
+    if not q or len(q) < 2:
+        return {"results": []}
+    results = [dict(r) for r in conn.execute(
+        f"SELECT {INST_COLS} {INST_JOIN} WHERE s.name LIKE ? AND i.status != 'paid' AND i.currency = ? "
+        "ORDER BY s.name, i.due_date LIMIT 30",
+        (f"%{q}%", row["currency"]),
+    ).fetchall()]
+    remaining = remaining_by_installment(conn)
+    for inst in results:
+        inst["remaining_paise"] = remaining.get(inst["installment_id"], inst["amount_due_paise"])
+        inst["amount_difference_paise"] = inst["amount_due_paise"] - row["amount_paid_paise"]
+    return {"results": results}
+
+
 @router.get("/{match_id}")
 def get_item(match_id: int, conn=Depends(get_conn), user: User = Depends(current_user)):
     row = _match_row(conn, match_id)
