@@ -1,11 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate } from "@/lib/format";
 
+interface StudentEnrollment {
+  program: string; fee_model: string; total_fee_paise: number; currency: string;
+  enrolled_around: string | null;
+}
 interface CounselorStudent {
   id: number; name: string; city: string | null; country: string | null;
+  enrollments: StudentEnrollment[];
 }
 interface CommissionLine {
   id: number; payment_id: number; date: string; payer_name: string | null;
@@ -135,23 +141,64 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
 
       {/* Referred students */}
       <div className="bg-white rounded-lg border p-5 mb-4" style={{ borderColor: "var(--card-border)" }}>
-        <h3 className="font-bold text-gray-900 mb-3">Referred students</h3>
+        <h3 className="font-bold text-gray-900 mb-3">
+          Referred students
+          <span className="text-sm font-normal text-gray-500 ml-2">{counselor.students.length} students</span>
+        </h3>
         {counselor.students.length === 0 ? (
           <p className="text-sm text-gray-500">No students linked to this counselor.</p>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {counselor.students.map((s) => (
-              <span key={s.id} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-gray-50 border text-sm"
-                style={{ borderColor: "var(--card-border)" }}>
-                <span className="font-medium text-gray-900">{s.name}</span>
-                {(s.city || s.country) && (
-                  <span className="text-gray-400 text-xs">
-                    ({[s.city, s.country].filter(Boolean).join(", ")})
-                  </span>
-                )}
-              </span>
-            ))}
-          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-gray-500 border-b" style={{ borderColor: "var(--card-border)" }}>
+                <th className="pb-2 font-medium">Student</th>
+                <th className="pb-2 font-medium">Location</th>
+                <th className="pb-2 font-medium">Program</th>
+                <th className="pb-2 font-medium">Type</th>
+                <th className="pb-2 font-medium text-right">Total fee</th>
+                <th className="pb-2 font-medium">Enrolled around</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y" style={{ borderColor: "var(--card-border)" }}>
+              {counselor.students.map((s) => {
+                const location = [s.city, s.country].filter(Boolean).join(", ") || "—";
+                if (s.enrollments.length === 0) {
+                  return (
+                    <tr key={s.id}>
+                      <td className="py-2.5 font-medium hover:underline" style={{ color: "var(--accent)" }}>
+                        <Link href={`/students?id=${s.id}`}>{s.name}</Link>
+                      </td>
+                      <td className="py-2.5 text-gray-600">{location}</td>
+                      <td className="py-2.5 text-gray-400" colSpan={4}>No enrollments</td>
+                    </tr>
+                  );
+                }
+                return s.enrollments.map((e, ei) => (
+                  <tr key={`${s.id}-${ei}`}>
+                    {ei === 0 ? (
+                      <>
+                        <td className="py-2.5 font-medium hover:underline" style={{ color: "var(--accent)" }}
+                          rowSpan={s.enrollments.length}>
+                          <Link href={`/students?id=${s.id}`}>{s.name}</Link>
+                        </td>
+                        <td className="py-2.5 text-gray-600" rowSpan={s.enrollments.length}>{location}</td>
+                      </>
+                    ) : null}
+                    <td className="py-2.5 text-gray-900">{e.program}</td>
+                    <td className="py-2.5">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        e.fee_model === "package" ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"
+                      }`}>
+                        {e.fee_model === "package" ? "Package" : "Hourly"}
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-right font-medium">{formatMoney(e.total_fee_paise, e.currency)}</td>
+                    <td className="py-2.5 text-gray-600">{e.enrolled_around ? formatDate(e.enrolled_around) : "—"}</td>
+                  </tr>
+                ));
+              })}
+            </tbody>
+          </table>
         )}
       </div>
 

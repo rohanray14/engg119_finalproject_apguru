@@ -147,7 +147,7 @@ def get_counselor(counselor_id: int, conn=Depends(get_conn), user: User = Depend
         raise not_found("Counselor")
     rule = _rule_view(c)
 
-    # Students this counselor referred
+    # Students this counselor referred, with their enrollments
     students = []
     for s in conn.execute("SELECT id, name, city, country, counselor_ids FROM student ORDER BY name").fetchall():
         try:
@@ -155,7 +155,22 @@ def get_counselor(counselor_id: int, conn=Depends(get_conn), user: User = Depend
         except (json.JSONDecodeError, TypeError):
             cids = []
         if counselor_id in [int(x) for x in cids]:
-            students.append({"id": s["id"], "name": s["name"], "city": s["city"], "country": s["country"]})
+            enrollments = []
+            for e in conn.execute(
+                "SELECT e.id, e.program, e.fee_model, e.total_fee_paise, e.currency "
+                "FROM enrollment e WHERE e.student_id = ? ORDER BY e.id", (s["id"],)).fetchall():
+                first_due = conn.execute(
+                    "SELECT MIN(due_date) AS d FROM installment WHERE enrollment_id = ? AND due_date IS NOT NULL",
+                    (e["id"],)).fetchone()
+                enrollments.append({
+                    "program": e["program"], "fee_model": e["fee_model"],
+                    "total_fee_paise": e["total_fee_paise"], "currency": e["currency"],
+                    "enrolled_around": first_due["d"] if first_due else None,
+                })
+            students.append({
+                "id": s["id"], "name": s["name"], "city": s["city"], "country": s["country"],
+                "enrollments": enrollments,
+            })
 
     # Commission lines
     lines = [dict(r) for r in conn.execute(
