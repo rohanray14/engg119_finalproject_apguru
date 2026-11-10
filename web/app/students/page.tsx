@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate } from "@/lib/format";
@@ -47,8 +48,24 @@ function displayCity(raw: string | null): string {
 }
 
 export default function StudentsPage() {
+  return (
+    <Suspense fallback={<div className="p-8"><div className="animate-pulse h-64 bg-gray-200 rounded" /></div>}>
+      <StudentsContent />
+    </Suspense>
+  );
+}
+
+function StudentsContent() {
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const q = searchParams.get("search");
+    if (q) setSearch(q);
+    const id = searchParams.get("id");
+    if (id) setSelectedId(Number(id));
+  }, [searchParams]);
 
   const params = new URLSearchParams({ limit: "200" });
   if (search) params.set("search", search);

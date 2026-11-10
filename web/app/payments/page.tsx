@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
@@ -69,6 +69,38 @@ function friendlyMethod(method: string | null, source: string): string {
   return methodLabels[raw] ?? methodLabels[raw.toUpperCase()] ?? raw;
 }
 
+function Popover({ trigger, children }: { trigger: React.ReactNode; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const ref = useRef<HTMLSpanElement>(null);
+
+  function show() {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 4, left: rect.right });
+    }
+    setOpen(true);
+  }
+
+  return (
+    <>
+      <span ref={ref} className="cursor-help" onMouseEnter={show} onMouseLeave={() => setOpen(false)}>
+        {trigger}
+      </span>
+      {open && (
+        <div
+          className="fixed z-[9999] bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg"
+          style={{ top: pos.top, left: pos.left, transform: "translateX(-100%)" }}
+          onMouseEnter={() => setOpen(true)}
+          onMouseLeave={() => setOpen(false)}
+        >
+          {children}
+        </div>
+      )}
+    </>
+  );
+}
+
 function DeductionBreakdown({ r }: { r: PaymentRow }) {
   if (r.deductions_paise <= 0) return <span>—</span>;
   const parts: { label: string; value: string }[] = [];
@@ -77,21 +109,20 @@ function DeductionBreakdown({ r }: { r: PaymentRow }) {
   if (r.tds_paise > 0) parts.push({ label: "TDS", value: formatMoney(r.tds_paise, r.currency) });
   if (r.fx_diff_paise > 0) parts.push({ label: "FX loss", value: formatMoney(r.fx_diff_paise, r.currency) });
   return (
-    <span className="relative group cursor-help">
-      <span className="underline decoration-dotted">{formatMoney(r.deductions_paise, r.currency)}</span>
-      <span className="hidden group-hover:block absolute right-0 top-full mt-1 z-50 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
+    <Popover trigger={<span className="underline decoration-dotted">{formatMoney(r.deductions_paise, r.currency)}</span>}>
+      <div className="whitespace-nowrap">
         {parts.map((p, i) => (
-          <span key={i} className="flex justify-between gap-4">
+          <div key={i} className="flex justify-between gap-4">
             <span className="text-gray-300">{p.label}</span>
             <span className="font-medium">{p.value}</span>
-          </span>
+          </div>
         ))}
-        <span className="flex justify-between gap-4 border-t border-gray-700 mt-1 pt-1">
+        <div className="flex justify-between gap-4 border-t border-gray-700 mt-1 pt-1">
           <span className="text-gray-300">Total</span>
           <span className="font-medium">{formatMoney(r.deductions_paise, r.currency)}</span>
-        </span>
-      </span>
-    </span>
+        </div>
+      </div>
+    </Popover>
   );
 }
 
@@ -101,16 +132,13 @@ function ConfirmBadge({ confirmation }: { confirmation: string }) {
     backgroundColor: info?.bg ?? "#f3f4f6",
     color: info?.text ?? "#374151",
   };
-  return (
-    <span className="relative group">
-      <span className="px-2 py-0.5 rounded text-xs font-medium cursor-help" style={style}>
-        {confirmation.replace(/_/g, " ")}
-      </span>
-      {info?.tip && (
-        <span className="hidden group-hover:block absolute right-0 top-full mt-1 z-50 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 w-56 shadow-lg leading-relaxed">
-          {info.tip}
-        </span>
-      )}
+  return info?.tip ? (
+    <Popover trigger={<span className="px-2 py-0.5 rounded text-xs font-medium" style={style}>{confirmation.replace(/_/g, " ")}</span>}>
+      <div className="w-52 leading-relaxed">{info.tip}</div>
+    </Popover>
+  ) : (
+    <span className="px-2 py-0.5 rounded text-xs font-medium" style={style}>
+      {confirmation.replace(/_/g, " ")}
     </span>
   );
 }
@@ -315,7 +343,12 @@ export default function PaymentsPage() {
                     <tr key={r.id} className={isScreenshot ? "bg-red-50/40 hover:bg-red-50" : "hover:bg-gray-50"}>
                       <td className="px-4 py-2.5 whitespace-nowrap">{formatDate(r.date)}</td>
                       <td className="px-4 py-2.5 font-medium text-gray-900 max-w-[200px] truncate">
-                        {r.payer_name || <span className="text-gray-400 font-normal">(blank)</span>}
+                        {r.payer_name ? (
+                          <Link href={`/students?search=${encodeURIComponent(r.payer_name)}`}
+                            className="hover:underline hover:text-teal-700">
+                            {r.payer_name}
+                          </Link>
+                        ) : <span className="text-gray-400 font-normal">(blank)</span>}
                       </td>
                       <td className="px-4 py-2.5 text-right whitespace-nowrap font-medium">
                         {formatMoney(r.amount_paid_paise, r.currency)}
