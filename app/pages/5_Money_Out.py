@@ -214,6 +214,8 @@ with st.container(border=True):
     mc2.metric("Avg monthly collected", fmt_inr(avg_monthly_received))
     mc3.metric("Current collection rate", f"{current_collection_rate:.0f}%")
 
+    import altair as alt
+
     # Project forward 12 months at different collection rates
     scenarios = [
         ("Current rate", current_collection_rate / 100),
@@ -222,47 +224,88 @@ with st.container(border=True):
         ("50% drop", max(0, current_collection_rate - 50) / 100),
     ]
 
-    # Muted, professional palette: teal → slate → warm gray → muted coral
-    _scenario_colors = ["#1a6b5a", "#5b7f95", "#8e9bab", "#c47a6c"]
-
     # Net position = cumulative (inflow - outflow) starting from zero
     projection_rows = []
     last_month = end
     for month_offset in range(1, 13):
         proj_month = _add_months(last_month, month_offset)
-        label = proj_month.strftime("%b %y")
-        row = {"Month": label}
         for scenario_name, rate in scenarios:
             monthly_inflow = int(avg_monthly_expected * rate)
             monthly_net = monthly_inflow - avg_monthly_burn
             cumulative = monthly_net * month_offset
-            row[scenario_name] = cumulative / 100  # rupees
-        projection_rows.append(row)
+            projection_rows.append({
+                "Month": proj_month,
+                "Scenario": scenario_name,
+                "Cumulative": cumulative / 100,  # rupees
+            })
 
-    df_proj = pd.DataFrame(projection_rows).set_index("Month")
+    df_proj = pd.DataFrame(projection_rows)
 
-    st.line_chart(df_proj, color=_scenario_colors)
+    # Single teal hue, darker = better scenario, lighter = worse
+    scenario_names = [s[0] for s in scenarios]
+    _opacities = [1.0, 0.65, 0.4, 0.22]
+    _dashes = [[0, 0], [6, 3], [4, 4], [2, 2]]
 
-    # Scenario summary as a compact row of indicators
+    base = alt.Chart(df_proj).encode(
+        x=alt.X("Month:T", title=None, axis=alt.Axis(format="%b %y", labelAngle=-45)),
+        y=alt.Y("Cumulative:Q", title="Cumulative net (₹)", axis=alt.Axis(format="~s")),
+        detail="Scenario:N",
+    )
+
+    lines = alt.layer(*[
+        base.transform_filter(
+            alt.datum.Scenario == name
+        ).mark_line(
+            strokeWidth=2.5 if i == 0 else 1.8,
+            opacity=_opacities[i],
+            strokeDash=_dashes[i],
+            color="#1a6b5a",
+        )
+        for i, name in enumerate(scenario_names)
+    ])
+
+    # Nearest-point rule for a single clean tooltip
+    nearest = alt.selection_point(
+        nearest=True, on="pointerover", fields=["Month"], empty=False,
+    )
+    points = base.mark_point(opacity=0).encode(
+        tooltip=[
+            alt.Tooltip("Month:T", title="Month", format="%b %Y"),
+            alt.Tooltip("Scenario:N", title="Scenario"),
+            alt.Tooltip("Cumulative:Q", title="Net position (₹)", format=",.0f"),
+        ],
+    ).add_params(nearest)
+
+    rule = base.mark_rule(color="#ccc", strokeWidth=0.5).encode(
+        x="Month:T",
+    ).transform_filter(nearest)
+
+    chart = (lines + rule + points).properties(height=320).configure_view(
+        strokeWidth=0,
+    ).configure_axis(
+        grid=True, gridColor="#f0f0f0", labelColor="#636e72", titleColor="#636e72",
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
+    # Scenario legend + summary as a compact row
     indicator_cols = st.columns(len(scenarios))
     for idx, (scenario_name, rate) in enumerate(scenarios):
         monthly_inflow = int(avg_monthly_expected * rate)
         monthly_net = monthly_inflow - avg_monthly_burn
-        color = _scenario_colors[idx]
+        opacity = _opacities[idx]
+        dash_label = "━━" if idx == 0 else "╌╌" if idx == 1 else "┄┄" if idx == 2 else "··"
         with indicator_cols[idx]:
             if monthly_net < 0:
                 status = f"−{fmt_inr(abs(monthly_net))}/mo deficit"
-                icon = "▼"
             elif monthly_net == 0:
                 status = "Break-even"
-                icon = "●"
             else:
                 status = f"+{fmt_inr(monthly_net)}/mo surplus"
-                icon = "▲"
             st.markdown(
-                f'<div style="border-left:3px solid {color}; padding:4px 0 4px 10px;">'
-                f'<span style="font-size:0.8rem; font-weight:600; color:{color};">'
-                f'{icon} {scenario_name}</span><br>'
+                f'<div style="padding:4px 0;">'
+                f'<span style="font-size:0.85rem; color:rgba(26,107,90,{opacity}); font-weight:600;">'
+                f'{dash_label} {scenario_name}</span><br>'
                 f'<span style="font-size:0.78rem; color:#636e72;">{status}</span>'
                 f'</div>',
                 unsafe_allow_html=True,
