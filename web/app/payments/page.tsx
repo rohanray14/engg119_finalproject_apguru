@@ -341,14 +341,13 @@ export default function PaymentsPage() {
                             review →
                           </Link>
                         ) : r.match_status === "unmatched" ? (
-                          <Link href="/review"
-                            className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 inline-block"
+                          <span className="px-2 py-0.5 rounded text-xs font-medium"
                             style={{
-                              backgroundColor: r.payer_name ? "#dbeafe" : matchBadge.unmatched.bg,
-                              color: r.payer_name ? "#1e40af" : matchBadge.unmatched.text,
+                              backgroundColor: matchBadge.unmatched.bg,
+                              color: matchBadge.unmatched.text,
                             }}>
-                            {r.payer_name ? "try matching →" : "unmatched →"}
-                          </Link>
+                            unmatched
+                          </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded text-xs font-medium"
                             style={{
