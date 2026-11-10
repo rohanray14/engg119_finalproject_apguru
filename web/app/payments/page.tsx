@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { formatMoney, formatDate } from "@/lib/format";
+import { formatMoney, formatMoneyCompact, formatDate } from "@/lib/format";
 
 interface PaymentRow {
   id: number;
@@ -148,12 +148,45 @@ type SortDir = "asc" | "desc";
 
 const PAGE_SIZE = 50;
 
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function exportCSV(items: PaymentRow[]) {
+  const headers = ["Date", "Payer", "Amount", "Currency", "Gateway Fee", "GST on Fee", "TDS", "FX Diff", "Deductions", "In Bank (INR)", "Method", "Confirmation", "Match Status"];
+  const rows = items.map((r) => [
+    r.date,
+    r.payer_name ?? "",
+    (r.amount_paid_paise / 100).toFixed(0),
+    r.currency,
+    (r.gateway_fee_paise / 100).toFixed(0),
+    (r.gst_on_fee_paise / 100).toFixed(0),
+    (r.tds_paise / 100).toFixed(0),
+    (r.fx_diff_paise / 100).toFixed(0),
+    (r.deductions_paise / 100).toFixed(0),
+    (r.amount_in_bank_paise / 100).toFixed(0),
+    r.method || r.source,
+    r.confirmation,
+    r.match_status,
+  ]);
+  const csv = [headers, ...rows].map((row) => row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `payments_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function PaymentsPage() {
   const [source, setSource] = useState("");
   const [currency, setCurrency] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [match, setMatch] = useState("");
   const [search, setSearch] = useState("");
+  const [month, setMonth] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(0);
@@ -171,14 +204,17 @@ export default function PaymentsPage() {
     fetcher
   );
 
-  const activeFilters = [source, currency, confirmation, match, search].filter(Boolean).length;
+  const activeFilters = [source, currency, confirmation, match, search, month].filter(Boolean).length;
+
+  function clearAll() {
+    setSource(""); setCurrency(""); setConfirmation(""); setMatch(""); setSearch(""); setMonth(""); setPage(0);
+  }
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
       if (sortDir === "asc") {
         setSortDir("desc");
       } else {
-        // already desc → clear sort (back to default: newest first)
         setSortKey(null);
       }
     } else {
@@ -188,13 +224,19 @@ export default function PaymentsPage() {
     setPage(0);
   }
 
-  const sorted = useMemo(() => {
+  // Apply client-side month filter
+  const filtered = useMemo(() => {
     if (!data) return [];
-    const items = [...data.items];
+    if (!month) return data.items;
+    return data.items.filter((r) => r.date.startsWith(month));
+  }, [data, month]);
+
+  const sorted = useMemo(() => {
+    const items = [...filtered];
     if (sortKey) {
       items.sort((a, b) => {
-        let av: string | number = a[sortKey] ?? "";
-        let bv: string | number = b[sortKey] ?? "";
+        const av: string | number = a[sortKey] ?? "";
+        const bv: string | number = b[sortKey] ?? "";
         if (typeof av === "string" && typeof bv === "string") {
           const cmp = av.localeCompare(bv);
           return sortDir === "asc" ? cmp : -cmp;
@@ -204,7 +246,27 @@ export default function PaymentsPage() {
       });
     }
     return items;
-  }, [data, sortKey, sortDir]);
+  }, [filtered, sortKey, sortDir]);
+
+  // Compute summary stats from the filtered set
+  const stats = useMemo(() => {
+    const totalReceived = filtered.reduce((s, r) => s + r.amount_in_bank_paise, 0);
+    const screenshotCount = filtered.filter((r) => r.confirmation === "screenshot_only").length;
+    const unmatchedCount = filtered.filter((r) => r.match_status === "unmatched").length;
+    const reviewCount = filtered.filter((r) => r.match_status === "pending_review").length;
+    const blankCount = filtered.filter((r) => !r.payer_name).length;
+    return { totalReceived, screenshotCount, unmatchedCount, reviewCount, blankCount };
+  }, [filtered]);
+
+  // Determine available months from the data for the filter dropdown
+  const availableMonths = useMemo(() => {
+    if (!data) return [];
+    const set = new Set<string>();
+    for (const r of data.items) {
+      if (r.date) set.add(r.date.slice(0, 7)); // "2026-09"
+    }
+    return Array.from(set).sort().reverse();
+  }, [data]);
 
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
   const pageItems = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -237,15 +299,12 @@ export default function PaymentsPage() {
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Filter payments</span>
           {activeFilters > 0 && (
-            <button
-              onClick={() => { setSource(""); setCurrency(""); setConfirmation(""); setMatch(""); setSearch(""); setPage(0); }}
-              className="text-xs text-gray-500 hover:text-gray-700 underline"
-            >
+            <button onClick={clearAll} className="text-xs text-gray-500 hover:text-gray-700 underline">
               Clear all filters
             </button>
           )}
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
           <div>
             <label className="block text-xs text-gray-500 mb-1">How they paid</label>
             <select value={source} onChange={(e) => { setSource(e.target.value); setPage(0); }}
@@ -265,6 +324,17 @@ export default function PaymentsPage() {
               <option value="INR">INR (₹)</option>
               <option value="USD">USD ($)</option>
               <option value="AED">AED</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Month</label>
+            <select value={month} onChange={(e) => { setMonth(e.target.value); setPage(0); }}
+              className="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
+              <option value="">All time</option>
+              {availableMonths.map((m) => {
+                const [y, mo] = m.split("-");
+                return <option key={m} value={m}>{MONTHS[parseInt(mo) - 1]} {y}</option>;
+              })}
             </select>
           </div>
           <div>
@@ -302,31 +372,72 @@ export default function PaymentsPage() {
 
       {isLoading ? (
         <div className="animate-pulse h-64 bg-gray-200 rounded" />
-      ) : !data || data.items.length === 0 ? (
+      ) : !data || filtered.length === 0 ? (
         <div className="bg-white rounded-lg border p-8 text-center" style={{ borderColor: "var(--card-border)" }}>
           <p className="text-gray-500">No payments match the filters.</p>
         </div>
       ) : (
         <>
-          {/* Summary + pagination top */}
+          {/* Summary bar */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+            <div className="bg-white rounded-lg border px-4 py-3" style={{ borderColor: "var(--card-border)" }}>
+              <div className="text-xs text-gray-500">Total received</div>
+              <div className="text-lg font-bold text-gray-900">{formatMoneyCompact(stats.totalReceived, "INR")}</div>
+              <div className="text-xs text-gray-400">in bank (INR)</div>
+            </div>
+            <div className="bg-white rounded-lg border px-4 py-3" style={{ borderColor: "var(--card-border)" }}>
+              <div className="text-xs text-gray-500">Payments</div>
+              <div className="text-lg font-bold text-gray-900">{filtered.length}</div>
+              <div className="text-xs text-gray-400">{activeFilters > 0 ? "matching filters" : "total"}</div>
+            </div>
+            {stats.reviewCount > 0 && (
+              <div className="bg-amber-50 rounded-lg border border-amber-200 px-4 py-3">
+                <div className="text-xs text-amber-700">Needs review</div>
+                <div className="text-lg font-bold text-amber-800">{stats.reviewCount}</div>
+                <div className="text-xs text-amber-600">waiting for you</div>
+              </div>
+            )}
+            {stats.unmatchedCount > 0 && (
+              <div className="bg-white rounded-lg border px-4 py-3" style={{ borderColor: "var(--card-border)" }}>
+                <div className="text-xs text-gray-500">Unmatched</div>
+                <div className="text-lg font-bold text-gray-900">{stats.unmatchedCount}</div>
+                <div className="text-xs text-gray-400">{stats.blankCount > 0 ? `${stats.blankCount} with no payer name` : "no student linked"}</div>
+              </div>
+            )}
+            {stats.screenshotCount > 0 && (
+              <div className="bg-red-50 rounded-lg border border-red-200 px-4 py-3">
+                <div className="text-xs text-red-700">Unverified</div>
+                <div className="text-lg font-bold text-red-800">{stats.screenshotCount}</div>
+                <div className="text-xs text-red-600">screenshot only — not confirmed</div>
+              </div>
+            )}
+          </div>
+
+          {/* Pagination top + export */}
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-gray-500">
               {sorted.length} payments{activeFilters > 0 ? " (filtered)" : ""}
               {totalPages > 1 && ` · page ${page + 1} of ${totalPages}`}
             </p>
-            {totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage(0)} disabled={page === 0}
-                  className="px-2 py-1 text-xs border rounded disabled:opacity-30">First</button>
-                <button onClick={() => setPage(page - 1)} disabled={page === 0}
-                  className="px-2 py-1 text-xs border rounded disabled:opacity-30">Prev</button>
-                <span className="text-xs text-gray-500 px-2">{page + 1} / {totalPages}</span>
-                <button onClick={() => setPage(page + 1)} disabled={page >= totalPages - 1}
-                  className="px-2 py-1 text-xs border rounded disabled:opacity-30">Next</button>
-                <button onClick={() => setPage(totalPages - 1)} disabled={page >= totalPages - 1}
-                  className="px-2 py-1 text-xs border rounded disabled:opacity-30">Last</button>
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              <button onClick={() => exportCSV(sorted)}
+                className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50">
+                Export CSV
+              </button>
+              {totalPages > 1 && (
+                <div className="flex items-center gap-1">
+                  <button onClick={() => setPage(0)} disabled={page === 0}
+                    className="px-2 py-1 text-xs border rounded disabled:opacity-30">First</button>
+                  <button onClick={() => setPage(page - 1)} disabled={page === 0}
+                    className="px-2 py-1 text-xs border rounded disabled:opacity-30">Prev</button>
+                  <span className="text-xs text-gray-500 px-2">{page + 1} / {totalPages}</span>
+                  <button onClick={() => setPage(page + 1)} disabled={page >= totalPages - 1}
+                    className="px-2 py-1 text-xs border rounded disabled:opacity-30">Next</button>
+                  <button onClick={() => setPage(totalPages - 1)} disabled={page >= totalPages - 1}
+                    className="px-2 py-1 text-xs border rounded disabled:opacity-30">Last</button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="bg-white rounded-lg border overflow-x-auto" style={{ borderColor: "var(--card-border)" }}>
@@ -346,8 +457,13 @@ export default function PaymentsPage() {
               <tbody className="divide-y">
                 {pageItems.map((r) => {
                   const isScreenshot = r.confirmation === "screenshot_only";
+                  const isBlank = !r.payer_name;
                   return (
-                    <tr key={r.id} className={isScreenshot ? "bg-red-50/40 hover:bg-red-50" : "hover:bg-gray-50"}>
+                    <tr key={r.id} className={
+                      isScreenshot ? "bg-red-50/40 hover:bg-red-50" :
+                      isBlank ? "bg-amber-50/40 hover:bg-amber-50" :
+                      "hover:bg-gray-50"
+                    }>
                       <td className="px-4 py-2.5 whitespace-nowrap">{formatDate(r.date)}</td>
                       <td className="px-4 py-2.5 font-medium text-gray-900 max-w-[200px] truncate">
                         {r.payer_name ? (
@@ -355,7 +471,7 @@ export default function PaymentsPage() {
                             className="hover:underline hover:text-teal-700">
                             {r.payer_name}
                           </Link>
-                        ) : <span className="text-gray-400 font-normal">(blank)</span>}
+                        ) : <span className="text-amber-500 font-normal">(no payer name)</span>}
                       </td>
                       <td className="px-4 py-2.5 text-right whitespace-nowrap font-medium">
                         {formatMoney(r.amount_paid_paise, r.currency)}
