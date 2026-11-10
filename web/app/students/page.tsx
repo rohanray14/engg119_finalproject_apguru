@@ -1,10 +1,11 @@
 "use client";
 
 import { Suspense, useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate } from "@/lib/format";
+import StudentProfile from "@/components/student-profile";
 
 interface StudentRow {
   id: number; name: string; city: string | null; country: string | null;
@@ -48,15 +49,15 @@ export default function StudentsPage() {
 
 function StudentsContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [search, setSearch] = useState("");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   useEffect(() => {
     const q = searchParams.get("search");
     if (q) setSearch(q);
     const id = searchParams.get("id");
-    if (id) router.push(`/students/${id}`);
-  }, [searchParams, router]);
+    if (id) setSelectedId(Number(id));
+  }, [searchParams]);
 
   const params = new URLSearchParams({ limit: "200" });
   if (search) params.set("search", search);
@@ -66,6 +67,15 @@ function StudentsContent() {
   );
 
   const students = data?.items ?? [];
+
+  // Show profile view
+  if (selectedId !== null) {
+    return (
+      <div className="p-8">
+        <StudentProfile studentId={selectedId} onBack={() => setSelectedId(null)} />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -94,7 +104,7 @@ function StudentsContent() {
             {students.map((s) => (
               <tr key={s.id}
                 className="cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => router.push(`/students/${s.id}`)}>
+                onClick={() => setSelectedId(s.id)}>
                 <td className="px-4 py-2.5 font-medium" style={{ color: "var(--accent)" }}>{s.name}</td>
                 <td className="px-4 py-2.5 text-gray-600">
                   {[displayCity(s.city), displayCountry(s.country)].filter(v => v !== "—").join(", ") || "—"}

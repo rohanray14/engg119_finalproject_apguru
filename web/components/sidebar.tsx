@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import useSWR from "swr";
@@ -15,6 +16,7 @@ interface NavItem {
 interface NavSection {
   heading?: string;
   items: NavItem[];
+  defaultOpen?: boolean;
 }
 
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
@@ -35,6 +37,7 @@ export default function Sidebar() {
     },
     {
       heading: "Money in",
+      defaultOpen: true,
       items: [
         { href: "/payments", label: "Payments" },
         { href: "/review", label: "Match review", badge: reviewCount },
@@ -64,6 +67,22 @@ export default function Sidebar() {
     },
   ];
 
+  // Auto-open sections that contain the active page
+  const initialOpen: Record<string, boolean> = {};
+  sections.forEach((s) => {
+    if (!s.heading) return;
+    const hasActive = s.items.some((item) =>
+      item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+    );
+    initialOpen[s.heading] = hasActive || (s.defaultOpen ?? false);
+  });
+
+  const [open, setOpen] = useState<Record<string, boolean>>(initialOpen);
+
+  function toggle(heading: string) {
+    setOpen((prev) => ({ ...prev, [heading]: !prev[heading] }));
+  }
+
   return (
     <aside className="w-52 min-h-screen flex flex-col py-6 px-4 shrink-0"
       style={{ backgroundColor: "var(--sidebar-bg)" }}>
@@ -73,14 +92,26 @@ export default function Sidebar() {
       </div>
       <nav className="flex flex-col gap-0.5">
         {sections.map((section, si) => (
-          <div key={si} className={si > 0 ? "mt-4" : ""}>
-            {section.heading && (
-              <div className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider"
-                style={{ color: "var(--sidebar-text)", opacity: 0.6 }}>
-                {section.heading}
-              </div>
-            )}
-            {section.items.map((item) => {
+          <div key={si} className={si > 0 ? "mt-3" : ""}>
+            {section.heading ? (
+              <button
+                onClick={() => toggle(section.heading!)}
+                className="w-full flex items-center justify-between px-3 mb-1 group"
+              >
+                <span className="text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--sidebar-text)", opacity: 0.6 }}>
+                  {section.heading}
+                </span>
+                <svg
+                  className="w-3 h-3 transition-transform"
+                  style={{ color: "var(--sidebar-text)", opacity: 0.4, transform: open[section.heading] ? "rotate(0deg)" : "rotate(-90deg)" }}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            ) : null}
+            {(!section.heading || open[section.heading!]) && section.items.map((item) => {
               const active = item.href === "/"
                 ? pathname === "/"
                 : pathname.startsWith(item.href);

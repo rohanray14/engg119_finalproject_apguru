@@ -1,7 +1,5 @@
 "use client";
 
-import { use } from "react";
-import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate } from "@/lib/format";
@@ -52,27 +50,29 @@ function matchStatusStyle(status: string) {
   }
 }
 
-export default function StudentProfile({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const { data: student, isLoading } = useSWR<StudentData>(`/students/${id}`, fetcher);
+interface Props {
+  studentId: number;
+  onBack: () => void;
+}
+
+export default function StudentProfile({ studentId, onBack }: Props) {
+  const { data: student, isLoading } = useSWR<StudentData>(`/students/${studentId}`, fetcher);
 
   if (isLoading) {
     return (
-      <div className="p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-48" />
-          <div className="h-64 bg-gray-200 rounded" />
-        </div>
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 bg-gray-200 rounded w-48" />
+        <div className="h-64 bg-gray-200 rounded" />
       </div>
     );
   }
 
   if (!student) {
     return (
-      <div className="p-8">
-        <Link href="/students" className="text-sm hover:underline" style={{ color: "var(--accent)" }}>
+      <div>
+        <button onClick={onBack} className="text-sm hover:underline" style={{ color: "var(--accent)" }}>
           &larr; Back to students
-        </Link>
+        </button>
         <div className="mt-8 text-center text-gray-500">Student not found.</div>
       </div>
     );
@@ -91,10 +91,10 @@ export default function StudentProfile({ params }: { params: Promise<{ id: strin
   const mainCurrency = student.enrollments[0]?.currency ?? "INR";
 
   return (
-    <div className="p-8 max-w-4xl">
-      <Link href="/students" className="text-sm hover:underline" style={{ color: "var(--accent)" }}>
+    <div className="max-w-4xl">
+      <button onClick={onBack} className="text-sm hover:underline" style={{ color: "var(--accent)" }}>
         &larr; Back to students
-      </Link>
+      </button>
 
       {/* Header */}
       <div className="mt-4 mb-6">
