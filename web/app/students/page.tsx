@@ -22,6 +22,30 @@ interface StudentDetail {
 
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
+const countryMap: Record<string, string> = {
+  IN: "India", India: "India",
+  US: "USA", USA: "USA", "United States": "USA",
+  UK: "UK", "United Kingdom": "UK",
+  UAE: "UAE", "United Arab Emirates": "UAE", "U.A.E": "UAE", Dubai: "UAE",
+  SG: "Singapore", Singapore: "Singapore",
+};
+function displayCountry(raw: string | null): string {
+  if (!raw) return "—";
+  return countryMap[raw] ?? raw;
+}
+
+const cityMap: Record<string, string> = {
+  Bengaluru: "Bangalore", Bangalore: "Bangalore", Blore: "Bangalore",
+  Bombay: "Mumbai", Mumbai: "Mumbai",
+  Calcutta: "Kolkata", Kolkata: "Kolkata",
+  Madras: "Chennai", Chennai: "Chennai",
+  DXB: "Dubai", Dubai: "Dubai", dubai: "Dubai",
+};
+function displayCity(raw: string | null): string {
+  if (!raw) return "—";
+  return cityMap[raw] ?? raw;
+}
+
 export default function StudentsPage() {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -68,8 +92,8 @@ export default function StudentsPage() {
                 className={`cursor-pointer hover:bg-gray-50 ${selectedId === s.id ? "bg-blue-50" : ""}`}
                 onClick={() => setSelectedId(s.id)}>
                 <td className="px-4 py-2.5 font-medium text-gray-900">{s.name}</td>
-                <td className="px-4 py-2.5 text-gray-600">{s.city || "—"}</td>
-                <td className="px-4 py-2.5 text-gray-600">{s.country || "—"}</td>
+                <td className="px-4 py-2.5 text-gray-600">{displayCity(s.city)}</td>
+                <td className="px-4 py-2.5 text-gray-600">{displayCountry(s.country)}</td>
                 <td className="px-4 py-2.5 text-right">
                   {s.owed.length > 0
                     ? s.owed.map((o) => formatMoney(o.amount_paise, o.currency)).join(", ")
@@ -99,7 +123,7 @@ export default function StudentsPage() {
             <div>
               <h2 className="text-xl font-bold text-gray-900">{detail.name}</h2>
               <p className="text-sm text-gray-500">
-                {[detail.city, detail.country].filter(Boolean).join(", ") || "No location"}
+                {[displayCity(detail.city), displayCountry(detail.country)].filter(v => v && v !== "—").join(", ") || "No location"}
               </p>
               {detail.aliases.length > 0 && (
                 <p className="text-xs text-gray-400 mt-1">Aliases: {detail.aliases.join(", ")}</p>
