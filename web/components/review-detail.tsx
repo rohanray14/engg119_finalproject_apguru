@@ -77,6 +77,9 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
   const [acting, setActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState<string | null>(null); // "approved" | "rejected" | "assigned"
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectNote, setRejectNote] = useState("");
+  const [confirmAssign, setConfirmAssign] = useState<Installment | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Installment[]>([]);
   const [searching, setSearching] = useState(false);
@@ -104,6 +107,9 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
     setSearchResults([]);
     setError(null);
     setShowSuccess(null);
+    setRejectOpen(false);
+    setRejectNote("");
+    setConfirmAssign(null);
   }, [detail.match_id]);
 
   // Debounced search
@@ -156,7 +162,7 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
     try {
       await apiFetch(`/review/${detail.match_id}/reject`, {
         method: "POST",
-        body: { reason: "not_a_fee", note: "" },
+        body: { reason: "not_a_fee", note: rejectNote.trim() },
       });
       succeedThen("rejected");
     } catch (e: unknown) {
@@ -333,9 +339,8 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
                 {acting ? "Approving..." : `Approve: ${suggested[0]?.student_name || "suggestion"}`}
               </button>
               <button
-                onClick={handleReject}
-                disabled={acting}
-                className="px-5 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                onClick={() => setRejectOpen(!rejectOpen)}
+                className="px-5 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
               >
                 Not a fee payment
               </button>
@@ -360,9 +365,8 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
           {canApprove && detail.status === "pending_review" && (
             <div className="flex gap-3">
               <button
-                onClick={handleReject}
-                disabled={acting}
-                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 bg-white"
+                onClick={() => setRejectOpen(!rejectOpen)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 bg-white"
               >
                 Not a fee payment
               </button>
@@ -376,6 +380,67 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Reject confirmation with note */}
+      {rejectOpen && (
+        <div className="bg-red-50 rounded-lg border border-red-200 p-4">
+          <div className="text-sm font-medium text-red-800 mb-2">Mark as not a fee payment</div>
+          <textarea
+            value={rejectNote}
+            onChange={(e) => setRejectNote(e.target.value)}
+            placeholder="Optional: why is this not a fee? (e.g. internal transfer, refund, duplicate...)"
+            className="w-full px-3 py-2 text-sm border border-red-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-red-200 resize-none"
+            rows={2}
+            maxLength={500}
+          />
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={handleReject}
+              disabled={acting}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+            >
+              {acting ? "Rejecting..." : "Confirm reject"}
+            </button>
+            <button
+              onClick={() => { setRejectOpen(false); setRejectNote(""); }}
+              className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-md hover:bg-white"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Assign confirmation */}
+      {confirmAssign && (
+        <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
+          <div className="text-sm font-medium text-blue-800 mb-2">
+            Assign this payment to {confirmAssign.student_name}?
+          </div>
+          <p className="text-xs text-blue-700 mb-3">
+            {formatMoney(p.amount_paid_paise, p.currency)} will be applied to {confirmAssign.student_name}&apos;s
+            {" "}{confirmAssign.program} installment ({formatMoney(confirmAssign.amount_due_paise, confirmAssign.currency)} due
+            {confirmAssign.due_date ? ` on ${formatDate(confirmAssign.due_date)}` : ""}).
+            {detail.has_suggestion && ` This overrides the AI suggestion.`}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { handleAssign(confirmAssign.installment_id); setConfirmAssign(null); }}
+              disabled={acting}
+              className="px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50"
+              style={{ backgroundColor: "var(--accent)" }}
+            >
+              {acting ? "Assigning..." : `Yes, assign to ${confirmAssign.student_name}`}
+            </button>
+            <button
+              onClick={() => setConfirmAssign(null)}
+              className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-md hover:bg-white"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
@@ -446,7 +511,7 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
                     {canApprove && detail.status === "pending_review" && (
                       <td className="py-2 text-right">
                         <button
-                          onClick={() => handleAssign(inst.installment_id)}
+                          onClick={() => setConfirmAssign(inst)}
                           disabled={acting}
                           className="text-xs px-3 py-1.5 rounded font-medium text-white disabled:opacity-50"
                           style={{ backgroundColor: "var(--accent)" }}

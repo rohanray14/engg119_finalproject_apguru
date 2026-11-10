@@ -46,6 +46,7 @@ function ReviewContent() {
   const [bulkResult, setBulkResult] = useState<BulkResult | null>(null);
   const [reviewedCount, setReviewedCount] = useState(0);
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [listSearch, setListSearch] = useState("");
 
   // Read ?id= from URL (e.g. linked from Payments page)
   useEffect(() => {
@@ -59,13 +60,21 @@ function ReviewContent() {
   const items = queue?.items ?? [];
 
   // Filter items
+  const searchLower = listSearch.toLowerCase();
   const filteredItems = items.filter((item) => {
+    // Category filter
     switch (filter) {
-      case "quick_approve": return item.has_suggestion && item.confidence >= 0.9;
-      case "needs_attention": return item.confidence < 0.85 || !item.has_suggestion;
-      case "no_suggestion": return !item.has_suggestion;
-      default: return true;
+      case "quick_approve": if (!(item.has_suggestion && item.confidence >= 0.9)) return false; break;
+      case "needs_attention": if (!(item.confidence < 0.85 || !item.has_suggestion)) return false; break;
+      case "no_suggestion": if (item.has_suggestion) return false; break;
     }
+    // Name search
+    if (searchLower) {
+      const payer = (item.payment.payer_name || "").toLowerCase();
+      const student = (item.suggested_student || "").toLowerCase();
+      if (!payer.includes(searchLower) && !student.includes(searchLower)) return false;
+    }
+    return true;
   });
 
   // Auto-select first filtered item
@@ -228,20 +237,29 @@ function ReviewContent() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: payment list */}
           <div className="lg:col-span-4">
-            {/* Filter dropdown */}
-            <div className="mb-3 flex items-center gap-2">
-              <select
-                value={filter}
-                onChange={(e) => { setFilter(e.target.value as FilterKey); setSelectedId(null); }}
-                className="text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300"
-              >
-                {FILTER_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              <span className="text-xs text-gray-400">
-                {filteredItems.length} of {items.length}
-              </span>
+            {/* Filter + search */}
+            <div className="mb-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <select
+                  value={filter}
+                  onChange={(e) => { setFilter(e.target.value as FilterKey); setSelectedId(null); }}
+                  className="text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                >
+                  {FILTER_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <span className="text-xs text-gray-400">
+                  {filteredItems.length} of {items.length}
+                </span>
+              </div>
+              <input
+                type="text"
+                value={listSearch}
+                onChange={(e) => { setListSearch(e.target.value); setSelectedId(null); }}
+                placeholder="Search by payer or student name..."
+                className="w-full text-sm border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
+              />
             </div>
             <div className="max-h-[calc(100vh-260px)] overflow-y-auto">
               <div className="space-y-0">
