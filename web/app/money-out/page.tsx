@@ -59,15 +59,16 @@ function lakhs(paise: number): string {
   return `${sign}${amt.toFixed(0)}`;
 }
 
+// Muted monochrome palette — teal accent with grays
 const CAT_COLORS: Record<string, string> = {
-  faculty: "#2563eb",
-  refund: "#f472b6",
-  software: "#34d399",
-  ads: "#3b82f6",
-  tax: "#f59e0b",
-  rent: "#0d9488",
-  other: "#ef4444",
-  commission: "#8b5cf6",
+  faculty: "#1a2332",
+  ads: "#2d6a5e",
+  software: "#4b8c81",
+  tax: "#6b9e96",
+  refund: "#8fb5af",
+  rent: "#b0ccc8",
+  other: "#94a3b8",
+  commission: "#64748b",
 };
 
 export default function MoneyOutPage() {
@@ -147,7 +148,7 @@ export default function MoneyOutPage() {
           <div className="text-sm text-gray-500">Avg monthly burn</div>
           <div className="text-2xl font-bold text-gray-900">{data ? formatMoneyCompact(data.avg_monthly_burn_paise, "INR") : "—"}</div>
           {prevMonthSpend > 0 && (
-            <div className={`text-xs font-medium ${momPct > 0 ? "text-red-500" : "text-green-600"}`}>
+            <div className="text-xs font-medium text-gray-500">
               {momPct > 0 ? "+" : ""}{momPct.toFixed(0)}% MoM
             </div>
           )}
@@ -162,7 +163,7 @@ export default function MoneyOutPage() {
         <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
           <div className="text-sm text-gray-500">Spend / Revenue</div>
           <div className="text-2xl font-bold text-gray-900">{spendRatio.toFixed(0)}%</div>
-          <div className={`text-xs font-medium ${spendRatio < 50 ? "text-green-600" : spendRatio < 75 ? "text-amber-500" : "text-red-500"}`}>
+          <div className="text-xs font-medium text-gray-500">
             of {data ? formatMoneyCompact(data.total_received_paise, "INR") : "—"} received
           </div>
         </div>
@@ -252,10 +253,10 @@ export default function MoneyOutPage() {
               <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 11 }} width={55} />
               <Tooltip formatter={(value) => `${lakhs(Number(value) * 100)}`} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="Current rate" stroke="#16a34a" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="10% drop" stroke="#f59e0b" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="25% drop" stroke="#f97316" strokeWidth={2} dot={false} strokeDasharray="5 5" />
-              <Line type="monotone" dataKey="50% drop" stroke="#dc2626" strokeWidth={2} dot={false} strokeDasharray="5 5" />
+              <Line type="monotone" dataKey="Current rate" stroke="#1a2332" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="10% drop" stroke="#2d6a5e" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="25% drop" stroke="#94a3b8" strokeWidth={1.5} dot={false} strokeDasharray="5 5" />
+              <Line type="monotone" dataKey="50% drop" stroke="#cbd5e1" strokeWidth={1.5} dot={false} strokeDasharray="5 5" />
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -275,7 +276,7 @@ export default function MoneyOutPage() {
               const monthlyInflow = Math.round(r.avg_monthly_expected_paise * rate);
               const monthlyNet = monthlyInflow - r.avg_monthly_burn_paise;
               const isPositive = monthlyNet >= 0;
-              const bgColor = isPositive ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200";
+              const bgColor = isPositive ? "bg-gray-50 text-gray-700 border-gray-200" : "bg-gray-100 text-gray-600 border-gray-300";
               return (
                 <div key={s.label} className={`text-xs font-medium px-3 py-1.5 rounded-full border ${bgColor}`}>
                   {s.label}: {isPositive ? "+" : ""}{formatMoneyCompact(Math.abs(monthlyNet), "INR")}/mo
