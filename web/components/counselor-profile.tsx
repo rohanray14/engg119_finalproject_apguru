@@ -77,6 +77,53 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
   const paidOut = counselor.total_paid_out.find((t) => t.currency === "INR")?.net_paise ?? 0;
   const netOwed = (inr?.net_paise ?? 0) - paidOut;
 
+  // Compute action items
+  const now = new Date();
+  const actionItems: { severity: "high" | "medium" | "low"; text: string }[] = [];
+
+  // Check for overdue unpaid commissions
+  if (netOwed > 0 && counselor.commission_lines.length > 0) {
+    const oldest = counselor.commission_lines[counselor.commission_lines.length - 1]; // sorted desc
+    if (oldest.date) {
+      const oldestDate = new Date(oldest.date);
+      const monthsAgo = Math.floor((now.getTime() - oldestDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
+      if (monthsAgo >= 6) {
+        actionItems.push({
+          severity: "high",
+          text: `Commission of ${formatMoney(netOwed, "INR")} unpaid for ${monthsAgo} months (since ${formatDate(oldest.date)}). Approve payout urgently.`,
+        });
+      } else if (monthsAgo >= 3) {
+        actionItems.push({
+          severity: "medium",
+          text: `Commission pending for ${monthsAgo} months. Consider approving payout.`,
+        });
+      }
+    }
+  }
+
+  // Check for students with no matched payments
+  const studentsWithPayments = new Set(counselor.commission_lines.map((l) => l.payer_name));
+  const studentsNoPayment = counselor.students.filter(
+    (s) => s.enrollments.length > 0 && !counselor.commission_lines.some((l) => l.payment_id)
+  );
+  if (studentsNoPayment.length > 0 && counselor.students.length > 0) {
+    const pct = Math.round((1 - counselor.commission_lines.length / counselor.students.length) * 100);
+    if (pct > 50) {
+      actionItems.push({
+        severity: "medium",
+        text: `Only ${counselor.commission_lines.length} of ${counselor.students.length} referred students have matched payments. ${pct}% of referrals haven't generated commission yet.`,
+      });
+    }
+  }
+
+  // Check if rate needs setting
+  if (counselor.rule.rate <= 0) {
+    actionItems.push({
+      severity: "high",
+      text: "No commission rate set. Set the rate on the Commissions page before payouts can be calculated.",
+    });
+  }
+
   return (
     <div>
       <button onClick={onBack} className="text-sm hover:underline" style={{ color: "var(--accent)" }}>
@@ -106,6 +153,31 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
           </span>
         </div>
       </div>
+
+      {/* Action items */}
+      {actionItems.length > 0 && (
+        <div className="mb-6 space-y-2">
+          {actionItems.map((item, i) => (
+            <div key={i} className={`rounded-lg border p-3 text-sm flex items-start gap-2 ${
+              item.severity === "high"
+                ? "bg-red-50 border-red-200 text-red-800"
+                : item.severity === "medium"
+                ? "bg-amber-50 border-amber-200 text-amber-800"
+                : "bg-blue-50 border-blue-200 text-blue-800"
+            }`}>
+              <span className="font-bold shrink-0">
+                {item.severity === "high" ? "!" : item.severity === "medium" ? "!" : "i"}
+              </span>
+              <span>{item.text}</span>
+              {item.severity === "high" && netOwed > 0 && item.text.includes("payout") && (
+                <Link href="/commissions" className="shrink-0 ml-auto underline font-medium">
+                  Approve payout
+                </Link>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-4 gap-4 mb-6">

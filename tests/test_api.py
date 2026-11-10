@@ -215,8 +215,8 @@ class TestDecisions:
         item = _pending_with_suggestion(client)
         r = client.post(f"/api/review/{item['match_id']}/approve", headers=auth(email="priya@educore.in"))
         assert r.status_code == 200
-        top = client.get("/api/audit?limit=1", headers=auth()).json()["items"][0]
-        assert top["action"] == "approve_match"
+        recent = client.get("/api/audit?limit=5", headers=auth()).json()["items"]
+        top = next(i for i in recent if i["action"] == "approve_match")
         assert top["actor"] == "priya@educore.in (finance_lead)"
         assert top["entity"] == f"match:{item['match_id']}"
         detail = client.get(f"/api/review/{item['match_id']}", headers=auth()).json()

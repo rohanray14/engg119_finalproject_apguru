@@ -185,7 +185,7 @@ st.write("")
 
 with st.container(border=True):
     st.markdown("### Cash runway projection")
-    st.caption("When do outflows overtake inflows if collection rates drop?")
+    st.caption("Cumulative net position over 12 months under stress scenarios")
 
     # Monthly inflow data
     inflow_months = []
@@ -209,12 +209,10 @@ with st.container(border=True):
     avg_monthly_received = int(active_inflow["received"].mean()) if len(active_inflow) > 0 else 0
     current_collection_rate = (avg_monthly_received / avg_monthly_expected * 100) if avg_monthly_expected > 0 else 0
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Avg monthly expected", fmt_inr(avg_monthly_expected))
-    col2.metric("Avg monthly collected", fmt_inr(avg_monthly_received))
-    col3.metric("Current collection rate", f"{current_collection_rate:.0f}%")
-
-    st.write("")
+    mc1, mc2, mc3 = st.columns(3)
+    mc1.metric("Avg monthly expected", fmt_inr(avg_monthly_expected))
+    mc2.metric("Avg monthly collected", fmt_inr(avg_monthly_received))
+    mc3.metric("Current collection rate", f"{current_collection_rate:.0f}%")
 
     # Project forward 12 months at different collection rates
     scenarios = [
@@ -223,6 +221,9 @@ with st.container(border=True):
         ("25% drop", max(0, current_collection_rate - 25) / 100),
         ("50% drop", max(0, current_collection_rate - 50) / 100),
     ]
+
+    # Muted, professional palette: teal → slate → warm gray → muted coral
+    _scenario_colors = ["#1a6b5a", "#5b7f95", "#8e9bab", "#c47a6c"]
 
     # Net position = cumulative (inflow - outflow) starting from zero
     projection_rows = []
@@ -240,28 +241,30 @@ with st.container(border=True):
 
     df_proj = pd.DataFrame(projection_rows).set_index("Month")
 
-    st.line_chart(df_proj)
+    st.line_chart(df_proj, color=_scenario_colors)
 
-    # Find crossover points (when cumulative goes negative)
-    st.write("")
-    for scenario_name, rate in scenarios:
+    # Scenario summary as a compact row of indicators
+    indicator_cols = st.columns(len(scenarios))
+    for idx, (scenario_name, rate) in enumerate(scenarios):
         monthly_inflow = int(avg_monthly_expected * rate)
         monthly_net = monthly_inflow - avg_monthly_burn
-        if monthly_net < 0:
+        color = _scenario_colors[idx]
+        with indicator_cols[idx]:
+            if monthly_net < 0:
+                status = f"−{fmt_inr(abs(monthly_net))}/mo deficit"
+                icon = "▼"
+            elif monthly_net == 0:
+                status = "Break-even"
+                icon = "●"
+            else:
+                status = f"+{fmt_inr(monthly_net)}/mo surplus"
+                icon = "▲"
             st.markdown(
-                f'{badge(scenario_name, "red" if "50%" in scenario_name else "orange")} '
-                f'Net negative from month 1 — losing **{fmt_inr(abs(monthly_net))}**/month. '
-                f'Burn exceeds inflow by {fmt_inr(abs(monthly_net))} each month.',
-                unsafe_allow_html=True,
-            )
-        elif monthly_net == 0:
-            st.markdown(
-                f'{badge(scenario_name, "orange")} Break-even — no surplus.',
-                unsafe_allow_html=True,
-            )
-        else:
-            st.markdown(
-                f'{badge(scenario_name, "green")} Surplus of **{fmt_inr(monthly_net)}**/month — runway is clear.',
+                f'<div style="border-left:3px solid {color}; padding:4px 0 4px 10px;">'
+                f'<span style="font-size:0.8rem; font-weight:600; color:{color};">'
+                f'{icon} {scenario_name}</span><br>'
+                f'<span style="font-size:0.78rem; color:#636e72;">{status}</span>'
+                f'</div>',
                 unsafe_allow_html=True,
             )
 
