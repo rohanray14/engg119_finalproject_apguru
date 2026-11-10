@@ -116,29 +116,6 @@ export default function TodayPage() {
         </div>
       </div>
 
-      {/* How it works */}
-      <div className="bg-white rounded-lg border p-5 mb-6" style={{ borderColor: "var(--card-border)" }}>
-        <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">How the workflow works</div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-          <div>
-            <div className="font-medium text-gray-900 mb-1">1. Payments arrive</div>
-            <p className="text-gray-500">Bank transfers, gateway payments (Stripe/Razorpay), and cash receipts are imported. Each is verified against the bank statement.</p>
-          </div>
-          <div>
-            <div className="font-medium text-gray-900 mb-1">2. AI matches to students</div>
-            <p className="text-gray-500">The matching agent links each payment to a student&apos;s installment using name similarity, amount, and date. High-confidence matches are auto-approved.</p>
-          </div>
-          <div>
-            <div className="font-medium text-gray-900 mb-1">3. You review the rest</div>
-            <p className="text-gray-500">Payments below the confidence threshold appear in Match Review for you to approve, reject, or reassign. Bulk approve is available for batches.</p>
-          </div>
-          <div>
-            <div className="font-medium text-gray-900 mb-1">4. Track and follow up</div>
-            <p className="text-gray-500">Overdue installments, risk flags, and commission payouts are tracked automatically. Use Ask to query anything in the ledger.</p>
-          </div>
-        </div>
-      </div>
-
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard
