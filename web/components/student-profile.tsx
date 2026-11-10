@@ -91,7 +91,7 @@ export default function StudentProfile({ studentId, onBack }: Props) {
   const mainCurrency = student.enrollments[0]?.currency ?? "INR";
 
   return (
-    <div className="max-w-4xl">
+    <div>
       <button onClick={onBack} className="text-sm hover:underline" style={{ color: "var(--accent)" }}>
         &larr; Back to students
       </button>
