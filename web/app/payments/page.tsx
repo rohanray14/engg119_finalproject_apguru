@@ -175,10 +175,15 @@ export default function PaymentsPage() {
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
+      if (sortDir === "asc") {
+        setSortDir("desc");
+      } else {
+        // already desc → clear sort (back to default: newest first)
+        setSortKey(null);
+      }
     } else {
       setSortKey(key);
-      setSortDir(key === "date" ? "desc" : "asc");
+      setSortDir("asc");
     }
     setPage(0);
   }
@@ -206,13 +211,15 @@ export default function PaymentsPage() {
 
   function SortHeader({ label, field, align }: { label: string; field: SortKey; align?: string }) {
     const active = sortKey === field;
-    const arrow = active ? (sortDir === "asc" ? " ↑" : " ↓") : "";
     return (
       <th
         className={`px-4 py-3 font-medium cursor-pointer hover:text-gray-700 select-none ${align === "right" ? "text-right" : ""}`}
         onClick={() => toggleSort(field)}
       >
-        {label}{arrow}
+        {label}
+        {active
+          ? <span className="ml-1 text-gray-900">{sortDir === "asc" ? "↑" : "↓"}</span>
+          : <span className="ml-1 text-gray-300">↕</span>}
       </th>
     );
   }
