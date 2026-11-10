@@ -39,31 +39,39 @@ def compute_dashboard_stats(conn, as_of: date) -> dict:
     this_start, this_end = _month_range(as_of)
     prev_start, prev_end = _month_range(_prev_month(as_of))
 
-    received_this_month = conn.execute(
-        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE date BETWEEN ? AND ?",
+    from ledger.money import fx_convert
+
+    def _sum_fx(sql, params):
+        """Sum amounts across all currencies, converting to INR paise."""
+        rows = conn.execute(sql, params).fetchall()
+        return sum(fx_convert(r[1], r[0], "INR") for r in rows)
+
+    received_this_month = _sum_fx(
+        "SELECT currency, COALESCE(SUM(amount_paid_paise),0) FROM payment_in WHERE date BETWEEN ? AND ? GROUP BY currency",
         (this_start.isoformat(), this_end.isoformat()),
-    ).fetchone()[0]
-    received_last_month = conn.execute(
-        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE date BETWEEN ? AND ?",
+    )
+    received_last_month = _sum_fx(
+        "SELECT currency, COALESCE(SUM(amount_paid_paise),0) FROM payment_in WHERE date BETWEEN ? AND ? GROUP BY currency",
         (prev_start.isoformat(), prev_end.isoformat()),
-    ).fetchone()[0]
-    expected_this_month = conn.execute(
-        "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment WHERE due_date BETWEEN ? AND ?",
+    )
+    expected_this_month = _sum_fx(
+        "SELECT currency, COALESCE(SUM(amount_due_paise),0) FROM installment WHERE due_date BETWEEN ? AND ? GROUP BY currency",
         (this_start.isoformat(), this_end.isoformat()),
-    ).fetchone()[0]
-    spent_this_month = conn.execute(
-        "SELECT COALESCE(SUM(amount_paise), 0) FROM payment_out WHERE date BETWEEN ? AND ?",
+    )
+    spent_this_month = _sum_fx(
+        "SELECT currency, COALESCE(SUM(amount_paise),0) FROM payment_out WHERE date BETWEEN ? AND ? GROUP BY currency",
         (this_start.isoformat(), this_end.isoformat()),
-    ).fetchone()[0]
+    )
 
     collection_rate_this = (received_this_month / expected_this_month * 100) if expected_this_month > 0 else 0
 
-    # ── All-time totals (for reference) ──
-    total_received = conn.execute("SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in").fetchone()[0]
-    total_out = conn.execute("SELECT COALESCE(SUM(amount_paise), 0) FROM payment_out").fetchone()[0]
-    confirmed = conn.execute(
-        "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE confirmation='in_bank'"
-    ).fetchone()[0]
+    # ── All-time totals (for reference), FX-converted to INR ──
+    total_received = _sum_fx(
+        "SELECT currency, COALESCE(SUM(amount_paid_paise),0) FROM payment_in GROUP BY currency", ())
+    total_out = _sum_fx(
+        "SELECT currency, COALESCE(SUM(amount_paise),0) FROM payment_out GROUP BY currency", ())
+    confirmed = _sum_fx(
+        "SELECT currency, COALESCE(SUM(amount_paid_paise),0) FROM payment_in WHERE confirmation='in_bank' GROUP BY currency", ())
     confirm_rate = (confirmed / total_received * 100) if total_received > 0 else 0
 
     # ── Overdue ──
@@ -112,19 +120,19 @@ def compute_dashboard_stats(conn, as_of: date) -> dict:
         end = date.fromisoformat(max_month).replace(day=1)
         while cursor <= end:
             m_start, m_end = _month_range(cursor)
-            expected = conn.execute(
-                "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment WHERE due_date BETWEEN ? AND ?",
+            expected_m = _sum_fx(
+                "SELECT currency, COALESCE(SUM(amount_due_paise),0) FROM installment WHERE due_date BETWEEN ? AND ? GROUP BY currency",
                 (m_start.isoformat(), m_end.isoformat()),
-            ).fetchone()[0]
-            collected = conn.execute(
-                "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE date BETWEEN ? AND ?",
+            )
+            collected_m = _sum_fx(
+                "SELECT currency, COALESCE(SUM(amount_paid_paise),0) FROM payment_in WHERE date BETWEEN ? AND ? GROUP BY currency",
                 (m_start.isoformat(), m_end.isoformat()),
-            ).fetchone()[0]
-            if expected > 0 or collected > 0:
+            )
+            if expected_m > 0 or collected_m > 0:
                 months_data.append({
                     "Month": m_start.strftime("%b %y"),
-                    "Expected": expected / 100,
-                    "Collected": collected / 100,
+                    "Expected": expected_m / 100,
+                    "Collected": collected_m / 100,
                 })
             if cursor.month == 12:
                 cursor = cursor.replace(year=cursor.year + 1, month=1)
@@ -136,11 +144,11 @@ def compute_dashboard_stats(conn, as_of: date) -> dict:
     for i in range(6):
         week_start = as_of + timedelta(weeks=i)
         week_end = week_start + timedelta(days=6)
-        scheduled = conn.execute(
-            "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment "
-            "WHERE status IN ('open','partial') AND due_date BETWEEN ? AND ?",
+        scheduled = _sum_fx(
+            "SELECT currency, COALESCE(SUM(amount_due_paise),0) FROM installment "
+            "WHERE status IN ('open','partial') AND due_date BETWEEN ? AND ? GROUP BY currency",
             (week_start.isoformat(), week_end.isoformat()),
-        ).fetchone()[0]
+        )
         forecast_weeks.append({
             "Week": week_start.strftime("%-d %b"),
             "Scheduled": scheduled / 100,

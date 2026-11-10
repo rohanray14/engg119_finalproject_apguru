@@ -128,16 +128,44 @@ PAYMENT_OUT_CATEGORIES = [
     ("software", 5), ("refund", 6), ("other", 5),
 ]
 
-COUNSELOR_TERMS_TEMPLATES = [
-    "10% commission on all own referrals",
-    "20% on own referrals from {city}",
-    "15% commission, own students only",
-    "10% on all {city} students",
-    "Split 50-50 with co-referrer, 20% total on own referrals",
-    "10% commission on own referrals; 5% on {city} walk-ins",
-    "20% on own referrals, no city override",
-    "15% on own students from {city}; 10% on rest",
+# Counselor types and their terms templates:
+# - "referral": gets a cut of students they personally referred (any city)
+# - "city_all": gets a cut of ALL students in a city (consultant/agency deal)
+# - "city_referral": gets a cut only of students they referred in their city
+# - "student_referral": a former student who refers new students
+# - "split": shared referral credit with another counselor
+COUNSELOR_TYPE_WEIGHTS = [
+    ("referral", 6),
+    ("city_all", 3),
+    ("city_referral", 4),
+    ("student_referral", 4),
+    ("split", 3),
 ]
+COUNSELOR_TEMPLATES = {
+    "referral": [
+        "10% commission on all own referrals",
+        "15% commission, own students only",
+        "20% on own referrals, no city override",
+    ],
+    "city_all": [
+        "10% on all {city} students",
+        "10% commission on every {city} enrollment regardless of referrer",
+        "8% on all students from {city}",
+    ],
+    "city_referral": [
+        "20% on own referrals from {city}",
+        "15% on own students from {city}",
+    ],
+    "student_referral": [
+        "5% referral bonus on each student I refer",
+        "Rs 5000 per referral (settled as 5% of first fee)",
+        "5% on students I refer as alumni",
+    ],
+    "split": [
+        "Split 50-50 with co-referrer, 20% total on own referrals",
+        "10% commission on own referrals; 5% on {city} walk-ins",
+    ],
+}
 
 NAME_TAGS = ["(old)", "(Sat Math)", "(IB)", "(sibling)", "(2nd)", "(retake)"]
 
@@ -341,24 +369,50 @@ class Generator:
     def generate_all(self):
         self._generate_counselors(20)
         self._generate_students(200)
+        self._link_city_all_counselors()
         self._generate_payments_in()
         self._generate_payments_out(60)
         self._build_tracker_csv()
         self._build_bank_statement()
+
+    def _link_city_all_counselors(self):
+        """city_all counselors get linked to ALL students in their city."""
+        city_all = [c for c in self.counselors if c["type"] == "city_all"]
+        if not city_all:
+            return
+        canon = {
+            "Bengaluru": "Bangalore", "Bangalore": "Bangalore", "Blore": "Bangalore",
+            "Bombay": "Mumbai", "Mumbai": "Mumbai",
+            "Calcutta": "Kolkata", "Kolkata": "Kolkata",
+            "Madras": "Chennai", "Chennai": "Chennai",
+        }
+        for c in city_all:
+            c_city = canon.get(c["city"], c["city"])
+            for s in self.students:
+                s_city = canon.get(s.get("_raw_city", ""), s.get("_raw_city", ""))
+                if s_city == c_city:
+                    existing = s["counselor_ids"]
+                    if c["id"] not in existing:
+                        existing.append(c["id"])
 
     # ------------------------------------------------------------------
     # Counselors
     # ------------------------------------------------------------------
     def _generate_counselors(self, n: int):
         cities = [c for c, _ in INDIA_CITIES + OVERSEAS_CITIES]
+        types_pool = []
+        for t, w in COUNSELOR_TYPE_WEIGHTS:
+            types_pool.extend([t] * w)
         for _ in range(n):
             cid = self._cid()
             name = f"{self.rng.choice(FIRST_NAMES)} {self.rng.choice(LAST_NAMES)}"
+            ctype = self.rng.choice(types_pool)
             city = self.rng.choice(cities)
-            template = self.rng.choice(COUNSELOR_TERMS_TEMPLATES)
+            template = self.rng.choice(COUNSELOR_TEMPLATES[ctype])
             terms = template.format(city=city)
             self.counselors.append({
-                "id": cid, "name": name, "terms_text": terms, "city": city,
+                "id": cid, "name": name, "terms_text": terms,
+                "city": city, "type": ctype,
             })
 
     # ------------------------------------------------------------------
@@ -410,10 +464,17 @@ class Generator:
             if city == "Dubai" and self.rng.random() < 0.3:
                 messy_country = "Dubai"
 
-            # Counselor assignment (~60% have one, shared by family)
+            # Counselor assignment — respects counselor type:
+            # - "referral" / "student_referral" / "split": can refer anyone
+            # - "city_referral": only refers students in their city
+            # - "city_all": students are auto-linked later (all students in that city)
             counselor_ids = []
             if self.rng.random() < 0.60:
-                counselor_ids = [self.rng.choice(self.counselors)["id"]]
+                eligible = [c for c in self.counselors if c["type"] in ("referral", "student_referral", "split")]
+                eligible += [c for c in self.counselors
+                             if c["type"] == "city_referral" and c["city"] == city]
+                if eligible:
+                    counselor_ids = [self.rng.choice(eligible)["id"]]
 
             self._family_meta[fid] = {
                 "last_name": last, "parent_name": parent_name,
@@ -436,7 +497,8 @@ class Generator:
                     "id": sid, "name": name,
                     "aliases": [_messy_name(self.rng, name)],
                     "city": messy_city, "country": messy_country,
-                    "counselor_ids": counselor_ids,
+                    "_raw_city": city,
+                    "counselor_ids": list(counselor_ids),  # copy so city_all can append
                     "parent_name": parent_name,
                     "payer_aliases": [parent_name],
                     "is_overseas": is_overseas,

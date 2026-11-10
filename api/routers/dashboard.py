@@ -52,19 +52,35 @@ def dashboard(
     this_start, this_end = _month_range(as_of)
     prev_start, prev_end = _month_range(this_start - timedelta(days=1))
 
+    from ledger.money import fx_convert
+
     def received(a: date, b: date) -> int:
-        return _one(conn, "SELECT COALESCE(SUM(amount_paid_paise),0) FROM payment_in WHERE currency='INR' AND date BETWEEN ? AND ?",
-                    (a.isoformat(), b.isoformat()))
+        """Total received across all currencies, converted to INR paise."""
+        rows = conn.execute(
+            "SELECT currency, COALESCE(SUM(amount_paid_paise),0) AS total "
+            "FROM payment_in WHERE date BETWEEN ? AND ? GROUP BY currency",
+            (a.isoformat(), b.isoformat()),
+        ).fetchall()
+        return sum(fx_convert(r[1], r[0], "INR") for r in rows)
 
     def expected(a: date, b: date) -> int:
-        return _one(conn, "SELECT COALESCE(SUM(amount_due_paise),0) FROM installment WHERE currency='INR' AND due_date BETWEEN ? AND ?",
-                    (a.isoformat(), b.isoformat()))
+        """Total expected across all currencies, converted to INR paise."""
+        rows = conn.execute(
+            "SELECT currency, COALESCE(SUM(amount_due_paise),0) AS total "
+            "FROM installment WHERE due_date BETWEEN ? AND ? GROUP BY currency",
+            (a.isoformat(), b.isoformat()),
+        ).fetchall()
+        return sum(fx_convert(r[1], r[0], "INR") for r in rows)
 
     received_this = received(this_start, this_end)
     received_last = received(prev_start, prev_end)
     expected_this = expected(this_start, this_end)
-    spent_this = _one(conn, "SELECT COALESCE(SUM(amount_paise),0) FROM payment_out WHERE currency='INR' AND date BETWEEN ? AND ?",
-                      (this_start.isoformat(), this_end.isoformat()))
+    spent_rows = conn.execute(
+        "SELECT currency, COALESCE(SUM(amount_paise),0) AS total "
+        "FROM payment_out WHERE date BETWEEN ? AND ? GROUP BY currency",
+        (this_start.isoformat(), this_end.isoformat()),
+    ).fetchall()
+    spent_this = sum(fx_convert(r[1], r[0], "INR") for r in spent_rows)
 
     # Balances use what is still owed (amount due minus what was received),
     # so a part-paid installment counts only for its remainder.
@@ -110,8 +126,11 @@ def dashboard(
     for i in range(6):
         ws = as_of + timedelta(weeks=i)
         we = ws + timedelta(days=6)
-        scheduled = sum(remaining.get(r["id"], 0) for r in open_insts
-                        if r["currency"] == "INR" and ws.isoformat() <= r["due_date"] <= we.isoformat())
+        scheduled = sum(
+            fx_convert(remaining.get(r["id"], 0), r["currency"], "INR")
+            for r in open_insts
+            if ws.isoformat() <= r["due_date"] <= we.isoformat()
+        )
         forecast.append({"week_start": ws, "scheduled_paise": scheduled, "likely_paise": scheduled * 7 // 10})
 
     commissions = [dict(r) for r in conn.execute(
@@ -139,6 +158,7 @@ def dashboard(
         "as_of": as_of,
         "month": {
             "currency": "INR",
+            "fx_converted": True,
             "received_paise": received_this,
             "received_last_month_paise": received_last,
             "expected_paise": expected_this,

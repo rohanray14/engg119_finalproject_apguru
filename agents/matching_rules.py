@@ -352,7 +352,7 @@ def _decide(
     return None
 
 
-MAX_STUDENTS_FOR_HIGH = 5  # Max distinct students sharing amount for HIGH confidence
+MAX_STUDENTS_FOR_HIGH = 4  # Max distinct students sharing amount for HIGH confidence
 
 
 def _single_candidate_decision(
@@ -376,6 +376,10 @@ def _single_candidate_decision(
             confidence = HIGH_CONFIDENCE
         else:
             confidence = MEDIUM_CONFIDENCE
+        # Non-exact amount explanations (TDS-adjusted, partial) always cap
+        # at MEDIUM: the amount gap leaves room for misidentification.
+        if expl["score"] < 1.0:
+            confidence = min(confidence, MEDIUM_CONFIDENCE)
         return MatchPrediction(
             payment_id=payment["id"],
             installment_ids=[inst["id"]],
@@ -428,6 +432,18 @@ def _multi_candidate_decision(
             confidence = HIGH_CONFIDENCE
         else:
             confidence = MEDIUM_CONFIDENCE
+        # Non-exact amount explanations always cap at MEDIUM.
+        if expl["score"] < 1.0:
+            confidence = min(confidence, MEDIUM_CONFIDENCE)
+        # Name collision: if another candidate from a different student also
+        # strongly matches the payer name (score >= 80, not just fuzzy surname
+        # overlap), the match may be ambiguous (e.g. two "Priya Patel" families).
+        if any(
+            c["nscore"] >= 80
+            and c["inst"]["student_id"] not in top_student_ids
+            for c in candidates
+        ):
+            confidence = min(confidence, MEDIUM_CONFIDENCE)
         return MatchPrediction(
             payment_id=payment["id"],
             installment_ids=[inst["id"]],
@@ -454,6 +470,9 @@ def _multi_candidate_decision(
             confidence = HIGH_CONFIDENCE
         else:
             confidence = LOW_CONFIDENCE
+        # Non-exact amount explanations always cap at MEDIUM.
+        if expl["score"] < 1.0:
+            confidence = min(confidence, MEDIUM_CONFIDENCE)
         return MatchPrediction(
             payment_id=payment["id"],
             installment_ids=[inst["id"]],
