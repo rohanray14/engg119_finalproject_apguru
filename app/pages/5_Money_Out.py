@@ -1,14 +1,16 @@
-"""Money Out page — outgoing payments by category."""
+"""Money Out page — spend trends, burn rate, runway projection."""
 
 import sys
 from pathlib import Path
+from datetime import date, timedelta
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 import streamlit as st
+import pandas as pd
 from app.Home import get_db
-from app.style import apply_theme, fmt_inr, fmt_date_display
+from app.style import apply_theme, badge, metric_subtitle, fmt_inr
 
 st.set_page_config(page_title="Money Out | Educore", page_icon="💰", layout="wide")
 apply_theme()
@@ -19,26 +21,257 @@ with st.sidebar:
     st.markdown("## Educore")
     st.caption("Finance Desk")
 
-st.title("Money out")
-st.caption("All debits by category.")
 
-# Summary by category
-categories = conn.execute(
-    "SELECT category, COUNT(*) as count, SUM(amount_paise) as total "
-    "FROM payment_out GROUP BY category ORDER BY total DESC"
+# ── Helpers ──────────────────────────────────────────────────────────
+
+def _month_range(d: date):
+    first = d.replace(day=1)
+    if first.month == 12:
+        last = first.replace(year=first.year + 1, month=1, day=1) - timedelta(days=1)
+    else:
+        last = first.replace(month=first.month + 1, day=1) - timedelta(days=1)
+    return first, last
+
+
+def _add_months(d: date, n: int) -> date:
+    month = d.month - 1 + n
+    year = d.year + month // 12
+    month = month % 12 + 1
+    return d.replace(year=year, month=month, day=1)
+
+
+# ── Load all payment_out data ────────────────────────────────────────
+
+all_rows = conn.execute(
+    "SELECT * FROM payment_out ORDER BY date DESC, id DESC"
 ).fetchall()
 
-if categories:
-    cols = st.columns(len(categories))
-    for i, c in enumerate(categories):
-        with cols[i]:
-            st.metric(c["category"].title(), fmt_inr(c["total"]))
-            st.caption(f"{c['count']} payments")
+if not all_rows:
+    st.title("Money out")
+    st.info("No outgoing payments recorded yet.")
+    st.stop()
+
+
+# ── Build monthly spend by category ─────────────────────────────────
+
+min_date = date.fromisoformat(
+    conn.execute("SELECT MIN(date) FROM payment_out").fetchone()[0]
+)
+max_date = date.fromisoformat(
+    conn.execute("SELECT MAX(date) FROM payment_out").fetchone()[0]
+)
+
+monthly_totals = []  # [{month_label, month_date, cat1, cat2, ..., total}]
+cursor = min_date.replace(day=1)
+end = max_date.replace(day=1)
+
+while cursor <= end:
+    m_start, m_end = _month_range(cursor)
+    row_data = {"month_label": m_start.strftime("%b %y"), "month_date": m_start, "total": 0}
+    cats = conn.execute(
+        "SELECT category, SUM(amount_paise) as s FROM payment_out "
+        "WHERE date BETWEEN ? AND ? GROUP BY category",
+        (m_start.isoformat(), m_end.isoformat()),
+    ).fetchall()
+    for c in cats:
+        row_data[c["category"]] = c["s"]
+        row_data["total"] += c["s"]
+    monthly_totals.append(row_data)
+    cursor = _add_months(cursor, 1)
+
+df_monthly = pd.DataFrame(monthly_totals)
+
+# Months with actual spend (for averages)
+active_months = df_monthly[df_monthly["total"] > 0]
+num_active = len(active_months)
+
+# ── Headline metrics ─────────────────────────────────────────────────
+
+total_spent = sum(r["amount_paise"] for r in all_rows)
+avg_monthly_burn = int(active_months["total"].mean()) if num_active > 0 else 0
+
+# Last full month vs the one before
+if num_active >= 2:
+    last_month_spend = int(active_months.iloc[-1]["total"])
+    prev_month_spend = int(active_months.iloc[-2]["total"])
+    mom_delta = ((last_month_spend - prev_month_spend) / prev_month_spend * 100) if prev_month_spend > 0 else 0
+elif num_active == 1:
+    last_month_spend = int(active_months.iloc[-1]["total"])
+    prev_month_spend = 0
+    mom_delta = 0
+else:
+    last_month_spend = 0
+    prev_month_spend = 0
+    mom_delta = 0
+
+# Compare to money in
+total_received = conn.execute(
+    "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in"
+).fetchone()[0]
+spend_ratio = (total_spent / total_received * 100) if total_received > 0 else 0
+
+st.title("Money out")
+st.caption("Spend trends, burn rate, and runway projections.")
 
 st.write("")
 
-# Filters
+# ── Row 1: Key metrics ──────────────────────────────────────────────
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.metric("Total spent (all time)", fmt_inr(total_spent))
+    st.markdown(metric_subtitle(f"{len(all_rows)} payments"), unsafe_allow_html=True)
+with col2:
+    delta_str = f"{mom_delta:+.0f}% MoM" if prev_month_spend > 0 else None
+    st.metric("Avg monthly burn", fmt_inr(avg_monthly_burn), delta=delta_str, delta_color="inverse")
+with col3:
+    st.metric("Last month", fmt_inr(last_month_spend))
+    if prev_month_spend > 0:
+        st.markdown(metric_subtitle(f"Prior: {fmt_inr(prev_month_spend)}"), unsafe_allow_html=True)
+with col4:
+    color = "#27ae60" if spend_ratio < 50 else "#e67e22" if spend_ratio < 75 else "#e74c3c"
+    st.metric("Spend / Revenue", f"{spend_ratio:.0f}%")
+    st.markdown(
+        f'<p style="color:{color}; font-size:0.8rem; margin-top:-8px;">'
+        f'of {fmt_inr(total_received)} received</p>',
+        unsafe_allow_html=True,
+    )
+
+st.write("")
+
+# ── Row 2: Spend trend chart + Category breakdown ───────────────────
+
+left, right = st.columns([3, 2])
+
+with left:
+    with st.container(border=True):
+        st.markdown("### Monthly spend trend")
+        st.caption("Month-over-month outflows by category")
+        all_cats = [c for c in df_monthly.columns if c not in ("month_label", "month_date", "total")]
+        chart_df = df_monthly[["month_label"] + all_cats].copy()
+        chart_df = chart_df.set_index("month_label")
+        # Convert paise to rupees for readability
+        chart_df = chart_df.fillna(0) / 100
+        if not chart_df.empty:
+            st.bar_chart(chart_df)
+
+with right:
+    with st.container(border=True):
+        st.markdown("### Spend by category")
+        st.caption("All-time breakdown")
+        categories = conn.execute(
+            "SELECT category, COUNT(*) as count, SUM(amount_paise) as total "
+            "FROM payment_out GROUP BY category ORDER BY total DESC"
+        ).fetchall()
+        for c in categories:
+            pct = c["total"] / total_spent * 100 if total_spent > 0 else 0
+            cols = st.columns([3, 2, 1])
+            cols[0].markdown(f"**{c['category'].title()}**")
+            cols[1].markdown(fmt_inr(c["total"]))
+            cols[2].markdown(
+                f'<span style="color:#636e72; font-size:0.85rem;">{pct:.0f}%</span>',
+                unsafe_allow_html=True,
+            )
+        # Simple bar
+        cat_df = pd.DataFrame([{"Category": c["category"].title(), "Amount": c["total"] / 100} for c in categories])
+        if not cat_df.empty:
+            cat_df = cat_df.set_index("Category")
+            st.bar_chart(cat_df, color=["#1a6b5a"])
+
+st.write("")
+
+# ── Row 3: Runway projection ────────────────────────────────────────
+
 with st.container(border=True):
+    st.markdown("### Cash runway projection")
+    st.caption("When do outflows overtake inflows if collection rates drop?")
+
+    # Monthly inflow data
+    inflow_months = []
+    cursor = min_date.replace(day=1)
+    while cursor <= end:
+        m_start, m_end = _month_range(cursor)
+        received = conn.execute(
+            "SELECT COALESCE(SUM(amount_paid_paise), 0) FROM payment_in WHERE date BETWEEN ? AND ?",
+            (m_start.isoformat(), m_end.isoformat()),
+        ).fetchone()[0]
+        expected = conn.execute(
+            "SELECT COALESCE(SUM(amount_due_paise), 0) FROM installment WHERE due_date BETWEEN ? AND ?",
+            (m_start.isoformat(), m_end.isoformat()),
+        ).fetchone()[0]
+        inflow_months.append({"month_date": m_start, "received": received, "expected": expected})
+        cursor = _add_months(cursor, 1)
+
+    df_inflow = pd.DataFrame(inflow_months)
+    active_inflow = df_inflow[df_inflow["expected"] > 0]
+    avg_monthly_expected = int(active_inflow["expected"].mean()) if len(active_inflow) > 0 else 0
+    avg_monthly_received = int(active_inflow["received"].mean()) if len(active_inflow) > 0 else 0
+    current_collection_rate = (avg_monthly_received / avg_monthly_expected * 100) if avg_monthly_expected > 0 else 0
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Avg monthly expected", fmt_inr(avg_monthly_expected))
+    col2.metric("Avg monthly collected", fmt_inr(avg_monthly_received))
+    col3.metric("Current collection rate", f"{current_collection_rate:.0f}%")
+
+    st.write("")
+
+    # Project forward 12 months at different collection rates
+    scenarios = [
+        ("Current rate", current_collection_rate / 100),
+        ("10% drop", max(0, current_collection_rate - 10) / 100),
+        ("25% drop", max(0, current_collection_rate - 25) / 100),
+        ("50% drop", max(0, current_collection_rate - 50) / 100),
+    ]
+
+    # Net position = cumulative (inflow - outflow) starting from zero
+    projection_rows = []
+    last_month = end
+    for month_offset in range(1, 13):
+        proj_month = _add_months(last_month, month_offset)
+        label = proj_month.strftime("%b %y")
+        row = {"Month": label}
+        for scenario_name, rate in scenarios:
+            monthly_inflow = int(avg_monthly_expected * rate)
+            monthly_net = monthly_inflow - avg_monthly_burn
+            cumulative = monthly_net * month_offset
+            row[scenario_name] = cumulative / 100  # rupees
+        projection_rows.append(row)
+
+    df_proj = pd.DataFrame(projection_rows).set_index("Month")
+
+    st.line_chart(df_proj)
+
+    # Find crossover points (when cumulative goes negative)
+    st.write("")
+    for scenario_name, rate in scenarios:
+        monthly_inflow = int(avg_monthly_expected * rate)
+        monthly_net = monthly_inflow - avg_monthly_burn
+        if monthly_net < 0:
+            st.markdown(
+                f'{badge(scenario_name, "red" if "50%" in scenario_name else "orange")} '
+                f'Net negative from month 1 — losing **{fmt_inr(abs(monthly_net))}**/month. '
+                f'Burn exceeds inflow by {fmt_inr(abs(monthly_net))} each month.',
+                unsafe_allow_html=True,
+            )
+        elif monthly_net == 0:
+            st.markdown(
+                f'{badge(scenario_name, "orange")} Break-even — no surplus.',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f'{badge(scenario_name, "green")} Surplus of **{fmt_inr(monthly_net)}**/month — runway is clear.',
+                unsafe_allow_html=True,
+            )
+
+st.write("")
+
+# ── Row 4: Detailed table ───────────────────────────────────────────
+
+with st.container(border=True):
+    st.markdown("### All outgoing payments")
+
     col1, col2 = st.columns(2)
     with col1:
         cat_filter = st.selectbox(
@@ -48,27 +281,28 @@ with st.container(border=True):
     with col2:
         curr_filter = st.selectbox("Currency", ["All", "INR", "USD", "AED", "GBP"])
 
-query = "SELECT * FROM payment_out WHERE 1=1"
-params = []
-if cat_filter != "All":
-    query += " AND category = ?"
-    params.append(cat_filter)
-if curr_filter != "All":
-    query += " AND currency = ?"
-    params.append(curr_filter)
-query += " ORDER BY date DESC, id DESC"
+    query = "SELECT * FROM payment_out WHERE 1=1"
+    params: list = []
+    if cat_filter != "All":
+        query += " AND category = ?"
+        params.append(cat_filter)
+    if curr_filter != "All":
+        query += " AND currency = ?"
+        params.append(curr_filter)
+    query += " ORDER BY date DESC, id DESC"
 
-rows = conn.execute(query, params).fetchall()
-st.caption(f"{len(rows)} payments")
+    rows = conn.execute(query, params).fetchall()
+    st.caption(f"{len(rows)} payments")
 
-if rows:
-    data = []
-    for r in rows:
-        data.append({
-            "Date": fmt_date_display(r["date"]),
-            "Payee": r["payee"],
-            "Category": r["category"].title(),
-            "Amount": fmt_inr(r["amount_paise"]),
-            "Currency": r["currency"],
-        })
-    st.dataframe(data, use_container_width=True, hide_index=True)
+    if rows:
+        from app.style import fmt_date_display
+        data = []
+        for r in rows:
+            data.append({
+                "Date": fmt_date_display(r["date"]),
+                "Payee": r["payee"],
+                "Category": r["category"].title(),
+                "Amount": fmt_inr(r["amount_paise"]),
+                "Currency": r["currency"],
+            })
+        st.dataframe(data, use_container_width=True, hide_index=True)

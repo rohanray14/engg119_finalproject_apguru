@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import date
+from datetime import date, timedelta
 from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, Query
@@ -165,6 +165,19 @@ def get_student(student_id: int, conn=Depends(get_conn), user: User = Depends(cu
     }
 
 
+def _mo_month_range(d: date) -> tuple[date, date]:
+    first = d.replace(day=1)
+    nxt = first.replace(year=first.year + 1, month=1) if first.month == 12 else first.replace(month=first.month + 1)
+    return first, nxt - timedelta(days=1)
+
+
+def _mo_add_months(d: date, n: int) -> date:
+    month = d.month - 1 + n
+    year = d.year + month // 12
+    month = month % 12 + 1
+    return d.replace(year=year, month=month, day=1)
+
+
 @router.get("/money-out")
 def money_out(
     category: Optional[str] = Query(None, max_length=30),
@@ -189,7 +202,95 @@ def money_out(
     rows = [dict(r) for r in conn.execute(
         f"SELECT * FROM payment_out WHERE {clause} ORDER BY date DESC, id DESC LIMIT ? OFFSET ?",
         [*params, limit, offset]).fetchall()]
-    return {"summary": summary, "total": total, "limit": limit, "offset": offset, "items": rows}
+
+    # ── Monthly spend by category ──
+    min_row = conn.execute("SELECT MIN(date) FROM payment_out").fetchone()
+    max_row = conn.execute("SELECT MAX(date) FROM payment_out").fetchone()
+    monthly_spend: list[dict] = []
+    if min_row[0] and max_row[0]:
+        cursor = date.fromisoformat(min_row[0]).replace(day=1)
+        end = date.fromisoformat(max_row[0]).replace(day=1)
+        while cursor <= end:
+            ms, me = _mo_month_range(cursor)
+            cats = conn.execute(
+                "SELECT category, SUM(amount_paise) AS total_paise FROM payment_out "
+                "WHERE date BETWEEN ? AND ? GROUP BY category",
+                (ms.isoformat(), me.isoformat()),
+            ).fetchall()
+            month_total = sum(c["total_paise"] for c in cats)
+            if month_total > 0:
+                by_cat = {c["category"]: c["total_paise"] for c in cats}
+                monthly_spend.append({"month": ms.isoformat()[:7], "total_paise": month_total, "by_category": by_cat})
+            cursor = _mo_add_months(cursor, 1)
+
+    # ── Totals for metrics ──
+    total_spent = conn.execute("SELECT COALESCE(SUM(amount_paise),0) FROM payment_out").fetchone()[0]
+    total_received = conn.execute("SELECT COALESCE(SUM(amount_paid_paise),0) FROM payment_in").fetchone()[0]
+    avg_monthly_burn = int(sum(m["total_paise"] for m in monthly_spend) / len(monthly_spend)) if monthly_spend else 0
+
+    # ── Runway projection ──
+    inflow_min = conn.execute(
+        "SELECT MIN(d) FROM (SELECT MIN(date) AS d FROM payment_in UNION SELECT MIN(due_date) FROM installment) t"
+    ).fetchone()[0]
+    inflow_max = conn.execute(
+        "SELECT MAX(d) FROM (SELECT MAX(date) AS d FROM payment_in UNION SELECT MAX(due_date) FROM installment) t"
+    ).fetchone()[0]
+    inflow_months: list[dict] = []
+    if inflow_min and inflow_max:
+        cursor = date.fromisoformat(inflow_min).replace(day=1)
+        end = date.fromisoformat(inflow_max).replace(day=1)
+        while cursor <= end:
+            ms, me = _mo_month_range(cursor)
+            exp = conn.execute(
+                "SELECT COALESCE(SUM(amount_due_paise),0) FROM installment WHERE due_date BETWEEN ? AND ?",
+                (ms.isoformat(), me.isoformat()),
+            ).fetchone()[0]
+            rec = conn.execute(
+                "SELECT COALESCE(SUM(amount_paid_paise),0) FROM payment_in WHERE date BETWEEN ? AND ?",
+                (ms.isoformat(), me.isoformat()),
+            ).fetchone()[0]
+            if exp > 0 or rec > 0:
+                inflow_months.append({"expected": exp, "received": rec})
+            cursor = _mo_add_months(cursor, 1)
+
+    avg_expected = int(sum(m["expected"] for m in inflow_months) / len(inflow_months)) if inflow_months else 0
+    avg_received = int(sum(m["received"] for m in inflow_months) / len(inflow_months)) if inflow_months else 0
+    collection_rate_pct = round(avg_received * 100 / avg_expected, 1) if avg_expected > 0 else 0
+
+    scenarios = [
+        {"name": "current_rate", "drop_pct": 0},
+        {"name": "drop_10", "drop_pct": 10},
+        {"name": "drop_25", "drop_pct": 25},
+        {"name": "drop_50", "drop_pct": 50},
+    ]
+    last_month_date = date.fromisoformat(max_row[0]).replace(day=1) if max_row[0] else date.today().replace(day=1)
+    projection: list[dict] = []
+    for i in range(1, 13):
+        proj_month = _mo_add_months(last_month_date, i)
+        row: dict = {"month": proj_month.isoformat()[:7]}
+        for s in scenarios:
+            rate = max(0, collection_rate_pct - s["drop_pct"]) / 100
+            monthly_inflow = int(avg_expected * rate)
+            monthly_net = monthly_inflow - avg_monthly_burn
+            row[s["name"]] = monthly_net * i  # cumulative paise
+        projection.append(row)
+
+    runway = {
+        "avg_monthly_expected_paise": avg_expected,
+        "avg_monthly_received_paise": avg_received,
+        "collection_rate_pct": collection_rate_pct,
+        "avg_monthly_burn_paise": avg_monthly_burn,
+        "projection": projection,
+    }
+
+    return {
+        "summary": summary, "total": total, "limit": limit, "offset": offset, "items": rows,
+        "total_spent_paise": total_spent,
+        "total_received_paise": total_received,
+        "avg_monthly_burn_paise": avg_monthly_burn,
+        "monthly_spend": monthly_spend,
+        "runway": runway,
+    }
 
 
 @router.get("/risk")
