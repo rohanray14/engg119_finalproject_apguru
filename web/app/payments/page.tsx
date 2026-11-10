@@ -69,13 +69,50 @@ function friendlyMethod(method: string | null, source: string): string {
   return methodLabels[raw] ?? methodLabels[raw.toUpperCase()] ?? raw;
 }
 
-function deductionTooltip(r: PaymentRow): string {
-  const parts: string[] = [];
-  if (r.gateway_fee_paise > 0) parts.push(`Gateway fee: ${formatMoney(r.gateway_fee_paise, r.currency)}`);
-  if (r.gst_on_fee_paise > 0) parts.push(`GST on fee: ${formatMoney(r.gst_on_fee_paise, r.currency)}`);
-  if (r.tds_paise > 0) parts.push(`TDS: ${formatMoney(r.tds_paise, r.currency)}`);
-  if (r.fx_diff_paise > 0) parts.push(`FX loss: ${formatMoney(r.fx_diff_paise, r.currency)}`);
-  return parts.length > 0 ? parts.join("\n") : "No deductions";
+function DeductionBreakdown({ r }: { r: PaymentRow }) {
+  if (r.deductions_paise <= 0) return <span>—</span>;
+  const parts: { label: string; value: string }[] = [];
+  if (r.gateway_fee_paise > 0) parts.push({ label: "Gateway fee", value: formatMoney(r.gateway_fee_paise, r.currency) });
+  if (r.gst_on_fee_paise > 0) parts.push({ label: "GST on fee", value: formatMoney(r.gst_on_fee_paise, r.currency) });
+  if (r.tds_paise > 0) parts.push({ label: "TDS", value: formatMoney(r.tds_paise, r.currency) });
+  if (r.fx_diff_paise > 0) parts.push({ label: "FX loss", value: formatMoney(r.fx_diff_paise, r.currency) });
+  return (
+    <span className="relative group cursor-help">
+      <span className="underline decoration-dotted">{formatMoney(r.deductions_paise, r.currency)}</span>
+      <span className="hidden group-hover:block absolute right-0 top-full mt-1 z-50 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
+        {parts.map((p, i) => (
+          <span key={i} className="flex justify-between gap-4">
+            <span className="text-gray-300">{p.label}</span>
+            <span className="font-medium">{p.value}</span>
+          </span>
+        ))}
+        <span className="flex justify-between gap-4 border-t border-gray-700 mt-1 pt-1">
+          <span className="text-gray-300">Total</span>
+          <span className="font-medium">{formatMoney(r.deductions_paise, r.currency)}</span>
+        </span>
+      </span>
+    </span>
+  );
+}
+
+function ConfirmBadge({ confirmation }: { confirmation: string }) {
+  const info = confirmBadge[confirmation];
+  const style = {
+    backgroundColor: info?.bg ?? "#f3f4f6",
+    color: info?.text ?? "#374151",
+  };
+  return (
+    <span className="relative group">
+      <span className="px-2 py-0.5 rounded text-xs font-medium cursor-help" style={style}>
+        {confirmation.replace(/_/g, " ")}
+      </span>
+      {info?.tip && (
+        <span className="hidden group-hover:block absolute right-0 top-full mt-1 z-50 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 w-56 shadow-lg leading-relaxed">
+          {info.tip}
+        </span>
+      )}
+    </span>
+  );
 }
 
 type SortKey = "date" | "payer_name" | "amount_paid_paise" | "amount_in_bank_paise" | null;
@@ -283,23 +320,15 @@ export default function PaymentsPage() {
                       <td className="px-4 py-2.5 text-right whitespace-nowrap font-medium">
                         {formatMoney(r.amount_paid_paise, r.currency)}
                       </td>
-                      <td className="px-4 py-2.5 text-right whitespace-nowrap text-gray-500 cursor-help"
-                        title={deductionTooltip(r)}>
-                        {r.deductions_paise > 0 ? formatMoney(r.deductions_paise, r.currency) : "—"}
+                      <td className="px-4 py-2.5 text-right whitespace-nowrap text-gray-500">
+                        <DeductionBreakdown r={r} />
                       </td>
                       <td className="px-4 py-2.5 text-right whitespace-nowrap">
                         {r.amount_in_bank_paise > 0 ? formatMoney(r.amount_in_bank_paise, "INR") : "—"}
                       </td>
                       <td className="px-4 py-2.5 text-xs">{friendlyMethod(r.method, r.source)}</td>
                       <td className="px-4 py-2.5">
-                        <span className="px-2 py-0.5 rounded text-xs font-medium cursor-help"
-                          title={confirmBadge[r.confirmation]?.tip ?? ""}
-                          style={{
-                            backgroundColor: confirmBadge[r.confirmation]?.bg ?? "#f3f4f6",
-                            color: confirmBadge[r.confirmation]?.text ?? "#374151",
-                          }}>
-                          {r.confirmation.replace(/_/g, " ")}
-                        </span>
+                        <ConfirmBadge confirmation={r.confirmation} />
                       </td>
                       <td className="px-4 py-2.5">
                         {r.match_id && r.match_status === "pending_review" ? (
