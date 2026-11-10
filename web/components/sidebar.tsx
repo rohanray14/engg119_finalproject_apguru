@@ -98,13 +98,13 @@ export default function Sidebar() {
                 onClick={() => toggle(section.heading!)}
                 className="w-full flex items-center justify-between px-3 mb-1 group"
               >
-                <span className="text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ color: "var(--sidebar-text)", opacity: 0.6 }}>
+                <span className="text-xs font-bold uppercase tracking-wider"
+                  style={{ color: "var(--sidebar-text)" }}>
                   {section.heading}
                 </span>
                 <svg
                   className="w-3 h-3 transition-transform"
-                  style={{ color: "var(--sidebar-text)", opacity: 0.4, transform: open[section.heading] ? "rotate(0deg)" : "rotate(-90deg)" }}
+                  style={{ color: "var(--sidebar-text)", opacity: 0.5, transform: open[section.heading] ? "rotate(0deg)" : "rotate(-90deg)" }}
                   fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -119,7 +119,7 @@ export default function Sidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
+                  className={`flex items-center justify-between py-2 rounded-md text-sm transition-colors ${section.heading ? "px-5" : "px-3"} ${
                     active
                       ? "text-white font-medium"
                       : "hover:text-white"
