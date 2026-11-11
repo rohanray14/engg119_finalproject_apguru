@@ -29,10 +29,8 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from ledger.money import (
     add_gst,
     gateway_fee_with_gst,
-    fx_convert,
     tds as compute_tds,
     GATEWAY_FEE_RATES_BPS,
-    DEFAULT_FX_RATES,
 )
 
 # ---------------------------------------------------------------------------
@@ -105,8 +103,8 @@ COMMON_INR_PAISE = [
 ]
 
 # Foreign amounts (in smallest unit: cents / fils)
-COMMON_USD_CENTS = [40000, 260000, 140000, 180000, 240000]
-COMMON_AED_FILS  = [150000, 480000, 900000]
+COMMON_USD_CENTS = [40000, 260000, 140000, 180000, 240000]   # kept for safety_cases
+COMMON_AED_FILS  = [150000, 480000, 900000]                 # kept for safety_cases
 
 # Payment method weights (SPEC section 3)
 METHOD_WEIGHTS = {
@@ -205,7 +203,6 @@ CASE_SPLIT_PAYMENT = "split_payment"      # one payment → multiple installment
 CASE_PARTIAL = "partial"                  # partial payment
 CASE_DUPLICATE_AMOUNT = "duplicate_amount"  # same amount, different students
 CASE_SIBLINGS = "siblings"               # same family, multiple students
-CASE_FOREIGN = "foreign"                 # foreign currency
 CASE_GATEWAY_FEES = "gateway_fees"       # amount differs due to gateway fees
 CASE_BLANK_PAYER = "blank_payer"         # no payer name
 CASE_HOURLY_TOPUP = "hourly_topup"       # hourly prepay top-up
@@ -257,20 +254,6 @@ def _messy_amount(rng: random.Random, paise: int, currency: str) -> str:
             return f"{_indian_comma_format(base)}+GST"
         else:
             return _indian_comma_format(rupees)
-    elif currency == "USD":
-        cents = paise
-        dollars = cents // 100
-        v = rng.choice(["usd_suffix", "dollar_sign", "dollar_hours"])
-        if v == "usd_suffix":
-            return f"{dollars} USD"
-        elif v == "dollar_sign":
-            return f"${dollars}"
-        else:
-            return f"${dollars}/ 10 hours"
-    elif currency == "AED":
-        fils = paise
-        dirhams = fils // 100
-        return f"{dirhams} AED" if rng.random() < 0.7 else f"AED {dirhams}"
     return str(paise // 100)
 
 
@@ -528,37 +511,21 @@ class Generator:
     def _generate_enrollment(self, student: dict, is_overseas: bool):
         eid = self._eid()
 
+        # All enrollments are INR (simplified: single currency)
+        currency = "INR"
         if self.rng.random() < 0.6:
             # Package
             program = self.rng.choice(PROGRAMS_PACKAGE)
             fee_model = "package"
-            if is_overseas:
-                currency = "USD" if self.rng.random() < 0.6 else "AED"
-                if currency == "USD":
-                    total_cents = self.rng.choice(COMMON_USD_CENTS)
-                else:
-                    total_fils = self.rng.choice(COMMON_AED_FILS)
-                    total_cents = total_fils  # "cents" = fils for AED
-                total_fee_paise = total_cents
-                gst = False
-            else:
-                # Indian package: pick a common INR amount as the inclusive total
-                inclusive = self.rng.choice(COMMON_INR_PAISE)
-                total_fee_paise = inclusive
-                gst = True
-                currency = "INR"
+            inclusive = self.rng.choice(COMMON_INR_PAISE)
+            total_fee_paise = inclusive
+            gst = not is_overseas  # overseas students exempt from GST
         else:
             # Hourly
             program = self.rng.choice(PROGRAMS_HOURLY)
             fee_model = "hourly"
-            if is_overseas:
-                currency = "USD" if self.rng.random() < 0.6 else "AED"
-                total_fee_paise = 40000 if currency == "USD" else 150000
-                gst = False
-            else:
-                total_fee_paise = self.rng.choice([4130000, 5900000, 11800000])
-                gst = True
-                currency = "INR"
+            total_fee_paise = self.rng.choice([4130000, 5900000, 11800000])
+            gst = not is_overseas
 
         enrollment = {
             "id": eid, "student_id": student["id"],
@@ -654,9 +621,6 @@ class Generator:
             elif payer_type == "parent":
                 case_types.append(CASE_FUZZY_NAME)
 
-            if is_overseas:
-                case_types.append(CASE_FOREIGN)
-
             if enroll["fee_model"] == "hourly":
                 case_types.append(CASE_HOURLY_TOPUP)
 
@@ -736,11 +700,7 @@ class Generator:
                 gst_on_fee_paise = gst_fee
                 amount_in_bank = amount_sent - total_ded
 
-            # FX convert to INR
-            if currency != "INR":
-                amount_in_bank_inr = fx_convert(amount_in_bank, currency, "INR")
-            else:
-                amount_in_bank_inr = amount_in_bank
+            amount_in_bank_inr = amount_in_bank
 
             # Simple case: no special complexity
             if not case_types:
@@ -794,13 +754,7 @@ class Generator:
         for _ in range(min(n_noise, 20)):
             pid = self._pid()
             method = self._pick_method()
-            cur = self.rng.choice(["INR", "INR", "INR", "USD", "AED"])
-            if cur == "INR":
-                amt = self.rng.choice(COMMON_INR_PAISE)
-            elif cur == "USD":
-                amt = self.rng.choice(COMMON_USD_CENTS)
-            else:
-                amt = self.rng.choice(COMMON_AED_FILS)
+            amt = self.rng.choice(COMMON_INR_PAISE)
 
             pay_date = _rand_date(self.rng, DATE_START, DATE_END)
             if method == "blank":
@@ -810,10 +764,10 @@ class Generator:
                 "method": method,
                 "payer_name": f"{self.rng.choice(FIRST_NAMES)} {self.rng.choice(LAST_NAMES)}",
                 "date": pay_date.isoformat(),
-                "amount_paid_paise": amt, "currency": cur,
+                "amount_paid_paise": amt, "currency": "INR",
                 "gateway_fee_paise": 0, "gst_on_fee_paise": 0,
                 "tds_paise": 0, "fx_diff_paise": 0,
-                "amount_in_bank_paise": amt if cur == "INR" else fx_convert(amt, cur, "INR"),
+                "amount_in_bank_paise": amt,
                 "confirmation": "in_bank",
                 "case_types": ["noise"],
             })
@@ -942,13 +896,6 @@ class Generator:
                 # Sometimes put status in amount column (SPEC)
                 if self.rng.random() < 0.03:
                     row["amount"] = "Paid Full"
-
-                # Sometimes add "two payments in one cell"
-                if (self.rng.random() < 0.02
-                        and pay["currency"] in ("USD", "AED")):
-                    unit = pay["currency"]
-                    half = pay["amount_paid_paise"] // 200
-                    row["amount"] = f"{half} {unit} + {half} {unit}"
 
                 self.tracker_rows.append(row)
 
