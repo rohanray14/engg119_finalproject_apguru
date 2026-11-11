@@ -7,11 +7,6 @@ import { formatMoney, formatDateLong, formatDate } from "@/lib/format";
 import type { Dashboard, Meta } from "@/lib/types";
 import DecisionList from "@/components/decision-list";
 import AskPanel from "@/components/ask-panel";
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
-
 function fetcher<T>(path: string) {
   return apiFetch<T>(path);
 }
@@ -21,25 +16,6 @@ function pctChange(current: number, previous: number): string | null {
   const pct = Math.round(((current - previous) / previous) * 100);
   if (pct === 0) return null;
   return pct > 0 ? `+${pct}%` : `${pct}%`;
-}
-
-function lakhs(paise: number): string {
-  const amt = paise / 100;
-  if (amt >= 1_00_00_000) return `${(amt / 1_00_00_000).toFixed(1)} Cr`;
-  if (amt >= 1_00_000) return `${(amt / 1_00_000).toFixed(0)} L`;
-  if (amt >= 1000) return `${(amt / 1000).toFixed(0)}K`;
-  if (amt === 0) return "0";
-  return `${amt.toFixed(0)}`;
-}
-
-function weekLabel(iso: string): string {
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
-
-function monthLabel(iso: string): string {
-  const [, m] = iso.split("-");
-  return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][parseInt(m) - 1];
 }
 
 export default function TodayPage() {
@@ -79,18 +55,6 @@ export default function TodayPage() {
   const overdueInr = dash.overdue.by_currency.find((c) => c.currency === "INR");
   const momChange = pctChange(dash.month.received_paise, dash.month.received_last_month_paise);
   const collectionRate = dash.month.collection_rate_pct;
-
-  // Collection rate % per month — last 12 months
-  const rateData = (dash.months ?? []).slice(-12).map((m) => {
-    const rate = m.expected_paise > 0 ? Math.round((m.collected_paise / m.expected_paise) * 100) : 0;
-    return { month: monthLabel(m.month), rate };
-  });
-
-  // Forecast — single bar per week showing what's due
-  const forecastData = (dash.forecast ?? []).map((w) => ({
-    week: weekLabel(w.week_start),
-    due: w.scheduled_paise,
-  }));
 
   const hasOwing = dash.top_owing.length > 0;
   const hasUnmatched = dash.largest_unmatched.length > 0;
@@ -230,58 +194,6 @@ export default function TodayPage() {
         </div>
       )}
 
-      {/* -- 5. Charts -- */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Collection rate % per month */}
-        <div className="lg:col-span-3 rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Collection rate</h3>
-          <p className="text-xs mb-4" style={{ color: "var(--text-tertiary)" }}>
-            % of expected fees actually collected each month
-          </p>
-          {rateData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={rateData} barCategoryGap="30%">
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
-                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} interval={0} />
-                <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} width={40} />
-                <Tooltip
-                  formatter={(value) => [`${value}%`, "Collected"]}
-                  labelStyle={{ fontWeight: 600, color: "var(--text)" }}
-                  contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
-                />
-                <Bar dataKey="rate" name="Collected" fill="var(--accent)" radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-sm py-8 text-center" style={{ color: "var(--text-tertiary)" }}>No data yet</div>
-          )}
-        </div>
-
-        {/* Expected incoming */}
-        <div className="lg:col-span-2 rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Expected incoming</h3>
-          <p className="text-xs mb-4" style={{ color: "var(--text-tertiary)" }}>
-            Fees due in the next 5 weeks
-          </p>
-          {forecastData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={forecastData} barCategoryGap="30%">
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
-                <XAxis dataKey="week" tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} />
-                <YAxis tickFormatter={(v) => lakhs(v)} tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} width={45} tickCount={4} />
-                <Tooltip
-                  formatter={(value) => [lakhs(Number(value))]}
-                  labelStyle={{ fontWeight: 600, color: "var(--text)" }}
-                  contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
-                />
-                <Bar dataKey="due" name="Due" fill="var(--info)" radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-sm py-8 text-center" style={{ color: "var(--text-tertiary)" }}>No forecast data</div>
-          )}
-        </div>
-      </div>
     </div>
   );
 }
