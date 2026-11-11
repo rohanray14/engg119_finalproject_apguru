@@ -183,7 +183,7 @@ export default function InsightsPage() {
             <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} tickLine={false} axisLine={false} />
             <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 11, fill: "#9ca3af" }} tickLine={false} axisLine={false} width={55} />
             <Tooltip
-              formatter={(value: number) => [lakhs(value * 100), "Collected"]}
+              formatter={(value) => [lakhs(Number(value) * 100), "Collected"]}
               labelStyle={{ fontWeight: 600 }}
               contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13 }}
             />
@@ -319,7 +319,7 @@ export default function InsightsPage() {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number) => formatMoneyCompact(value, "INR")}
+                  formatter={(value) => formatMoneyCompact(Number(value), "INR")}
                   contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }}
                 />
               </PieChart>
