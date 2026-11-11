@@ -13,8 +13,7 @@ interface Props {
 
 function confidenceLabel(item: ReviewItem): { text: string; color: string } | null {
   if (!item.has_suggestion) return null;
-  if (item.confidence >= 0.85) return { text: `${Math.round(item.confidence * 100)}%`, color: "var(--accent)" };
-  return { text: `${Math.round(item.confidence * 100)}%`, color: "var(--warning)" };
+  return { text: `${Math.round(item.confidence * 100)}%`, color: "var(--text-secondary)" };
 }
 
 export default function ReviewList({ items, selectedId, onSelect, skippedIds }: Props) {
