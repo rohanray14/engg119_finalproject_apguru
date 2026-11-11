@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
@@ -46,10 +46,10 @@ interface PaymentsResponse {
 
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
-const confirmBadge: Record<string, { bg: string; text: string; tip: string }> = {
-  in_bank: { bg: "rgba(0, 220, 130, 0.15)", text: "var(--accent)", tip: "Verified against bank statement — money is in the account" },
-  seen_by_gateway: { bg: "rgba(255, 176, 32, 0.15)", text: "var(--warning)", tip: "Gateway (Stripe/Razorpay/PayGlocal) confirms the payment, but not yet reconciled with bank" },
-  screenshot_only: { bg: "rgba(255, 77, 77, 0.15)", text: "var(--danger)", tip: "Only evidence is a screenshot — not verified by bank or gateway" },
+const confirmBadge: Record<string, { label: string; bg: string; text: string; tip: string }> = {
+  in_bank: { label: "In bank", bg: "rgba(0, 220, 130, 0.15)", text: "var(--accent)", tip: "Verified against bank statement — money is in the account" },
+  seen_by_gateway: { label: "Gateway", bg: "rgba(255, 176, 32, 0.15)", text: "var(--warning)", tip: "Gateway (Stripe/Razorpay/PayGlocal) confirms the payment, but not yet reconciled with bank" },
+  screenshot_only: { label: "Screenshot", bg: "rgba(255, 77, 77, 0.15)", text: "var(--danger)", tip: "Only evidence is a screenshot — not verified by bank or gateway" },
 };
 
 const matchBadge: Record<string, { bg: string; text: string }> = {
@@ -89,7 +89,8 @@ function Popover({ trigger, children }: { trigger: React.ReactNode; children: Re
   function show() {
     if (ref.current) {
       const rect = ref.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 4, left: rect.right });
+      const left = Math.min(rect.right, window.innerWidth - 240);
+      setPos({ top: rect.bottom + 4, left });
     }
     setOpen(true);
   }
@@ -113,30 +114,6 @@ function Popover({ trigger, children }: { trigger: React.ReactNode; children: Re
   );
 }
 
-function DeductionBreakdown({ r }: { r: PaymentRow }) {
-  if (r.deductions_paise <= 0) return <span>{"—"}</span>;
-  const parts: { label: string; value: string }[] = [];
-  if (r.gateway_fee_paise > 0) parts.push({ label: "Gateway fee", value: formatMoney(r.gateway_fee_paise, r.currency) });
-  if (r.gst_on_fee_paise > 0) parts.push({ label: "GST on fee", value: formatMoney(r.gst_on_fee_paise, r.currency) });
-  if (r.tds_paise > 0) parts.push({ label: "TDS", value: formatMoney(r.tds_paise, r.currency) });
-  if (r.fx_diff_paise > 0) parts.push({ label: "FX loss", value: formatMoney(r.fx_diff_paise, r.currency) });
-  return (
-    <Popover trigger={<span className="underline decoration-dotted">{formatMoney(r.deductions_paise, r.currency)}</span>}>
-      <div className="whitespace-nowrap">
-        {parts.map((p, i) => (
-          <div key={i} className="flex justify-between gap-4">
-            <span style={{ color: "var(--text-tertiary)" }}>{p.label}</span>
-            <span className="font-medium">{p.value}</span>
-          </div>
-        ))}
-        <div className="flex justify-between gap-4 mt-1 pt-1" style={{ borderTop: "1px solid var(--border)" }}>
-          <span style={{ color: "var(--text-tertiary)" }}>Total</span>
-          <span className="font-medium">{formatMoney(r.deductions_paise, r.currency)}</span>
-        </div>
-      </div>
-    </Popover>
-  );
-}
 
 function ConfirmBadge({ confirmation }: { confirmation: string }) {
   const info = confirmBadge[confirmation];
@@ -144,13 +121,14 @@ function ConfirmBadge({ confirmation }: { confirmation: string }) {
     backgroundColor: info?.bg ?? "var(--surface-hover)",
     color: info?.text ?? "var(--text-secondary)",
   };
+  const label = info?.label ?? confirmation.replace(/_/g, " ");
   return info?.tip ? (
-    <Popover trigger={<span className="px-2 py-0.5 rounded text-xs font-medium" style={style}>{confirmation.replace(/_/g, " ")}</span>}>
+    <Popover trigger={<span className="px-2 py-0.5 rounded text-xs font-medium" style={style}>{label}</span>}>
       <div className="w-52 leading-relaxed">{info.tip}</div>
     </Popover>
   ) : (
     <span className="px-2 py-0.5 rounded text-xs font-medium" style={style}>
-      {confirmation.replace(/_/g, " ")}
+      {label}
     </span>
   );
 }
@@ -197,16 +175,27 @@ export default function PaymentsPage() {
   const [source, setSource] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [match, setMatch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [month, setMonth] = useState("");
+  const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Debounce search input
+  useEffect(() => {
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(0);
+    }, 300);
+    return () => clearTimeout(searchTimer.current);
+  }, [searchInput]);
   const [sortKey, setSortKey] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(0);
-  const [showDetails, setShowDetails] = useState(false);
 
   const params = new URLSearchParams();
   if (source) params.set("source", source);
-if (confirmation) params.set("confirmation", confirmation);
+  if (confirmation) params.set("confirmation", confirmation);
   if (match) params.set("match", match);
   if (search) params.set("search", search);
   params.set("limit", "500");
@@ -219,7 +208,7 @@ if (confirmation) params.set("confirmation", confirmation);
   const activeFilters = [source, confirmation, match, search, month].filter(Boolean).length;
 
   function clearAll() {
-    setSource(""); setConfirmation(""); setMatch(""); setSearch(""); setMonth(""); setPage(0);
+    setSource(""); setConfirmation(""); setMatch(""); setSearchInput(""); setSearch(""); setMonth(""); setPage(0);
   }
 
   function toggleSort(key: SortKey) {
@@ -320,7 +309,6 @@ if (confirmation) params.set("confirmation", confirmation);
               <option value="bank">Bank transfer (NEFT/UPI/IMPS)</option>
               <option value="gateway">Gateway (Stripe/PayGlocal/Razorpay)</option>
               <option value="cash">Cash</option>
-              <option value="screenshot">Screenshot only</option>
             </select>
           </div>
           <div>
@@ -362,8 +350,8 @@ if (confirmation) params.set("confirmation", confirmation);
             <input
               type="text"
               placeholder="Search..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="w-full text-sm rounded-md px-3 py-2"
               style={{ backgroundColor: "var(--surface-hover)", border: "1px solid var(--border)", color: "var(--text)" }}
             />
@@ -371,7 +359,7 @@ if (confirmation) params.set("confirmation", confirmation);
         </div>
       </div>
 
-      {isLoading ? (
+      {isLoading && !data ? (
         <div className="animate-pulse h-64 rounded" style={{ backgroundColor: "var(--surface)" }} />
       ) : !data || filtered.length === 0 ? (
         <div className="rounded-xl border p-8 text-center" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
@@ -384,12 +372,10 @@ if (confirmation) params.set("confirmation", confirmation);
             <div className="rounded-xl border px-4 py-3" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Total received</div>
               <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{formatMoneyCompact(summary?.total_received ?? 0, "INR")}</div>
-              <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>in bank (INR)</div>
             </div>
             <div className="rounded-xl border px-4 py-3" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Payments</div>
               <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{summary?.total_payments ?? 0}</div>
-              <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>total{activeFilters > 0 ? ` · ${filtered.length} shown` : ""}</div>
             </div>
             {(summary?.review_count ?? 0) > 0 && (
               <Link href="/review"
@@ -397,29 +383,22 @@ if (confirmation) params.set("confirmation", confirmation);
                 style={{ backgroundColor: "rgba(255, 176, 32, 0.1)", borderColor: "rgba(255, 176, 32, 0.3)" }}>
                 <div className="text-xs" style={{ color: "var(--warning)" }}>Needs review</div>
                 <div className="text-lg font-bold" style={{ color: "var(--warning)" }}>{summary?.review_count ?? 0}</div>
-                <div className="text-xs" style={{ color: "var(--warning)" }}>waiting for you →</div>
               </Link>
             )}
             {(summary?.unmatched_count ?? 0) > 0 && (
               <button onClick={() => { setMatch(match === "unmatched" ? "" : "unmatched"); setPage(0); }}
-                className={`text-left rounded-xl border px-4 py-3 transition-colors ${match === "unmatched" ? "ring-2" : ""}`}
+                className={`text-left rounded-xl border px-4 py-3 transition-colors ${match === "unmatched" ? "ring-2 ring-white/30" : ""}`}
                 style={{ borderColor: "var(--border)" }}>
                 <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Unmatched</div>
                 <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{summary?.unmatched_count ?? 0}</div>
-                <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
-                  {(summary?.blank_count ?? 0) > 0
-                    ? `${(summary?.unmatched_count ?? 0) - (summary?.blank_count ?? 0)} with payer name · ${summary?.blank_count} blank`
-                    : "no student linked"} →
-                </div>
               </button>
             )}
             {(summary?.screenshot_count ?? 0) > 0 && (
               <button onClick={() => { setConfirmation(confirmation === "screenshot_only" ? "" : "screenshot_only"); setPage(0); }}
-                className={`text-left rounded-xl border px-4 py-3 transition-colors ${confirmation === "screenshot_only" ? "ring-2" : ""}`}
+                className={`text-left rounded-xl border px-4 py-3 transition-colors ${confirmation === "screenshot_only" ? "ring-2 ring-red-400/40" : ""}`}
                 style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", borderColor: "rgba(255, 77, 77, 0.3)" }}>
                 <div className="text-xs" style={{ color: "var(--danger)" }}>Unverified</div>
                 <div className="text-lg font-bold" style={{ color: "var(--danger)" }}>{summary?.screenshot_count ?? 0}</div>
-                <div className="text-xs" style={{ color: "var(--danger)" }}>screenshot only — not confirmed →</div>
               </button>
             )}
           </div>
@@ -431,15 +410,6 @@ if (confirmation) params.set("confirmation", confirmation);
               {totalPages > 1 && ` · page ${page + 1} of ${totalPages}`}
             </p>
             <div className="flex items-center gap-3">
-              <button onClick={() => setShowDetails((v) => !v)}
-                className="px-3 py-1.5 text-xs font-medium rounded-md"
-                style={{
-                  border: showDetails ? "1px solid var(--text)" : "1px solid var(--border)",
-                  backgroundColor: showDetails ? "var(--surface-hover)" : "transparent",
-                  color: "var(--text)",
-                }}>
-                {showDetails ? "Hide deductions" : "Show deductions"}
-              </button>
               <button onClick={() => exportCSV(sorted)}
                 className="px-3 py-1.5 text-xs font-medium rounded-md"
                 style={{ border: "1px solid var(--border)", color: "var(--text)" }}>
@@ -472,7 +442,6 @@ if (confirmation) params.set("confirmation", confirmation);
                   <SortHeader label="Date" field="date" />
                   <SortHeader label="Payer" field="payer_name" />
                   <SortHeader label="Amount" field="amount_paid_paise" align="right" />
-                  {showDetails && <th className="px-4 py-3 font-medium text-right">Deductions</th>}
                   <SortHeader label="In Bank (₹)" field="amount_in_bank_paise" align="right" />
                   <th className="px-4 py-3 font-medium">Method</th>
                   <th className="px-4 py-3 font-medium">Verified</th>
@@ -495,22 +464,19 @@ if (confirmation) params.set("confirmation", confirmation);
                       <td className="px-4 py-2.5 whitespace-nowrap">{formatDate(r.date)}</td>
                       <td className="px-4 py-2.5 font-medium max-w-[200px] truncate" style={{ color: "var(--text)" }}>
                         {r.payer_name ? (
-                          <Link href={r.matched_student_id
-                            ? `/students?id=${r.matched_student_id}`
-                            : `/students?search=${encodeURIComponent(r.payer_name)}`}
-                            className="hover:underline" style={{ color: "var(--accent)" }}>
-                            {r.payer_name}
-                          </Link>
+                          r.matched_student_id ? (
+                            <Link href={`/students?id=${r.matched_student_id}`}
+                              className="hover:underline" style={{ color: "var(--accent)" }}>
+                              {r.payer_name}
+                            </Link>
+                          ) : (
+                            <span>{r.payer_name}</span>
+                          )
                         ) : <span style={{ color: "var(--warning)", fontWeight: "normal" }}>(no payer name)</span>}
                       </td>
                       <td className="px-4 py-2.5 text-right whitespace-nowrap font-medium">
                         {formatMoney(r.amount_paid_paise, r.currency)}
                       </td>
-                      {showDetails && (
-                        <td className="px-4 py-2.5 text-right whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>
-                          <DeductionBreakdown r={r} />
-                        </td>
-                      )}
                       <td className="px-4 py-2.5 text-right whitespace-nowrap">
                         {r.amount_in_bank_paise > 0 ? formatMoney(r.amount_in_bank_paise, "INR") : "—"}
                       </td>
@@ -572,19 +538,20 @@ if (confirmation) params.set("confirmation", confirmation);
               <button onClick={() => setPage(page - 1)} disabled={page === 0}
                 className="px-2 py-1 text-xs rounded disabled:opacity-30"
                 style={{ border: "1px solid var(--border)", color: "var(--text)" }}>Prev</button>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button key={i} onClick={() => setPage(i)}
-                  className="px-2.5 py-1 text-xs rounded"
-                  style={i === page
-                    ? { backgroundColor: "var(--text)", color: "var(--bg)", border: "1px solid var(--text)" }
-                    : { border: "1px solid var(--border)", color: "var(--text)" }
-                  }>
-                  {i + 1}
-                </button>
-              )).slice(
-                Math.max(0, page - 3),
-                Math.min(totalPages, page + 4)
-              )}
+              {Array.from({ length: Math.min(7, totalPages) }, (_, idx) => {
+                const i = Math.max(0, Math.min(page - 3, totalPages - 7)) + idx;
+                if (i >= totalPages) return null;
+                return (
+                  <button key={i} onClick={() => setPage(i)}
+                    className="px-2.5 py-1 text-xs rounded"
+                    style={i === page
+                      ? { backgroundColor: "var(--text)", color: "var(--bg)", border: "1px solid var(--text)" }
+                      : { border: "1px solid var(--border)", color: "var(--text)" }
+                    }>
+                    {i + 1}
+                  </button>
+                );
+              })}
               <button onClick={() => setPage(page + 1)} disabled={page >= totalPages - 1}
                 className="px-2 py-1 text-xs rounded disabled:opacity-30"
                 style={{ border: "1px solid var(--border)", color: "var(--text)" }}>Next</button>
@@ -596,16 +563,7 @@ if (confirmation) params.set("confirmation", confirmation);
 
           <p className="text-xs mt-3" style={{ color: "var(--text-tertiary)" }}>
             &ldquo;In Bank&rdquo; shows the amount received after gateway fees, GST, and FX conversion — always in INR (₹).
-            Hover over deductions to see the breakdown.
           </p>
-          {(summary?.blank_count ?? 0) > 0 && (
-            <p className="text-xs mt-2" style={{ color: "var(--text-tertiary)" }}>
-              {summary?.blank_count} payment{(summary?.blank_count ?? 0) > 1 ? "s" : ""} show &ldquo;(blank)&rdquo; as the payer name.
-              This happens when the bank statement or gateway report does not include the sender&rsquo;s
-              name — common with UPI, NEFT batch transfers, and some international gateways. These
-              payments need manual review to match them to a student.
-            </p>
-          )}
         </>
       )}
     </div>
