@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PORT=10000
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt altair
+
+COPY config.py ./
+COPY ledger/ ledger/
+COPY agents/ agents/
+COPY evals/__init__.py evals/scoring.py evals/
+COPY data/*.csv data/
+COPY app/ app/
+
+COPY start-streamlit.sh .
+
+RUN useradd --create-home --uid 10001 appuser && mkdir -p logs data && chown -R appuser /app && chmod +x start-streamlit.sh
+USER appuser
+
+EXPOSE 10000
+CMD ["./start-streamlit.sh"]

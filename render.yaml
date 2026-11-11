@@ -10,3 +10,11 @@ services:
         value: "1"
       - key: CORS_ORIGINS
         value: ""
+
+  - type: web
+    name: educore-finance-desk
+    runtime: docker
+    dockerfilePath: Dockerfile.streamlit
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
