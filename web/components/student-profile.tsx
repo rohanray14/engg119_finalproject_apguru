@@ -73,7 +73,8 @@ export default function StudentProfile({ studentId, onBack }: Props) {
 
   const totalOwed = student.enrollments.reduce((sum, e) =>
     sum + e.installments.reduce((s, i) => s + i.remaining_paise, 0), 0);
-  const totalFee = student.enrollments.reduce((sum, e) => sum + e.total_fee_paise, 0);
+  const totalFee = student.enrollments.reduce((sum, e) =>
+    sum + e.installments.reduce((s, i) => s + i.amount_due_paise, 0), 0);
   const totalPaid = student.payments.reduce((sum, p) =>
     p.match_status === "approved" || p.match_status === "auto" ? sum + p.amount_paid_paise : sum, 0);
   const mainCurrency = student.enrollments[0]?.currency ?? "INR";
@@ -152,15 +153,16 @@ export default function StudentProfile({ studentId, onBack }: Props) {
 
       {/* Enrollments */}
       {student.enrollments.map((e) => {
+        const enrollTotal = e.installments.reduce((s, i) => s + i.amount_due_paise, 0);
         const enrollPaid = e.installments.reduce((s, i) => s + (i.amount_due_paise - i.remaining_paise), 0);
-        const pct = e.total_fee_paise > 0 ? Math.round((enrollPaid / e.total_fee_paise) * 100) : 0;
+        const pct = enrollTotal > 0 ? Math.round((enrollPaid / enrollTotal) * 100) : 0;
         return (
           <div key={e.id} className="bg-white rounded-lg border p-5 mb-4" style={{ borderColor: "var(--card-border)" }}>
             <div className="flex items-center justify-between mb-3">
               <div>
                 <div className="font-bold text-gray-900">{e.program}</div>
                 <div className="text-xs text-gray-500">
-                  {e.fee_model === "package" ? "Package" : "Hourly"} · Total: {formatMoney(e.total_fee_paise, e.currency)}
+                  {e.fee_model === "package" ? "Package" : "Hourly"} · Total: {formatMoney(enrollTotal, e.currency)}
                   {e.gst_applicable && " + GST"}
                 </div>
               </div>

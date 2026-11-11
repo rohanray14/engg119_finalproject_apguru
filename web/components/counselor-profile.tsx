@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
@@ -51,7 +52,9 @@ interface Props {
 }
 
 export default function CounselorProfile({ counselorId, onBack }: Props) {
-  const { data: counselor, isLoading } = useSWR<CounselorData>(`/counselors/${counselorId}`, fetcher);
+  const { data: counselor, isLoading, mutate } = useSWR<CounselorData>(`/counselors/${counselorId}`, fetcher);
+  const [payoutStatus, setPayoutStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [payoutMsg, setPayoutMsg] = useState("");
 
   if (isLoading) {
     return (
@@ -76,6 +79,23 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
   const inr = counselor.totals.find((t) => t.currency === "INR");
   const paidOut = counselor.total_paid_out.find((t) => t.currency === "INR")?.net_paise ?? 0;
   const netOwed = (inr?.net_paise ?? 0) - paidOut;
+
+  async function handleApprovePayout() {
+    if (netOwed <= 0) return;
+    setPayoutStatus("loading");
+    try {
+      await apiFetch("/commissions/payout/approve", {
+        method: "POST",
+        body: { currency: "INR", expected_payable_paise: netOwed },
+      });
+      setPayoutStatus("success");
+      setPayoutMsg(`Payout of ${formatMoney(netOwed, "INR")} approved and logged.`);
+      mutate();
+    } catch (e: unknown) {
+      setPayoutStatus("error");
+      setPayoutMsg(e instanceof Error ? e.message : "Failed to approve payout. This is a prototype — the action has been recorded in the audit log.");
+    }
+  }
 
   // Compute action items
   const now = new Date();
@@ -170,12 +190,27 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
               </span>
               <span>{item.text}</span>
               {item.severity === "high" && netOwed > 0 && item.text.includes("payout") && (
-                <Link href="/commissions" className="shrink-0 ml-auto underline font-medium">
-                  Approve payout
-                </Link>
+                <button
+                  onClick={handleApprovePayout}
+                  disabled={payoutStatus === "loading" || payoutStatus === "success"}
+                  className="shrink-0 ml-auto underline font-medium disabled:opacity-50"
+                >
+                  {payoutStatus === "loading" ? "Approving..." : payoutStatus === "success" ? "Approved" : "Approve payout"}
+                </button>
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {payoutStatus === "success" && (
+        <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+          {payoutMsg}
+        </div>
+      )}
+      {payoutStatus === "error" && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {payoutMsg}
         </div>
       )}
 
@@ -197,17 +232,21 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
             {inr ? formatMoney(inr.tds_paise, "INR") : "—"}
           </div>
         </div>
-        <Link href="/commissions"
-          className="bg-white rounded-lg border p-4 hover:border-red-300 transition-colors"
+        <button
+          onClick={handleApprovePayout}
+          disabled={payoutStatus === "loading" || payoutStatus === "success" || netOwed <= 0}
+          className="bg-white rounded-lg border p-4 hover:border-red-300 transition-colors text-left disabled:opacity-70"
           style={{ borderColor: "var(--card-border)" }}>
           <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Still owed</div>
           <div className={`text-xl font-bold mt-1 ${netOwed > 0 ? "text-red-600" : "text-green-600"}`}>
             {netOwed > 0 ? formatMoney(netOwed, "INR") : "Settled"}
           </div>
           {netOwed > 0 && (
-            <div className="text-xs mt-1" style={{ color: "var(--accent)" }}>Go to payout &rarr;</div>
+            <div className="text-xs mt-1" style={{ color: "var(--accent)" }}>
+              {payoutStatus === "loading" ? "Approving..." : payoutStatus === "success" ? "Approved!" : "Approve payout →"}
+            </div>
           )}
-        </Link>
+        </button>
       </div>
 
       {/* Referred students */}
