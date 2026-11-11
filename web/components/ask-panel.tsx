@@ -27,6 +27,12 @@ const suggestions = [
   "How many unmatched payments?",
   "What are the total expenses?",
   "Expense breakdown by category",
+  "Revenue per student — who brings in the most?",
+  "Seasonal trends — which months see the most payments?",
+  "Gateway comparison — fees by payment method",
+  "Commission cost as a % of total revenue",
+  "Average days to pay after due date",
+  "Which cities generate the most revenue?",
 ];
 
 export default function AskPanel() {

@@ -159,16 +159,19 @@ function CommissionsContent() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {data.counselors.map((c) => {
+            {data.counselors.filter((c) => {
+              const amt = c.amounts.find((a) => a.currency === "INR");
+              return (amt && amt.earned_paise > 0) || c.status === "needs_rate";
+            }).map((c) => {
               const amt = c.amounts.find((a) => a.currency === "INR");
               return (
                 <tr key={c.id}>
                   <td className="py-3 font-medium cursor-pointer hover:underline" style={{ color: "var(--accent)" }}
                     onClick={() => setSelectedId(c.id)}>{c.name}</td>
-                  <td className="py-3 text-gray-600 italic max-w-[200px] truncate">
+                  <td className="py-3 text-gray-600 italic max-w-[300px]">
                     {c.terms_text ? `"${c.terms_text}"` : "—"}
                   </td>
-                  <td className="py-3 text-gray-700">{ruleText(c)}</td>
+                  <td className="py-3 text-gray-700 text-sm">{ruleText(c)}</td>
                   <td className="py-3 text-right">{amt && amt.earned_paise > 0 ? formatMoney(amt.earned_paise, "INR") : "—"}</td>
                   <td className="py-3 text-right font-medium">{amt && amt.net_paise > 0 ? formatMoney(amt.net_paise, "INR") : "—"}</td>
                   <td className="py-3">

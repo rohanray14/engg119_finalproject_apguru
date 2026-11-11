@@ -21,13 +21,12 @@ export default function ReviewPage() {
   );
 }
 
-type FilterKey = "all" | "quick_approve" | "needs_attention" | "no_suggestion";
+type FilterKey = "all" | "quick_approve" | "needs_attention";
 
 const FILTER_OPTIONS: { value: FilterKey; label: string }[] = [
   { value: "all", label: "All items" },
   { value: "quick_approve", label: "Quick approvals (90%+)" },
   { value: "needs_attention", label: "Needs attention (<85%)" },
-  { value: "no_suggestion", label: "No suggestion" },
 ];
 
 function ReviewContent() {
@@ -66,7 +65,6 @@ function ReviewContent() {
     switch (filter) {
       case "quick_approve": if (!(item.has_suggestion && item.confidence >= 0.9)) return false; break;
       case "needs_attention": if (!(item.confidence < 0.85 || !item.has_suggestion)) return false; break;
-      case "no_suggestion": if (item.has_suggestion) return false; break;
     }
     // Name search
     if (searchLower) {

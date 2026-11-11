@@ -552,6 +552,14 @@ export default function PaymentsPage() {
             &ldquo;In Bank&rdquo; shows the amount received after gateway fees, GST, and FX conversion — always in INR (₹).
             Hover over deductions to see the breakdown.
           </p>
+          {stats.blankCount > 0 && (
+            <p className="text-xs text-gray-400 mt-2">
+              {stats.blankCount} payment{stats.blankCount > 1 ? "s" : ""} show &ldquo;(blank)&rdquo; as the payer name.
+              This happens when the bank statement or gateway report does not include the sender&rsquo;s
+              name — common with UPI, NEFT batch transfers, and some international gateways. These
+              payments need manual review to match them to a student.
+            </p>
+          )}
         </>
       )}
     </div>

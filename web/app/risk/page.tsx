@@ -270,7 +270,7 @@ export default function RiskPage() {
                           Send reminder
                         </button>
                         <button
-                          onClick={() => router.push("/students")}
+                          onClick={() => router.push(`/students?search=${encodeURIComponent(g.student)}`)}
                           className="px-3 py-1 text-xs font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
                         >
                           View student
