@@ -85,26 +85,35 @@ const sevStyle: Record<string, { dot: string; text: string }> = {
 export default function RiskPage() {
   const router = useRouter();
   const [severity, setSeverity] = useState("");
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const params = severity ? `?severity=${severity}` : "";
   const { data, isLoading } = useSWR<RiskData>(`/risk${params}`, fetcher);
 
+  function flagKey(f: RiskFlag) { return `${f.category}:${f.entity}:${f.explanation}`; }
+  function dismiss(f: RiskFlag) {
+    setDismissed((prev) => new Set(prev).add(flagKey(f)));
+  }
+
+  const activeItems = useMemo(() => {
+    if (!data) return [];
+    return data.items.filter((f) => !dismissed.has(flagKey(f)));
+  }, [data, dismissed]);
+
   // Compute action summary
   const actionSummary = useMemo(() => {
-    if (!data) return null;
-    const overdue = data.items.filter((f) => f.category === "overdue_installment");
-    const unmatched = data.items.filter((f) => f.category === "unmatched_old");
-    const duplicates = data.items.filter((f) => f.category === "duplicate_payment");
-    const suspicious = data.items.filter((f) =>
+    const overdue = activeItems.filter((f) => f.category === "overdue_installment");
+    const unmatched = activeItems.filter((f) => f.category === "unmatched_old");
+    const duplicates = activeItems.filter((f) => f.category === "duplicate_payment");
+    const suspicious = activeItems.filter((f) =>
       f.category === "unconfirmed_large" || f.category === "suspicious_payer"
     );
     const groups = groupOverdue(overdue);
     return { overdue, unmatched, duplicates, suspicious, overdueGroups: groups };
-  }, [data]);
+  }, [activeItems]);
 
   const nonOverdueFlags = useMemo(() => {
-    if (!data) return [];
-    return data.items.filter((f) => f.category !== "overdue_installment");
-  }, [data]);
+    return activeItems.filter((f) => f.category !== "overdue_installment");
+  }, [activeItems]);
 
   return (
     <div className="p-8">
@@ -218,15 +227,31 @@ export default function RiskPage() {
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
+        {dismissed.size > 0 && (
+          <button onClick={() => setDismissed(new Set())}
+            className="text-xs text-gray-500 hover:text-gray-700 underline">
+            Show {dismissed.size} dismissed
+          </button>
+        )}
       </div>
 
       {isLoading ? (
         <div className="animate-pulse space-y-3">
           {[1, 2, 3].map((i) => <div key={i} className="h-16 bg-gray-200 rounded" />)}
         </div>
-      ) : !data || data.items.length === 0 ? (
+      ) : activeItems.length === 0 ? (
         <div className="bg-white rounded-lg border p-8 text-center" style={{ borderColor: "var(--card-border)" }}>
-          <p className="text-gray-500">No risk flags.</p>
+          <p className="text-gray-500">
+            {dismissed.size > 0
+              ? `All flags dismissed. ${dismissed.size} hidden.`
+              : "No risk flags."}
+          </p>
+          {dismissed.size > 0 && (
+            <button onClick={() => setDismissed(new Set())}
+              className="mt-2 text-xs text-gray-500 underline hover:text-gray-700">
+              Show all again
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-6">
@@ -263,6 +288,11 @@ export default function RiskPage() {
                         >
                           View student
                         </button>
+                        <button
+                          onClick={() => g.flags.forEach((f) => dismiss(f))}
+                          className="px-2 py-1 text-xs text-gray-400 hover:text-gray-600 transition"
+                          title="Dismiss this flag for now"
+                        >✕</button>
                       </div>
                     </div>
                     {g.flags.length > 1 && (
@@ -330,12 +360,19 @@ export default function RiskPage() {
                             )}
                           </div>
                         </div>
-                        <button
-                          onClick={() => router.push(action.page)}
-                          className="px-3 py-1 text-xs font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition shrink-0 ml-3"
-                        >
-                          {action.label}
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0 ml-3">
+                          <button
+                            onClick={() => router.push(action.page)}
+                            className="px-3 py-1 text-xs font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                          >
+                            {action.label}
+                          </button>
+                          <button
+                            onClick={() => dismiss(f)}
+                            className="px-2 py-1 text-xs text-gray-400 hover:text-gray-600 transition"
+                            title="Dismiss this flag for now"
+                          >✕</button>
+                        </div>
                       </div>
                     );
                   })}

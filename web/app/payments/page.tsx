@@ -517,6 +517,15 @@ export default function PaymentsPage() {
                             }}>
                             unmatched
                           </span>
+                        ) : r.payer_name && (r.match_status === "auto" || r.match_status === "approved") ? (
+                          <Link href={`/students?search=${encodeURIComponent(r.payer_name)}`}
+                            className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 inline-block"
+                            style={{
+                              backgroundColor: matchBadge[r.match_status]?.bg ?? "#f3f4f6",
+                              color: matchBadge[r.match_status]?.text ?? "#374151",
+                            }}>
+                            {r.match_status === "auto" ? "matched" : "approved"} →
+                          </Link>
                         ) : (
                           <span className="px-2 py-0.5 rounded text-xs font-medium"
                             style={{

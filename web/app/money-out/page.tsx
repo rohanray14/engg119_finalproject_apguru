@@ -276,11 +276,27 @@ export default function MoneyOutPage() {
               const monthlyInflow = Math.round(r.avg_monthly_expected_paise * rate);
               const monthlyNet = monthlyInflow - r.avg_monthly_burn_paise;
               const isPositive = monthlyNet >= 0;
-              const bgColor = isPositive ? "bg-gray-50 text-gray-700 border-gray-200" : "bg-gray-100 text-gray-600 border-gray-300";
+              // Find how many months in projection before net goes negative
+              const projKey = s.drop === 0 ? "current_rate" : `drop_${s.drop}`;
+              const proj = r.projection;
+              const deficitIdx = proj.findIndex((p) => {
+                const val = s.drop === 0 ? p.current_rate : s.drop === 10 ? p.drop_10 : s.drop === 25 ? p.drop_25 : p.drop_50;
+                return val < 0;
+              });
+              const monthsLabel = isPositive
+                ? "sustainable"
+                : deficitIdx >= 0
+                ? `deficit in ${deficitIdx + 1}mo`
+                : "deficit";
+              const bgColor = isPositive
+                ? "bg-green-50 text-green-800 border-green-200"
+                : deficitIdx >= 0 && deficitIdx < 3
+                ? "bg-red-50 text-red-800 border-red-200"
+                : "bg-amber-50 text-amber-800 border-amber-200";
               return (
                 <div key={s.label} className={`text-xs font-medium px-3 py-1.5 rounded-full border ${bgColor}`}>
-                  {s.label}: {isPositive ? "+" : ""}{formatMoneyCompact(Math.abs(monthlyNet), "INR")}/mo
-                  {isPositive ? " surplus" : " deficit"}
+                  {s.label}: {monthsLabel}
+                  <span className="ml-1 opacity-70">({isPositive ? "+" : ""}{formatMoneyCompact(Math.abs(monthlyNet), "INR")}/mo)</span>
                 </div>
               );
             });
