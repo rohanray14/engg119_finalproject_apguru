@@ -716,7 +716,7 @@ class Generator:
                 source = "cash"
                 confirmation = "screenshot_only"
             elif method == "blank":
-                source = "screenshot"
+                source = "bank"
                 confirmation = "screenshot_only"
                 method = None  # will be blank in output
             else:

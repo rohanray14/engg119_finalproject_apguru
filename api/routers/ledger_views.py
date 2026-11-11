@@ -20,7 +20,7 @@ MatchFilter = Literal["matched", "unmatched", "pending_review", "rejected"]
 
 @router.get("/payments")
 def list_payments(
-    source: Optional[Literal["bank", "gateway", "cash", "screenshot"]] = None,
+    source: Optional[Literal["bank", "gateway", "cash"]] = None,
     currency: Optional[str] = Query(None, min_length=3, max_length=3),
     confirmation: Optional[Literal["in_bank", "seen_by_gateway", "screenshot_only"]] = None,
     match: Optional[MatchFilter] = None,

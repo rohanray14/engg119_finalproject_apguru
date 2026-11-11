@@ -68,12 +68,10 @@ const methodLabels: Record<string, string> = {
   STRIPE: "Stripe",
   PAYGLOCAL: "PayGlocal",
   RAZORPAY: "Razorpay",
-  SCREENSHOT: "Screenshot",
   CASH: "Cash",
   bank: "Bank Transfer",
   gateway: "Gateway",
   cash: "Cash",
-  screenshot: "Screenshot",
 };
 
 function friendlyMethod(method: string | null, source: string): string {
@@ -469,6 +467,11 @@ export default function PaymentsPage() {
                               className="hover:underline" style={{ color: "var(--accent)" }}>
                               {r.payer_name}
                             </Link>
+                          ) : r.match_id ? (
+                            <Link href={`/review?id=${r.match_id}`}
+                              className="hover:underline" style={{ color: "var(--text)" }}>
+                              {r.payer_name}
+                            </Link>
                           ) : (
                             <span>{r.payer_name}</span>
                           )
@@ -505,13 +508,14 @@ export default function PaymentsPage() {
                             )}
                           </span>
                         ) : r.match_status === "unmatched" ? (
-                          <span className="px-2 py-0.5 rounded text-xs font-medium"
+                          <Link href="/review"
+                            className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 inline-block"
                             style={{
                               backgroundColor: matchBadge.unmatched.bg,
                               color: matchBadge.unmatched.text,
                             }}>
-                            unmatched
-                          </span>
+                            unmatched →
+                          </Link>
                         ) : (
                           <span className="px-2 py-0.5 rounded text-xs font-medium"
                             style={{

@@ -8,7 +8,7 @@ id,source,method,payer_name,date,amount_paid_paise,currency,gateway_fee_paise,gs
 15,bank,neft,,2025-10-22,4130000,INR,20650,3717,0,0,4105633,in_bank
 17,gateway,payglocal,,2025-10-16,2950000,INR,81125,14602,0,0,2854273,seen_by_gateway
 18,gateway,razorpay,,2025-06-01,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
-23,screenshot,,,2026-08-30,12390000,INR,0,0,0,0,12390000,screenshot_only
+23,bank,,,2026-08-30,12390000,INR,0,0,0,0,12390000,screenshot_only
 24,bank,neft,Vaishnavi Agarwal,2025-12-03,11800000,INR,59000,10620,0,0,11730380,in_bank
 25,gateway,payglocal,Kriti Malhotra,2025-07-02,2950000,INR,81125,14602,0,0,2854273,seen_by_gateway
 26,gateway,payglocal,,2025-04-25,24780000,INR,681450,122661,0,0,23975889,in_bank
@@ -24,7 +24,7 @@ id,source,method,payer_name,date,amount_paid_paise,currency,gateway_fee_paise,gs
 67,gateway,payglocal,,2025-08-26,2950000,INR,81125,14602,0,0,2854273,seen_by_gateway
 76,gateway,stripe,,2026-03-23,15000000,INR,450000,81000,0,0,14469000,seen_by_gateway
 81,gateway,payglocal,,2026-08-21,4130000,INR,113575,20444,0,0,3995981,in_bank
-83,screenshot,,,2026-06-13,11800000,INR,0,0,0,0,11800000,screenshot_only
+83,bank,,,2026-06-13,11800000,INR,0,0,0,0,11800000,screenshot_only
 90,gateway,payglocal,,2025-06-09,13924000,INR,382910,68924,0,0,13472166,seen_by_gateway
 98,gateway,stripe,Aditya Rao,2025-04-29,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
 100,gateway,stripe,Esha Shah,2026-02-14,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
@@ -34,8 +34,8 @@ id,source,method,payer_name,date,amount_paid_paise,currency,gateway_fee_paise,gs
 112,gateway,stripe,Simran Kapoor,2026-01-19,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
 114,gateway,stripe,,2026-01-05,2065000,INR,61950,11151,0,0,1991899,seen_by_gateway
 116,bank,neft,Akash Srinivasan,2026-04-08,11800000,INR,59000,10620,0,0,11730380,in_bank
-119,screenshot,,,2026-03-04,5900000,INR,0,0,0,0,5900000,screenshot_only
-124,screenshot,,,2026-04-07,4130000,INR,0,0,0,0,4130000,screenshot_only
+119,bank,,,2026-03-04,5900000,INR,0,0,0,0,5900000,screenshot_only
+124,bank,,,2026-04-07,4130000,INR,0,0,0,0,4130000,screenshot_only
 125,cash,cash,Vikram Reddy,2025-12-18,7080000,INR,0,0,0,0,7080000,screenshot_only
 135,bank,neft,,2025-07-01,2950000,INR,14750,2655,0,0,2932595,screenshot_only
 137,gateway,payglocal,,2026-01-20,11800000,INR,324500,58410,0,0,11417090,in_bank
@@ -47,24 +47,24 @@ id,source,method,payer_name,date,amount_paid_paise,currency,gateway_fee_paise,gs
 158,gateway,stripe,Yash Nair,2026-05-14,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
 168,gateway,payglocal,,2025-05-17,11800000,INR,324500,58410,0,0,11417090,seen_by_gateway
 172,gateway,payglocal,,2026-08-12,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
-173,screenshot,,Tushar Rao,2025-06-29,5900000,INR,0,0,0,0,5900000,screenshot_only
+173,bank,,Tushar Rao,2025-06-29,5900000,INR,0,0,0,0,5900000,screenshot_only
 175,gateway,payglocal,Kiran Shah,2026-02-03,4130000,INR,113575,20444,0,0,3995981,in_bank
 178,bank,neft,Aditi Shah,2026-01-23,5900000,INR,29500,5310,0,0,5865190,in_bank
 179,gateway,stripe,Ishaan Das,2025-11-24,6962000,INR,208860,37595,0,0,6715545,in_bank
 182,gateway,stripe,Diya Mehta,2026-07-24,11210000,INR,336300,60534,0,0,10813166,seen_by_gateway
-184,screenshot,,Nisha Chatterjee,2025-10-22,4130000,INR,0,0,0,0,4130000,screenshot_only
+184,bank,,Nisha Chatterjee,2025-10-22,4130000,INR,0,0,0,0,4130000,screenshot_only
 186,bank,neft,,2026-04-01,10030000,INR,50150,9027,0,0,9970823,in_bank
 188,bank,neft,,2025-05-18,15000000,INR,75000,13500,0,0,14911500,in_bank
 192,cash,cash,,2026-09-01,4130000,INR,0,0,0,0,4130000,screenshot_only
 194,gateway,stripe,Ishaan Das,2025-06-27,6962000,INR,208860,37595,0,0,6715545,seen_by_gateway
 199,bank,neft,Harsh Srinivasan,2026-05-17,11800000,INR,59000,10620,0,0,11730380,screenshot_only
-202,screenshot,,Sakshi Bansal,2026-05-05,7080000,INR,0,0,0,0,7080000,screenshot_only
+202,bank,,Sakshi Bansal,2026-05-05,7080000,INR,0,0,0,0,7080000,screenshot_only
 204,gateway,payglocal,,2025-12-21,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
 209,gateway,payglocal,Swati Malhotra,2025-06-23,13924000,INR,382910,68924,0,0,13472166,seen_by_gateway
 220,gateway,stripe,Swati Malhotra,2025-09-17,7500000,INR,225000,40500,0,0,7234500,in_bank
 225,gateway,stripe,Sanya Iyer,2026-04-27,2065000,INR,61950,11151,0,0,1991899,seen_by_gateway
 227,bank,neft,Neha Gupta,2025-05-30,4130000,INR,20650,3717,0,0,4105633,in_bank
-235,screenshot,,,2026-09-05,5900000,INR,0,0,0,0,5900000,screenshot_only
+235,bank,,,2026-09-05,5900000,INR,0,0,0,0,5900000,screenshot_only
 238,gateway,stripe,Simran Rao,2026-07-08,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
 245,gateway,stripe,,2025-11-01,11800000,INR,354000,63720,0,0,11382280,seen_by_gateway
 246,bank,upi,Jatin Kapoor,2025-10-16,15000000,INR,75000,13500,0,0,14911500,in_bank
@@ -81,11 +81,11 @@ id,source,method,payer_name,date,amount_paid_paise,currency,gateway_fee_paise,gs
 292,gateway,stripe,Manish Joshi,2026-02-15,11800000,INR,354000,63720,0,0,11382280,in_bank
 293,gateway,stripe,Zara Chopra,2025-08-10,2065000,INR,61950,11151,0,0,1991899,seen_by_gateway
 296,gateway,stripe,,2026-03-05,4130000,INR,123900,22302,0,0,3983798,seen_by_gateway
-297,screenshot,,Sakshi Bansal,2025-06-05,11800000,INR,0,0,0,0,11800000,screenshot_only
+297,bank,,Sakshi Bansal,2025-06-05,11800000,INR,0,0,0,0,11800000,screenshot_only
 298,gateway,stripe,,2026-07-07,5900000,INR,177000,31860,0,0,5691140,seen_by_gateway
 303,bank,neft,,2026-02-12,4130000,INR,20650,3717,0,0,4105633,in_bank
 305,bank,neft,,2026-07-18,5900000,INR,29500,5310,0,0,5865190,in_bank
-314,screenshot,,Lakshmi Chatterjee,2026-09-30,4130000,INR,0,0,0,0,4130000,screenshot_only
+314,bank,,Lakshmi Chatterjee,2026-09-30,4130000,INR,0,0,0,0,4130000,screenshot_only
 315,gateway,payglocal,,2025-09-05,2478000,INR,68145,12266,0,0,2397589,seen_by_gateway
 316,bank,neft,Priya Khanna,2026-09-18,6637500,INR,33188,5974,0,0,6598338,in_bank
 319,bank,neft,Sneha Malhotra,2025-09-19,12390000,INR,61950,11151,0,0,12316899,in_bank
@@ -100,7 +100,7 @@ id,source,method,payer_name,date,amount_paid_paise,currency,gateway_fee_paise,gs
 343,bank,neft,Simran Rao,2026-03-23,5900000,INR,29500,5310,0,0,5865190,in_bank
 346,bank,neft,,2025-09-13,5900000,INR,29500,5310,0,0,5865190,in_bank
 347,gateway,payglocal,Gauri Sharma,2026-09-13,5900000,INR,162250,29205,0,0,5708545,in_bank
-348,screenshot,,,2026-08-26,4130000,INR,0,0,0,0,4130000,screenshot_only
+348,bank,,,2026-08-26,4130000,INR,0,0,0,0,4130000,screenshot_only
 352,gateway,payglocal,Kiran Gupta,2025-10-04,4130000,INR,113575,20444,0,0,3995981,seen_by_gateway
 354,cash,cash,,2025-09-18,4130000,INR,0,0,0,0,4130000,screenshot_only
 357,gateway,stripe,,2025-12-29,11800000,INR,354000,63720,0,0,11382280,in_bank

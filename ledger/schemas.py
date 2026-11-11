@@ -44,7 +44,6 @@ class PaymentSource(str, enum.Enum):
     BANK = "bank"
     GATEWAY = "gateway"
     CASH = "cash"
-    SCREENSHOT = "screenshot"
 
 
 class PaymentMethod(str, enum.Enum):
