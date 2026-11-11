@@ -103,6 +103,35 @@ def list_queue(conn=Depends(get_conn), user: User = Depends(current_user)):
     }
 
 
+@router.post("/from-payment/{payment_id}")
+def create_review_from_payment(payment_id: int, conn=Depends(get_conn), user: User = Depends(current_user)):
+    """Get or create a pending_review match_result for an unmatched payment.
+
+    Returns the match_id so the frontend can navigate to /review?id=<match_id>.
+    """
+    # Check if payment exists
+    pay = conn.execute("SELECT id FROM payment_in WHERE id = ?", (payment_id,)).fetchone()
+    if pay is None:
+        raise not_found("Payment")
+    # Check if a match_result already exists
+    existing = conn.execute(
+        "SELECT id, status FROM match_result WHERE payment_id = ?", (payment_id,)
+    ).fetchone()
+    if existing:
+        return {"match_id": existing["id"], "status": existing["status"], "created": False}
+    # Create a blank pending_review match_result with no suggestion
+    cur = conn.execute(
+        "INSERT INTO match_result (payment_id, allocations, confidence, reason, method, status) "
+        "VALUES (?, '[]', 0.0, 'manual_review_requested', 'human', 'pending_review')",
+        (payment_id,),
+    )
+    match_id = cur.lastrowid
+    log_audit(conn, user.audit_actor, "create_review", f"match:{match_id}",
+              None, json.dumps({"payment_id": payment_id, "status": "pending_review"}))
+    conn.commit()
+    return {"match_id": match_id, "status": "pending_review", "created": True}
+
+
 @router.get("/{match_id}/search-students")
 def search_students(match_id: int, q: str = "", conn=Depends(get_conn), user: User = Depends(current_user)):
     """Search for students to manually assign a payment to."""

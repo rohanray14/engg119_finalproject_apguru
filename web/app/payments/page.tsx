@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatMoneyCompact, formatDate } from "@/lib/format";
@@ -170,6 +171,7 @@ function exportCSV(items: PaymentRow[]) {
 }
 
 export default function PaymentsPage() {
+  const router = useRouter();
   const [source, setSource] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [match, setMatch] = useState("");
@@ -207,6 +209,15 @@ export default function PaymentsPage() {
 
   function clearAll() {
     setSource(""); setConfirmation(""); setMatch(""); setSearchInput(""); setSearch(""); setMonth(""); setPage(0);
+  }
+
+  async function sendToReview(paymentId: number) {
+    try {
+      const res = await apiFetch<{ match_id: number }>(`/review/from-payment/${paymentId}`, { method: "POST" });
+      router.push(`/review?id=${res.match_id}`);
+    } catch {
+      router.push("/review");
+    }
   }
 
   function toggleSort(key: SortKey) {
@@ -473,7 +484,10 @@ export default function PaymentsPage() {
                               {r.payer_name}
                             </Link>
                           ) : (
-                            <span>{r.payer_name}</span>
+                            <button onClick={() => sendToReview(r.id)}
+                              className="hover:underline text-left" style={{ color: "var(--text)" }}>
+                              {r.payer_name}
+                            </button>
                           )
                         ) : <span style={{ color: "var(--warning)", fontWeight: "normal" }}>(no payer name)</span>}
                       </td>
@@ -508,14 +522,15 @@ export default function PaymentsPage() {
                             )}
                           </span>
                         ) : r.match_status === "unmatched" ? (
-                          <Link href="/review"
-                            className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 inline-block"
+                          <button
+                            onClick={() => sendToReview(r.id)}
+                            className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 cursor-pointer"
                             style={{
                               backgroundColor: matchBadge.unmatched.bg,
                               color: matchBadge.unmatched.text,
                             }}>
-                            unmatched →
-                          </Link>
+                            unmatched → match
+                          </button>
                         ) : (
                           <span className="px-2 py-0.5 rounded text-xs font-medium"
                             style={{
