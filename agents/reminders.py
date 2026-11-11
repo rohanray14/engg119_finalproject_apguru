@@ -72,36 +72,42 @@ def generate_reminders(
         # Count existing reminders for this installment
         existing_count = existing.get(inst_id, 0)
 
+        # Pick the single most relevant reminder type: the latest schedule
+        # entry whose send_date has arrived.  An installment that is 7+ days
+        # overdue should only appear as "overdue", not also as "pre_due" and
+        # "on_due".
+        best = None
         for offset_days, rtype in SCHEDULE:
             send_date = due + timedelta(days=offset_days)
+            if send_date <= as_of:
+                best = (offset_days, rtype, send_date)
 
-            # Only generate if send_date is on or before as_of
-            if send_date > as_of:
-                continue
+        if best is None:
+            continue  # none of the schedule entries apply yet
 
-            # Skip if we'd exceed the schedule position
-            reminder_index = SCHEDULE.index((offset_days, rtype))
-            if reminder_index < existing_count:
-                continue  # already sent
+        offset_days, rtype, send_date = best
+        reminder_index = SCHEDULE.index((offset_days, rtype))
+        if reminder_index < existing_count:
+            continue  # already sent
 
-            needs_approval = (existing_count + 1) >= 3  # 3rd+ needs approval
-            message = _compose_message(
-                student_name, program, amount, currency, due, rtype,
-            )
+        needs_approval = (existing_count + 1) >= 3  # 3rd+ needs approval
+        message = _compose_message(
+            student_name, program, amount, currency, due, rtype,
+        )
 
-            reminders.append(Reminder(
-                installment_id=inst_id,
-                student_id=student_id,
-                student_name=student_name,
-                enrollment_program=program,
-                amount_due_paise=amount,
-                currency=currency,
-                due_date=due,
-                reminder_type=rtype,
-                scheduled_for=send_date,
-                message=message,
-                needs_approval=needs_approval,
-            ))
+        reminders.append(Reminder(
+            installment_id=inst_id,
+            student_id=student_id,
+            student_name=student_name,
+            enrollment_program=program,
+            amount_due_paise=amount,
+            currency=currency,
+            due_date=due,
+            reminder_type=rtype,
+            scheduled_for=send_date,
+            message=message,
+            needs_approval=needs_approval,
+        ))
 
     return reminders
 
