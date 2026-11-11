@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate, displayLocation } from "@/lib/format";
@@ -134,12 +135,20 @@ export default function StudentProfile({ studentId, onBack }: Props) {
           <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Paid</div>
           <div className="text-xl font-bold mt-1" style={{ color: "var(--accent)" }}>{formatMoney(totalPaid, mainCurrency)}</div>
         </div>
-        <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Outstanding</div>
-          <div className={`text-xl font-bold mt-1 ${totalOwed > 0 ? "text-red-600" : "text-green-600"}`}>
-            {totalOwed > 0 ? formatMoney(totalOwed, mainCurrency) : "Paid up"}
+        {totalOwed > 0 ? (
+          <Link href={`/reminders?student=${encodeURIComponent(student.name)}`}
+            className="bg-white rounded-lg border p-4 hover:border-red-300 transition-colors block"
+            style={{ borderColor: "var(--card-border)" }}>
+            <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Outstanding</div>
+            <div className="text-xl font-bold mt-1 text-red-600">{formatMoney(totalOwed, mainCurrency)}</div>
+            <div className="text-xs mt-1" style={{ color: "var(--accent)" }}>Send reminder →</div>
+          </Link>
+        ) : (
+          <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
+            <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Outstanding</div>
+            <div className="text-xl font-bold mt-1 text-green-600">Paid up</div>
           </div>
-        </div>
+        )}
         <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
           <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Next due</div>
           <div className="text-xl font-bold text-gray-900 mt-1">

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate } from "@/lib/format";
@@ -28,12 +29,26 @@ const typeBadge: Record<string, { bg: string; text: string; label: string }> = {
   overdue: { bg: "#fee2e2", text: "#991b1b", label: "Overdue" },
 };
 
-export default function RemindersPage() {
+export default function RemindersPageWrapper() {
+  return (
+    <Suspense fallback={<div className="p-8"><div className="animate-pulse h-64 bg-gray-200 rounded" /></div>}>
+      <RemindersPage />
+    </Suspense>
+  );
+}
+
+function RemindersPage() {
   const { user } = useAppUser();
   const canApprove = user?.can_approve ?? false;
+  const urlParams = useSearchParams();
   const [typeFilter, setTypeFilter] = useState("");
   const [approvalFilter, setApprovalFilter] = useState("");
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const q = urlParams.get("student");
+    if (q) setSearch(q);
+  }, [urlParams]);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [sentMessages, setSentMessages] = useState<Set<string>>(new Set());
 
