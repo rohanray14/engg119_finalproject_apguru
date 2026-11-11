@@ -44,6 +44,7 @@ function ReviewContent() {
   const [reviewedCount, setReviewedCount] = useState(0);
   const [filter, setFilter] = useState<FilterKey>("all");
   const [listSearch, setListSearch] = useState("");
+  const [skippedIds, setSkippedIds] = useState<Set<number>>(new Set());
 
   // Read ?id= from URL (e.g. linked from Payments page)
   useEffect(() => {
@@ -91,10 +92,35 @@ function ReviewContent() {
 
   const handleSkip = useCallback(() => {
     if (!activeId || filteredItems.length === 0) return;
+    setSkippedIds((prev) => new Set(prev).add(activeId));
     const idx = filteredItems.findIndex((i) => i.match_id === activeId);
     const next = filteredItems[idx + 1] ?? filteredItems[0];
     if (next && next.match_id !== activeId) setSelectedId(next.match_id);
   }, [activeId, filteredItems]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      // Don't capture when typing in inputs
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
+      if (e.key === "ArrowDown" || e.key === "j") {
+        e.preventDefault();
+        const idx = filteredItems.findIndex((i) => i.match_id === activeId);
+        const next = filteredItems[idx + 1];
+        if (next) setSelectedId(next.match_id);
+      } else if (e.key === "ArrowUp" || e.key === "k") {
+        e.preventDefault();
+        const idx = filteredItems.findIndex((i) => i.match_id === activeId);
+        const prev = filteredItems[idx - 1];
+        if (prev) setSelectedId(prev.match_id);
+      } else if (e.key === "s") {
+        e.preventDefault();
+        handleSkip();
+      }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [activeId, filteredItems, handleSkip]);
 
   // Queue position
   const activeIndex = filteredItems.findIndex((i) => i.match_id === activeId);
@@ -179,26 +205,18 @@ function ReviewContent() {
               />
             </div>
             <div className="max-h-[calc(100vh-260px)] overflow-y-auto">
-              <div className="space-y-0">
-                {filteredItems.map((item) => {
-                  const active = item.match_id === activeId;
-                  return (
-                    <div key={item.match_id}
-                      ref={active ? (el) => { el?.scrollIntoView({ block: "nearest", behavior: "smooth" }); } : undefined}>
-                      <ReviewList
-                        items={[item]}
-                        selectedId={active ? item.match_id : null}
-                        onSelect={setSelectedId}
-                      />
-                    </div>
-                  );
-                })}
-                {filteredItems.length === 0 && (
-                  <div className="text-sm text-center py-8" style={{ color: "var(--text-secondary)" }}>
-                    No items match this filter.
-                  </div>
-                )}
-              </div>
+              {filteredItems.length === 0 ? (
+                <div className="text-sm text-center py-8" style={{ color: "var(--text-secondary)" }}>
+                  No items match this filter.
+                </div>
+              ) : (
+                <ReviewList
+                  items={filteredItems}
+                  selectedId={activeId}
+                  onSelect={setSelectedId}
+                  skippedIds={skippedIds}
+                />
+              )}
             </div>
           </div>
 

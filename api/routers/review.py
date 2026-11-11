@@ -126,11 +126,14 @@ def get_item(match_id: int, conn=Depends(get_conn), user: User = Depends(current
     row = _match_row(conn, match_id)
     allocs = parse_allocations(row["allocations"])
     suggested = _installments(conn, [int(a["installment_id"]) for a in allocs])
+    amt = row["amount_paid_paise"]
+    lo = int(amt * 0.8)
+    hi = int(amt * 1.2)
     others = [dict(r) for r in conn.execute(
         f"SELECT {INST_COLS} {INST_JOIN} "
-        "WHERE i.amount_due_paise = ? AND i.currency = ? AND i.status != 'paid' "
-        "ORDER BY i.due_date LIMIT 20",
-        (row["amount_paid_paise"], row["currency"]),
+        "WHERE i.amount_due_paise BETWEEN ? AND ? AND i.currency = ? AND i.status != 'paid' "
+        "ORDER BY ABS(i.amount_due_paise - ?) ASC, i.due_date LIMIT 20",
+        (lo, hi, row["currency"], amt),
     ).fetchall()]
     remaining = remaining_by_installment(conn)
     for inst in suggested + others:

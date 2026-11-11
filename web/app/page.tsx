@@ -80,19 +80,16 @@ export default function TodayPage() {
   const momChange = pctChange(dash.month.received_paise, dash.month.received_last_month_paise);
   const collectionRate = dash.month.collection_rate_pct;
 
-  // Collections vs expected chart — last 12 months max
-  const allMonths = (dash.months ?? []).map((m) => ({
-    month: monthLabel(m.month),
-    expected: m.expected_paise / 100,
-    collected: m.collected_paise / 100,
-  }));
-  const monthsData = allMonths.slice(-12);
+  // Collection rate % per month — last 12 months
+  const rateData = (dash.months ?? []).slice(-12).map((m) => {
+    const rate = m.expected_paise > 0 ? Math.round((m.collected_paise / m.expected_paise) * 100) : 0;
+    return { month: monthLabel(m.month), rate };
+  });
 
-  // Forecast chart
+  // Forecast — single bar per week showing what's due
   const forecastData = (dash.forecast ?? []).map((w) => ({
     week: weekLabel(w.week_start),
-    scheduled: w.scheduled_paise,
-    likely: w.likely_paise,
+    due: w.scheduled_paise,
   }));
 
   const hasOwing = dash.top_owing.length > 0;

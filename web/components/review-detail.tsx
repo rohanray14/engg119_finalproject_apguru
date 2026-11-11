@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import type { ReviewDetail as ReviewDetailType, Installment } from "@/lib/types";
 import { formatMoney, formatDate } from "@/lib/format";
 import { apiFetch } from "@/lib/api";
@@ -22,7 +23,6 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
   const [acting, setActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState<string | null>(null); // "approved" | "rejected" | "assigned"
-  const [approveOpen, setApproveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectNote, setRejectNote] = useState("");
   const [confirmAssign, setConfirmAssign] = useState<Installment | null>(null);
@@ -51,7 +51,6 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
     setSearchResults([]);
     setError(null);
     setShowSuccess(null);
-    setApproveOpen(false);
     setRejectOpen(false);
     setRejectNote("");
     setConfirmAssign(null);
@@ -224,9 +223,10 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
           {suggested.map((inst) => (
             <div key={inst.installment_id}>
               <div className="text-lg font-bold" style={{ color: "var(--text)" }}>
-                {inst.student_name} — {inst.program}, {inst.fee_model === "package"
-                  ? `installment`
-                  : "top-up"}
+                <Link href={`/students?id=${inst.student_id}`} className="hover:underline" style={{ color: "var(--accent)" }}>
+                  {inst.student_name}
+                </Link>
+                {" — "}{inst.program}
               </div>
               {/* Amount comparison */}
               <div className="mt-2 text-sm" style={{ color: "var(--text)" }}>
@@ -254,15 +254,15 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
           {canApprove && detail.status === "pending_review" && (
             <div className="flex gap-3 mt-4 pt-4 border-t" style={{ borderColor: "var(--card-border)" }}>
               <button
-                onClick={() => { setApproveOpen(true); setRejectOpen(false); }}
+                onClick={handleApprove}
                 disabled={acting}
                 className="px-5 py-2.5 text-sm font-medium text-white rounded-md disabled:opacity-50"
-                style={{ backgroundColor: approveOpen ? "var(--accent)" : "var(--accent)", opacity: approveOpen ? 0.7 : 1 }}
+                style={{ backgroundColor: "var(--accent)" }}
               >
-                Approve: {suggested[0]?.student_name || "suggestion"}
+                {acting ? "Approving..." : `Approve → ${suggested[0]?.student_name}`}
               </button>
               <button
-                onClick={() => { setRejectOpen(!rejectOpen); setApproveOpen(false); }}
+                onClick={() => setRejectOpen(!rejectOpen)}
                 className="px-5 py-2.5 text-sm font-medium border rounded-md"
                 style={{ color: "var(--text)", borderColor: "var(--border)" }}
               >
@@ -274,7 +274,7 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
                   className="px-5 py-2.5 text-sm font-medium border rounded-md ml-auto"
                   style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)" }}
                 >
-                  Skip for now
+                  Skip (S)
                 </button>
               )}
             </div>
@@ -307,38 +307,6 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
               )}
             </div>
           )}
-        </div>
-      )}
-
-      {/* Approve confirmation banner */}
-      {approveOpen && suggested.length > 0 && (
-        <div className="rounded-lg border p-4" style={{ backgroundColor: "rgba(0,220,130,0.08)", borderColor: "rgba(0,220,130,0.3)" }}>
-          <div className="text-sm font-medium mb-2" style={{ color: "var(--accent)" }}>
-            Confirm: approve this match?
-          </div>
-          <p className="text-xs mb-3" style={{ color: "var(--text-secondary)" }}>
-            {formatMoney(p.amount_paid_paise, p.currency)} will be linked to {suggested[0].student_name}&apos;s
-            {" "}{suggested[0].program} installment ({formatMoney(suggested[0].amount_due_paise, suggested[0].currency)} due
-            {suggested[0].due_date ? ` on ${formatDate(suggested[0].due_date)}` : ""}).
-            This updates the student&apos;s balance and credits their counselor&apos;s commission.
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={handleApprove}
-              disabled={acting}
-              className="px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50"
-              style={{ backgroundColor: "var(--accent)" }}
-            >
-              {acting ? "Approving..." : `Yes, approve for ${suggested[0].student_name}`}
-            </button>
-            <button
-              onClick={() => setApproveOpen(false)}
-              className="px-4 py-2 text-sm font-medium border rounded-md"
-              style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}
-            >
-              Cancel
-            </button>
-          </div>
         </div>
       )}
 
