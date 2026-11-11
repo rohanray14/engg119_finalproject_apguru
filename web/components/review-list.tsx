@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReviewItem } from "@/lib/types";
-import { formatMoney, formatDate, formatConfidence } from "@/lib/format";
+import { formatMoney, formatDate } from "@/lib/format";
 
 interface Props {
   items: ReviewItem[];
@@ -48,24 +48,15 @@ export default function ReviewList({ items, selectedId, onSelect }: Props) {
                 </div>
               )}
               <div className="flex items-center gap-1.5 mt-1 text-xs" style={{ color: "var(--text-secondary)" }}>
-                <span className="px-1.5 py-0.5 rounded font-medium" style={{
-                  backgroundColor: item.method === "ai" ? "rgba(139,92,246,0.15)" : "var(--surface-hover)",
-                  color: item.method === "ai" ? "#a78bfa" : "var(--text-secondary)",
-                  fontSize: "10px",
-                }}>{item.method === "ai" ? "AI" : "rules"}</span>
-                <span>·</span>
                 <span>{formatDate(item.payment.date)}</span>
-                <span>·</span>
-                {item.has_suggestion ? (
-                  <span className="px-1.5 py-0.5 rounded text-xs font-medium" style={{
-                    backgroundColor: item.confidence >= 0.85 ? "rgba(0,220,130,0.15)" : "rgba(255,176,32,0.15)",
-                    color: item.confidence >= 0.85 ? "var(--accent)" : "var(--warning)",
-                  }}>{item.confidence >= 0.85 ? "Strong" : "Weak"} · {formatConfidence(item.confidence)}</span>
-                ) : (
-                  <span className="px-1.5 py-0.5 rounded text-xs font-medium"
-                    style={{ backgroundColor: "var(--surface-hover)", color: "var(--text-secondary)" }}>
-                    no match
-                  </span>
+                {!item.has_suggestion && (
+                  <>
+                    <span>·</span>
+                    <span className="px-1.5 py-0.5 rounded text-xs font-medium"
+                      style={{ backgroundColor: "var(--surface-hover)", color: "var(--text-secondary)" }}>
+                      no match
+                    </span>
+                  </>
                 )}
               </div>
             </button>

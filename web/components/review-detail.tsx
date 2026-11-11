@@ -15,61 +15,6 @@ interface Props {
 }
 
 // ---------------------------------------------------------------------------
-// Reason tags: parse raw reason codes into visual tags
-// ---------------------------------------------------------------------------
-
-type TagColor = "green" | "amber" | "red" | "gray" | "blue";
-
-function parseReasonTags(reason: string | null): { label: string; color: TagColor }[] {
-  if (!reason) return [];
-  const tags: { label: string; color: TagColor }[] = [];
-
-  if (reason.includes("exact_amount") || /^amount\+/.test(reason)) {
-    tags.push({ label: "Exact amount", color: "green" });
-  }
-  if (reason.includes("remaining_")) {
-    tags.push({ label: "Remaining balance", color: "blue" });
-  }
-
-  const nm = reason.match(/(?:^|[+])name\(([0-9.]+)\)/);
-  if (nm) {
-    const score = Math.round(parseFloat(nm[1]));
-    tags.push({ label: `Name ${score}%`, color: score >= 80 ? "green" : "amber" });
-  }
-  const wn = reason.match(/weak_name\(([0-9.]+)\)/);
-  if (wn) {
-    const score = Math.round(parseFloat(wn[1]));
-    tags.push({ label: `Weak name ${score}%`, color: "red" });
-  }
-
-  const gl = reason.match(/global\((\d+)\)/);
-  if (gl) {
-    const count = parseInt(gl[1]);
-    tags.push({ label: `${count} share amount`, color: count <= 5 ? "gray" : "amber" });
-  }
-  const st = reason.match(/students\((\d+)\)/);
-  if (st) {
-    const count = parseInt(st[1]);
-    tags.push({ label: `${count} students`, color: count <= 5 ? "gray" : "amber" });
-  }
-
-  if (reason.includes("fifo")) tags.push({ label: "FIFO", color: "gray" });
-  if (reason.includes("blank_payer")) tags.push({ label: "Blank payer", color: "amber" });
-  if (reason.includes("globally_unique")) tags.push({ label: "Unique amount", color: "green" });
-  if (reason.includes("same_student")) tags.push({ label: "Same student", color: "green" });
-
-  return tags;
-}
-
-const TAG_STYLES: Record<TagColor, { bg: string; text: string }> = {
-  green: { bg: "rgba(0,220,130,0.15)", text: "var(--accent)" },
-  amber: { bg: "rgba(255,176,32,0.15)", text: "var(--warning)" },
-  red: { bg: "rgba(255,77,77,0.15)", text: "var(--danger)" },
-  gray: { bg: "var(--surface-hover)", text: "var(--text-secondary)" },
-  blue: { bg: "rgba(77,158,255,0.15)", text: "var(--info)" },
-};
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -98,8 +43,6 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
     seenIds.add(c.installment_id);
     return true;
   });
-
-  const reasonTags = parseReasonTags(detail.reason);
 
   // Reset search when detail changes
   useEffect(() => {
@@ -271,16 +214,9 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
       {/* AI suggestion */}
       {detail.has_suggestion && suggested.length > 0 ? (
         <div className="rounded-lg border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
-          <div className="flex items-center justify-between mb-3">
+          <div className="mb-3">
             <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--accent)" }}>
-              Matching agent suggests
-            </span>
-            <span className="text-xs px-2 py-1 rounded font-medium"
-              style={{
-                backgroundColor: detail.confidence >= 0.85 ? "rgba(0,220,130,0.15)" : "rgba(255,176,32,0.15)",
-                color: detail.confidence >= 0.85 ? "var(--accent)" : "var(--warning)",
-              }}>
-              {detail.confidence >= 0.85 ? "Strong match" : "Weak match"} · {formatConfidence(detail.confidence)}
+              Suggested match
             </span>
           </div>
           {suggested.map((inst) => (
@@ -306,27 +242,12 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
                   </span>
                 )}
               </div>
-              {/* Reason tags */}
-              {reasonTags.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {reasonTags.map((tag, i) => (
-                    <span key={i} className="text-xs px-2 py-0.5 rounded-full font-medium"
-                      style={{ backgroundColor: TAG_STYLES[tag.color].bg, color: TAG_STYLES[tag.color].text }}>
-                      {tag.label}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <div className="mt-3 text-xs" style={{ color: "var(--text-secondary)" }}>
+              <div className="mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
                 Remaining: {formatMoney(inst.remaining_paise, inst.currency)}
                 {inst.due_date && ` · Due ${formatDate(inst.due_date)}`}
               </div>
             </div>
           ))}
-          <div className="mt-3 text-xs" style={{ color: "var(--text-tertiary)" }}>
-            The amount check and the balance are calculated by the rules engine, not the AI.
-          </div>
-
           {/* Action buttons */}
           {canApprove && detail.status === "pending_review" && (
             <div className="flex gap-3 mt-4 pt-4 border-t" style={{ borderColor: "var(--card-border)" }}>
