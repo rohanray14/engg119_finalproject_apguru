@@ -408,7 +408,7 @@ export default function PaymentsPage() {
               </Link>
             )}
             {stats.unmatchedCount > 0 && (
-              <button onClick={() => { setMatch(match === "unmatched" ? "" : "unmatched"); setPage(0); }}
+              <button onClick={() => { setMatch(match === "unmatched" ? "" : "unmatched"); setConfirmation(""); setPage(0); }}
                 className={`text-left rounded-xl border px-4 py-3 transition-colors ${match === "unmatched" ? "ring-2" : ""}`}
                 style={{ borderColor: "var(--border)" }}>
                 <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Unmatched</div>
@@ -417,7 +417,7 @@ export default function PaymentsPage() {
               </button>
             )}
             {stats.screenshotCount > 0 && (
-              <button onClick={() => { setConfirmation(confirmation === "screenshot_only" ? "" : "screenshot_only"); setPage(0); }}
+              <button onClick={() => { setConfirmation(confirmation === "screenshot_only" ? "" : "screenshot_only"); setMatch(""); setPage(0); }}
                 className={`text-left rounded-xl border px-4 py-3 transition-colors ${confirmation === "screenshot_only" ? "ring-2" : ""}`}
                 style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", borderColor: "rgba(255, 77, 77, 0.3)" }}>
                 <div className="text-xs" style={{ color: "var(--danger)" }}>Unverified</div>
