@@ -145,7 +145,7 @@ export default function AskPanel() {
                         {msg.transactions.map((row, j) => (
                           <tr key={j}>
                             {Object.values(row).map((v, k) => (
-                              <td key={k} className="px-2 py-1" style={{ color: "var(--text)" }}>{String(v ?? "\u2014")}</td>
+                              <td key={k} className="px-2 py-1" style={{ color: "var(--text)" }}>{String(v ?? "—")}</td>
                             ))}
                           </tr>
                         ))}

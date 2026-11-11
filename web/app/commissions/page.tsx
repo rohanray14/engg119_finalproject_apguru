@@ -123,7 +123,7 @@ function CommissionsContent() {
             className="px-5 py-2.5 text-sm font-medium text-white rounded-md disabled:opacity-50"
             style={{ backgroundColor: "var(--accent)" }}
           >
-            {acting ? "Approving..." : `Approve payout \u00b7 ${formatMoney(inr.payable_paise, "INR")}`}
+            {acting ? "Approving..." : `Approve payout · ${formatMoney(inr.payable_paise, "INR")}`}
           </button>
         )}
       </div>
@@ -134,9 +134,9 @@ function CommissionsContent() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Commission earned" value={inr ? formatMoney(inr.earned_paise, "INR") : "\u2014"} />
-        <StatCard label="TDS withheld (2%)" value={inr ? formatMoney(inr.tds_paise, "INR") : "\u2014"} />
-        <StatCard label="Net to pay" value={inr ? formatMoney(inr.net_paise, "INR") : "\u2014"} />
+        <StatCard label="Commission earned" value={inr ? formatMoney(inr.earned_paise, "INR") : "—"} />
+        <StatCard label="TDS withheld (2%)" value={inr ? formatMoney(inr.tds_paise, "INR") : "—"} />
+        <StatCard label="Net to pay" value={inr ? formatMoney(inr.net_paise, "INR") : "—"} />
         <StatCard
           label="Needs rate set"
           value={String(data.needs_rate)}
@@ -169,11 +169,11 @@ function CommissionsContent() {
                   <td className="py-3 font-medium cursor-pointer hover:underline" style={{ color: "var(--accent)" }}
                     onClick={() => setSelectedId(c.id)}>{c.name}</td>
                   <td className="py-3 italic max-w-[300px]" style={{ color: "var(--text-secondary)" }}>
-                    {c.terms_text ? `"${c.terms_text}"` : "\u2014"}
+                    {c.terms_text ? `"${c.terms_text}"` : "—"}
                   </td>
                   <td className="py-3 text-sm" style={{ color: "var(--text)" }}>{ruleText(c)}</td>
-                  <td className="py-3 text-right">{amt && amt.earned_paise > 0 ? formatMoney(amt.earned_paise, "INR") : "\u2014"}</td>
-                  <td className="py-3 text-right font-medium">{amt && amt.net_paise > 0 ? formatMoney(amt.net_paise, "INR") : "\u2014"}</td>
+                  <td className="py-3 text-right">{amt && amt.earned_paise > 0 ? formatMoney(amt.earned_paise, "INR") : "—"}</td>
+                  <td className="py-3 text-right font-medium">{amt && amt.net_paise > 0 ? formatMoney(amt.net_paise, "INR") : "—"}</td>
                   <td className="py-3">
                     {c.status === "ready" && (
                       <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ backgroundColor: "rgba(0, 220, 130, 0.15)", color: "var(--accent)" }}>Ready</span>
@@ -190,7 +190,7 @@ function CommissionsContent() {
                     {c.status === "needs_rate" && !canApprove && (
                       <span className="text-xs" style={{ color: "var(--warning)" }}>Needs rate</span>
                     )}
-                    {c.status === "no_fees" && <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>\u2014</span>}
+                    {c.status === "no_fees" && <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>—</span>}
                   </td>
                 </tr>
               );

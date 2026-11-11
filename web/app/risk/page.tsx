@@ -112,7 +112,7 @@ export default function RiskPage() {
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Risk flags</h1>
-      <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Issues detected automatically \u2014 each with a next step.</p>
+      <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Issues detected automatically — each with a next step.</p>
 
       {/* Severity counts */}
       {data && (
@@ -133,7 +133,7 @@ export default function RiskPage() {
             onClick={() => setSeverity(severity === "medium" ? "" : "medium")}>
             <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Medium</div>
             <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data.counts.medium}</div>
-            <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>30\u201390 days, unmatched, oversized</div>
+            <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>30–90 days, unmatched, oversized</div>
           </div>
           <div className="rounded-xl border p-4 cursor-pointer"
             style={{ backgroundColor: "var(--surface)", borderColor: severity === "low" ? "var(--text)" : "var(--border)" }}
@@ -166,7 +166,7 @@ export default function RiskPage() {
           {actionSummary && actionSummary.overdueGroups.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-secondary)" }}>
-                Overdue installments \u2014 {actionSummary.overdueGroups.length} students
+                Overdue installments — {actionSummary.overdueGroups.length} students
               </h3>
               <div className="space-y-2">
                 {actionSummary.overdueGroups.map((g) => (
@@ -177,7 +177,7 @@ export default function RiskPage() {
                         <div>
                           <span className="font-medium" style={{ color: "var(--text)" }}>{g.student}</span>
                           <span className="ml-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-                            {g.flags.length} installment{g.flags.length > 1 ? "s" : ""} \u00b7 {formatMoney(g.totalPaise, g.currency)}
+                            {g.flags.length} installment{g.flags.length > 1 ? "s" : ""} · {formatMoney(g.totalPaise, g.currency)}
                           </span>
                         </div>
                       </div>
@@ -249,7 +249,7 @@ export default function RiskPage() {
             return [...byCategory.entries()].map(([cat, flags]) => (
               <div key={cat}>
                 <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-secondary)" }}>
-                  {categoryLabels[cat] ?? cat.replace(/_/g, " ")} \u2014 {flags.length} flag{flags.length > 1 ? "s" : ""}
+                  {categoryLabels[cat] ?? cat.replace(/_/g, " ")} — {flags.length} flag{flags.length > 1 ? "s" : ""}
                 </h3>
                 <div className="space-y-2">
                   {flags.map((f, i) => {
@@ -263,7 +263,7 @@ export default function RiskPage() {
                             <div className="text-sm" style={{ color: sev.text }}>{f.explanation}</div>
                             {f.amount_paise != null && (
                               <div className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
-                                {f.entity} \u00b7 {formatMoney(f.amount_paise, f.currency)}
+                                {f.entity} · {formatMoney(f.amount_paise, f.currency)}
                               </div>
                             )}
                           </div>

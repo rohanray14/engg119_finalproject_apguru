@@ -77,7 +77,7 @@ export default function MoneyOutPage() {
   if (isLoading) {
     return (
       <div className="p-8">
-        <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Money out</h1>
+        <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Expenses</h1>
         <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Where money is going, by category and month.</p>
         <div className="animate-pulse space-y-4">
           <div className="grid grid-cols-3 gap-3">{[...Array(3)].map((_, i) => <div key={i} className="h-24 rounded-lg" style={{ backgroundColor: "var(--surface)" }} />)}</div>
@@ -89,19 +89,19 @@ export default function MoneyOutPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Money out</h1>
+      <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Expenses</h1>
       <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Where money is going, by category and month.</p>
 
       {/* Row 1: Key metrics */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
         <div className="rounded-xl border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Total spent (all time)</div>
-          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data ? formatMoneyCompact(data.total_spent_paise, "INR") : "\u2014"}</div>
+          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data ? formatMoneyCompact(data.total_spent_paise, "INR") : "—"}</div>
           <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>{data?.total ?? 0} payments</div>
         </div>
         <div className="rounded-xl border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Avg monthly burn</div>
-          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data ? formatMoneyCompact(data.avg_monthly_burn_paise, "INR") : "\u2014"}</div>
+          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data ? formatMoneyCompact(data.avg_monthly_burn_paise, "INR") : "—"}</div>
           {prevMonthSpend > 0 && (
             <div className="text-xs font-medium" style={{ color: momPct > 0 ? "var(--danger)" : "var(--accent)" }}>
               {momPct > 0 ? "+" : ""}{momPct.toFixed(0)}% MoM

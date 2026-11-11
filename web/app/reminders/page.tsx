@@ -229,7 +229,7 @@ function RemindersPage() {
                             </a>
                           )}
                           {r.parent_email && (
-                            <a href={`mailto:${r.parent_email}?subject=Payment reminder \u2014 ${r.enrollment_program}&body=${encodeURIComponent(r.message)}`}
+                            <a href={`mailto:${r.parent_email}?subject=Payment reminder — ${r.enrollment_program}&body=${encodeURIComponent(r.message)}`}
                               className="text-xs px-2 py-0.5 rounded transition-colors whitespace-nowrap"
                               style={{ border: "1px solid rgba(77, 158, 255, 0.4)", color: "var(--info)" }}>
                               Email

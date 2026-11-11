@@ -42,10 +42,10 @@ const METHOD_LABELS: Record<string, string> = {
 
 function lakhs(paise: number): string {
   const amt = Math.abs(paise) / 100;
-  if (amt >= 10000000) return `\u20b9${(amt / 10000000).toFixed(1)}Cr`;
-  if (amt >= 100000) return `\u20b9${(amt / 100000).toFixed(1)}L`;
-  if (amt >= 1000) return `\u20b9${(amt / 1000).toFixed(0)}K`;
-  return `\u20b9${amt.toFixed(0)}`;
+  if (amt >= 10000000) return `₹${(amt / 10000000).toFixed(1)}Cr`;
+  if (amt >= 100000) return `₹${(amt / 100000).toFixed(1)}L`;
+  if (amt >= 1000) return `₹${(amt / 1000).toFixed(0)}K`;
+  return `₹${amt.toFixed(0)}`;
 }
 
 function monthLabel(iso: string): string {
@@ -160,7 +160,7 @@ export default function InsightsPage() {
         <div className="rounded-xl border p-5 flex flex-col justify-between" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-tertiary)" }}>Avg per student</div>
           <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>
-            {totalStudents > 0 ? formatMoneyCompact(Math.round(duePaise / totalStudents), "INR") : "\u2014"}
+            {totalStudents > 0 ? formatMoneyCompact(Math.round(duePaise / totalStudents), "INR") : "—"}
           </div>
           <div className="text-xs" style={{ color: "var(--text-secondary)" }}>total fee value</div>
         </div>
@@ -174,7 +174,7 @@ export default function InsightsPage() {
             <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Revenue received per month (matched payments only)</p>
           </div>
           <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
-            {by_month.length} months \u00b7 {by_month.reduce((s, r) => s + r.payments, 0)} payments
+            {by_month.length} months · {by_month.reduce((s, r) => s + r.payments, 0)} payments
           </div>
         </div>
         <ResponsiveContainer width="100%" height={240}>
@@ -334,7 +334,7 @@ export default function InsightsPage() {
                   <div className="flex items-center gap-3">
                     <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{r.payments} txn</span>
                     <span className="text-sm font-medium w-16 text-right" style={{ color: "var(--text)" }}>
-                      {totalMethodPaise > 0 ? `${Math.round((r.value / totalMethodPaise) * 100)}%` : "\u2014"}
+                      {totalMethodPaise > 0 ? `${Math.round((r.value / totalMethodPaise) * 100)}%` : "—"}
                     </span>
                   </div>
                 </div>
@@ -368,7 +368,7 @@ export default function InsightsPage() {
                       }} />
                   </div>
                   <div className="flex justify-between text-xs" style={{ color: "var(--text-secondary)" }}>
-                    <span>{r.students} students \u00b7 {r.enrollments} enrollments</span>
+                    <span>{r.students} students · {r.enrollments} enrollments</span>
                     <span className="font-medium" style={{
                       color: pctCollected >= 80 ? "var(--accent)" : pctCollected >= 50 ? "var(--warning)" : "var(--danger)",
                     }}>{pctCollected}% collected</span>

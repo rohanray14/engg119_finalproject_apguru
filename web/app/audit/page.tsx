@@ -107,10 +107,10 @@ export default function AuditPage() {
                     <td className="px-4 py-2.5 font-medium">{e.action.replace(/_/g, " ")}</td>
                     <td className="px-4 py-2.5">{e.entity}</td>
                     <td className="px-4 py-2.5 text-xs max-w-[200px] truncate" style={{ color: "var(--text-secondary)" }} title={e.old_value || ""}>
-                      {e.old_value || "\u2014"}
+                      {e.old_value || "—"}
                     </td>
                     <td className="px-4 py-2.5 text-xs max-w-[200px] truncate" style={{ color: "var(--text-secondary)" }} title={e.new_value || ""}>
-                      {e.new_value || "\u2014"}
+                      {e.new_value || "—"}
                     </td>
                   </tr>
                 ))}

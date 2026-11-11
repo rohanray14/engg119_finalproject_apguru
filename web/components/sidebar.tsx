@@ -47,8 +47,8 @@ export default function Sidebar() {
     {
       heading: "Money out",
       items: [
+        { href: "/money-out", label: "Expenses" },
         { href: "/commissions", label: "Commissions" },
-        { href: "/money-out", label: "Money Out" },
       ],
     },
     {

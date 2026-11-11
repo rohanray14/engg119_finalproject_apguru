@@ -37,9 +37,9 @@ interface PaymentsResponse {
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
 const confirmBadge: Record<string, { bg: string; text: string; tip: string }> = {
-  in_bank: { bg: "rgba(0, 220, 130, 0.15)", text: "var(--accent)", tip: "Verified against bank statement \u2014 money is in the account" },
+  in_bank: { bg: "rgba(0, 220, 130, 0.15)", text: "var(--accent)", tip: "Verified against bank statement — money is in the account" },
   seen_by_gateway: { bg: "rgba(255, 176, 32, 0.15)", text: "var(--warning)", tip: "Gateway (Stripe/Razorpay/PayGlocal) confirms the payment, but not yet reconciled with bank" },
-  screenshot_only: { bg: "rgba(255, 77, 77, 0.15)", text: "var(--danger)", tip: "Only evidence is a screenshot \u2014 not verified by bank or gateway" },
+  screenshot_only: { bg: "rgba(255, 77, 77, 0.15)", text: "var(--danger)", tip: "Only evidence is a screenshot — not verified by bank or gateway" },
 };
 
 const matchBadge: Record<string, { bg: string; text: string }> = {
@@ -327,7 +327,7 @@ export default function PaymentsPage() {
               className="w-full text-sm rounded-md px-3 py-2"
               style={{ backgroundColor: "var(--surface-hover)", border: "1px solid var(--border)", color: "var(--text)" }}>
               <option value="">All currencies</option>
-              <option value="INR">INR (\u20b9)</option>
+              <option value="INR">INR (₹)</option>
             </select>
           </div>
           <div>
@@ -404,7 +404,7 @@ export default function PaymentsPage() {
                 style={{ backgroundColor: "rgba(255, 176, 32, 0.1)", borderColor: "rgba(255, 176, 32, 0.3)" }}>
                 <div className="text-xs" style={{ color: "var(--warning)" }}>Needs review</div>
                 <div className="text-lg font-bold" style={{ color: "var(--warning)" }}>{stats.reviewCount}</div>
-                <div className="text-xs" style={{ color: "var(--warning)", opacity: 0.8 }}>waiting for you \u2192</div>
+                <div className="text-xs" style={{ color: "var(--warning)", opacity: 0.8 }}>waiting for you →</div>
               </Link>
             )}
             {stats.unmatchedCount > 0 && (
@@ -413,7 +413,7 @@ export default function PaymentsPage() {
                 style={{ borderColor: "var(--border)" }}>
                 <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Unmatched</div>
                 <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{stats.unmatchedCount}</div>
-                <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>{stats.blankCount > 0 ? `${stats.blankCount} with no payer name` : "no student linked"} \u2192</div>
+                <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>{stats.blankCount > 0 ? `${stats.blankCount} with no payer name` : "no student linked"} →</div>
               </button>
             )}
             {stats.screenshotCount > 0 && (
@@ -422,7 +422,7 @@ export default function PaymentsPage() {
                 style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", borderColor: "rgba(255, 77, 77, 0.3)" }}>
                 <div className="text-xs" style={{ color: "var(--danger)" }}>Unverified</div>
                 <div className="text-lg font-bold" style={{ color: "var(--danger)" }}>{stats.screenshotCount}</div>
-                <div className="text-xs" style={{ color: "var(--danger)", opacity: 0.8 }}>screenshot only \u2014 not confirmed \u2192</div>
+                <div className="text-xs" style={{ color: "var(--danger)", opacity: 0.8 }}>screenshot only — not confirmed →</div>
               </button>
             )}
           </div>
@@ -431,7 +431,7 @@ export default function PaymentsPage() {
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               {sorted.length} payments{activeFilters > 0 ? " (filtered)" : ""}
-              {totalPages > 1 && ` \u00b7 page ${page + 1} of ${totalPages}`}
+              {totalPages > 1 && ` · page ${page + 1} of ${totalPages}`}
             </p>
             <div className="flex items-center gap-3">
               <button onClick={() => setShowDetails((v) => !v)}
@@ -476,7 +476,7 @@ export default function PaymentsPage() {
                   <SortHeader label="Payer" field="payer_name" />
                   <SortHeader label="Amount" field="amount_paid_paise" align="right" />
                   {showDetails && <th className="px-4 py-3 font-medium text-right">Deductions</th>}
-                  <SortHeader label="In Bank (\u20b9)" field="amount_in_bank_paise" align="right" />
+                  <SortHeader label="In Bank (₹)" field="amount_in_bank_paise" align="right" />
                   {showDetails && <th className="px-4 py-3 font-medium">Method</th>}
                   {showDetails && <th className="px-4 py-3 font-medium">Confirmation</th>}
                   <th className="px-4 py-3 font-medium">Match</th>
@@ -515,7 +515,7 @@ export default function PaymentsPage() {
                         </td>
                       )}
                       <td className="px-4 py-2.5 text-right whitespace-nowrap">
-                        {r.amount_in_bank_paise > 0 ? formatMoney(r.amount_in_bank_paise, "INR") : "\u2014"}
+                        {r.amount_in_bank_paise > 0 ? formatMoney(r.amount_in_bank_paise, "INR") : "—"}
                       </td>
                       {showDetails && <td className="px-4 py-2.5 text-xs">{friendlyMethod(r.method, r.source)}</td>}
                       {showDetails && (
@@ -532,7 +532,7 @@ export default function PaymentsPage() {
                                 backgroundColor: matchBadge[r.match_status]?.bg ?? matchBadge.auto.bg,
                                 color: matchBadge[r.match_status]?.text ?? matchBadge.auto.text,
                               }}>
-                              {r.matched_student_name ?? "Student"} \u2192
+                              {r.matched_student_name ?? "Student"} →
                             </Link>
                             {r.match_status === "pending_review" && (
                               <Link href={`/review?id=${r.match_id}`}
@@ -600,14 +600,14 @@ export default function PaymentsPage() {
           )}
 
           <p className="text-xs mt-3" style={{ color: "var(--text-tertiary)" }}>
-            &ldquo;In Bank&rdquo; shows the amount received after gateway fees, GST, and FX conversion \u2014 always in INR (\u20b9).
+            &ldquo;In Bank&rdquo; shows the amount received after gateway fees, GST, and FX conversion — always in INR (₹).
             Hover over deductions to see the breakdown.
           </p>
           {stats.blankCount > 0 && (
             <p className="text-xs mt-2" style={{ color: "var(--text-tertiary)" }}>
               {stats.blankCount} payment{stats.blankCount > 1 ? "s" : ""} show &ldquo;(blank)&rdquo; as the payer name.
               This happens when the bank statement or gateway report does not include the sender&rsquo;s
-              name \u2014 common with UPI, NEFT batch transfers, and some international gateways. These
+              name — common with UPI, NEFT batch transfers, and some international gateways. These
               payments need manual review to match them to a student.
             </p>
           )}

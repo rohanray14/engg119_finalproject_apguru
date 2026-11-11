@@ -106,7 +106,7 @@ function StudentsContent() {
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Students</h1>
-      <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>{data?.total ?? "\u2014"} students</p>
+      <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>{data?.total ?? "—"} students</p>
 
       <input
         type="text" placeholder="Search by name..." value={search}
@@ -141,9 +141,9 @@ function StudentsContent() {
                 <td className="px-4 py-2.5 text-right">
                   {s.owed.length > 0
                     ? s.owed.map((o) => formatMoney(o.amount_paise, o.currency)).join(", ")
-                    : "\u2014"}
+                    : "—"}
                 </td>
-                <td className="px-4 py-2.5">{s.next_due ? formatDate(s.next_due) : "\u2014"}</td>
+                <td className="px-4 py-2.5">{s.next_due ? formatDate(s.next_due) : "—"}</td>
                 <td className="px-4 py-2.5">
                   <span className="px-2 py-0.5 rounded text-xs font-medium" style={{
                     backgroundColor: s.status === "paid_up" ? "rgba(0, 220, 130, 0.15)" : "rgba(255, 176, 32, 0.15)",
