@@ -140,7 +140,7 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
     setTimeout(() => {
       setShowSuccess(null);
       onDecision();
-    }, 700);
+    }, 1500);
   }
 
   async function handleApprove() {

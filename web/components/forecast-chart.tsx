@@ -36,8 +36,8 @@ export default function ForecastChart({ data }: { data: ForecastWeek[] }) {
             labelStyle={{ fontWeight: 600 }}
           />
           <Legend iconType="square" wrapperStyle={{ fontSize: 12 }} />
-          <Bar dataKey="scheduled" name="Scheduled and likely" fill="#2d6a5e" radius={[3, 3, 0, 0]} />
-          <Bar dataKey="likely" name="Less certain" fill="#8fbdb5" radius={[3, 3, 0, 0]} />
+          <Bar dataKey="scheduled" name="On time (based on history)" fill="#2d6a5e" radius={[3, 3, 0, 0]} />
+          <Bar dataKey="likely" name="May arrive late" fill="#8fbdb5" radius={[3, 3, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

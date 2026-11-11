@@ -139,11 +139,12 @@ export default function Sidebar() {
 
       {/* Data sources footer */}
       <div className="mt-auto pt-8">
-        <div className="text-[10px] leading-relaxed" style={{ color: "var(--sidebar-text)" }}>
-          <div className="font-semibold mb-1">Data sources</div>
-          <div>Bank statement · synced on load</div>
-          <div>PayGlocal, Stripe, Razorpay · synced on load</div>
-          <div>Fee tracker · synced on load</div>
+        <div className="text-xs leading-relaxed" style={{ color: "var(--sidebar-text)" }}>
+          <div className="font-semibold mb-1.5 text-[11px] uppercase tracking-wider opacity-70">Data sources</div>
+          <div>Bank statement</div>
+          <div>PayGlocal, Stripe, Razorpay</div>
+          <div>Fee tracker</div>
+          <div className="mt-1 opacity-50 text-[10px]">All synced on load</div>
         </div>
       </div>
     </aside>

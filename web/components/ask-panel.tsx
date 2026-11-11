@@ -67,7 +67,7 @@ export default function AskPanel() {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Something went wrong";
       if (msg.includes("Too many")) {
-        setError("Too many questions in a minute. Try again shortly.");
+        setError("Too many questions in a minute. Wait about 30 seconds and try again.");
       } else {
         setError(msg);
       }
