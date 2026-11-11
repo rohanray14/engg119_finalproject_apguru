@@ -154,18 +154,21 @@ export default function TodayPage() {
             </div>
             <div className="divide-y" style={{ borderColor: "var(--card-border)" }}>
               {dash.top_owing.map((s) => (
-                <div key={s.student_id} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
+                <Link key={s.student_id} href={`/students?id=${s.student_id}`}
+                  className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 hover:bg-gray-50 -mx-2 px-2 rounded transition-colors block">
                   <div>
-                    <Link href={`/students?search=${encodeURIComponent(s.name)}`}
-                      className="text-sm font-medium text-gray-900 hover:underline">{s.name}</Link>
+                    <div className="text-sm font-medium text-gray-900">{s.name}</div>
                     <div className="text-xs text-gray-400">
                       due {formatDate(s.earliest_due)}
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-red-700">
-                    {formatMoney(s.owed_paise, s.currency)}
-                  </span>
-                </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-red-700">
+                      {formatMoney(s.owed_paise, s.currency)}
+                    </span>
+                    <span className="text-xs" style={{ color: "var(--accent)" }}>→</span>
+                  </div>
+                </Link>
               ))}
             </div>
           </div>

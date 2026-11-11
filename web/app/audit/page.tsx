@@ -89,7 +89,8 @@ export default function AuditPage() {
                   <th className="px-4 py-3 font-medium">Who</th>
                   <th className="px-4 py-3 font-medium">Action</th>
                   <th className="px-4 py-3 font-medium">Entity</th>
-                  <th className="px-4 py-3 font-medium">Details</th>
+                  <th className="px-4 py-3 font-medium">Changed from</th>
+                  <th className="px-4 py-3 font-medium">Changed to</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -100,7 +101,10 @@ export default function AuditPage() {
                     <td className="px-4 py-2.5 text-gray-700">{e.actor}</td>
                     <td className="px-4 py-2.5 font-medium">{e.action.replace(/_/g, " ")}</td>
                     <td className="px-4 py-2.5">{e.entity}</td>
-                    <td className="px-4 py-2.5 text-xs text-gray-500 max-w-[300px] truncate" title={e.new_value || ""}>
+                    <td className="px-4 py-2.5 text-xs text-gray-500 max-w-[200px] truncate" title={e.old_value || ""}>
+                      {e.old_value || "—"}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-gray-500 max-w-[200px] truncate" title={e.new_value || ""}>
                       {e.new_value || "—"}
                     </td>
                   </tr>

@@ -121,7 +121,6 @@ function StudentsContent() {
               <th className="px-4 py-3 font-medium">Location</th>
               <SortHeader label="Owed" field="owed" align="right" />
               <SortHeader label="Next due" field="next_due" />
-              <SortHeader label="Enrollments" field="enrollment_count" />
               <SortHeader label="Status" field="status" />
             </tr>
           </thead>
@@ -140,7 +139,6 @@ function StudentsContent() {
                     : "—"}
                 </td>
                 <td className="px-4 py-2.5">{s.next_due ? formatDate(s.next_due) : "—"}</td>
-                <td className="px-4 py-2.5">{s.enrollment_count}</td>
                 <td className="px-4 py-2.5">
                   <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                     s.status === "paid_up"

@@ -96,12 +96,6 @@ export default function StudentProfile({ studentId, onBack }: Props) {
       <div className="mt-4 mb-6">
         <h1 className="text-3xl font-bold text-gray-900">{student.name}</h1>
         <p className="text-sm text-gray-500 mt-1">{location}</p>
-        {student.aliases.length > 0 && (
-          <p className="text-xs text-gray-400 mt-1">Also known as: {student.aliases.join(", ")}</p>
-        )}
-        {student.payer_aliases.length > 0 && (
-          <p className="text-xs text-gray-400">Known payers: {student.payer_aliases.join(", ")}</p>
-        )}
         {/* Contact info */}
         {(student.parent_name || student.parent_phone || student.parent_email) && (
           <div className="mt-3 flex items-center gap-4 text-sm">
@@ -171,7 +165,7 @@ export default function StudentProfile({ studentId, onBack }: Props) {
               <div>
                 <div className="font-bold text-gray-900">{e.program}</div>
                 <div className="text-xs text-gray-500">
-                  {e.fee_model === "package" ? "Package" : "Hourly"} · Total: {formatMoney(enrollTotal, e.currency)}
+                  Total: {formatMoney(enrollTotal, e.currency)}
                   {e.gst_applicable && " + GST"}
                 </div>
               </div>

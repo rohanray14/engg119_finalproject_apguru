@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatMoneyCompact, formatDate } from "@/lib/format";
@@ -55,16 +54,7 @@ const CAT_COLORS: Record<string, string> = {
 };
 
 export default function MoneyOutPage() {
-  const [category, setCategory] = useState("");
-  const [currency, setCurrency] = useState("");
-
-  const params = new URLSearchParams();
-  if (category) params.set("category", category);
-  if (currency) params.set("currency", currency);
-
-  const { data, isLoading } = useSWR<MoneyOutData>(`/money-out?${params}`, fetcher);
-
-  const categories = [...new Set(data?.summary.map((s) => s.category) ?? [])];
+  const { data, isLoading } = useSWR<MoneyOutData>("/money-out", fetcher);
 
   // Build stacked bar chart data from monthly_spend
   const allCats = [...new Set(data?.monthly_spend.flatMap((m) => Object.keys(m.by_category)) ?? [])];
@@ -186,13 +176,6 @@ export default function MoneyOutPage() {
       {/* Detail table */}
       <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
         <h3 className="font-bold text-gray-900 mb-4">All outgoing payments</h3>
-        <div className="flex gap-3 mb-4">
-          <select value={category} onChange={(e) => setCategory(e.target.value)}
-            className="text-sm border border-gray-300 rounded-md px-3 py-2">
-            <option value="">All categories</option>
-            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
 
         {!data || data.items.length === 0 ? (
           <p className="text-gray-500 py-4 text-center">No outgoing payments.</p>
