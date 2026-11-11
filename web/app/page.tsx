@@ -6,8 +6,11 @@ import { apiFetch } from "@/lib/api";
 import { formatMoney, formatMoneyCompact, formatDateLong, formatDate } from "@/lib/format";
 import type { Dashboard, Meta } from "@/lib/types";
 import DecisionList from "@/components/decision-list";
-import ForecastChart from "@/components/forecast-chart";
 import AskPanel from "@/components/ask-panel";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  CartesianGrid, Cell,
+} from "recharts";
 
 function fetcher<T>(path: string) {
   return apiFetch<T>(path);
@@ -18,6 +21,24 @@ function pctChange(current: number, previous: number): string | null {
   const pct = Math.round(((current - previous) / previous) * 100);
   if (pct === 0) return null;
   return pct > 0 ? `+${pct}%` : `${pct}%`;
+}
+
+function lakhs(paise: number): string {
+  const amt = paise / 100;
+  if (amt >= 1_00_00_000) return `₹${(amt / 1_00_00_000).toFixed(1)} Cr`;
+  if (amt >= 1_00_000) return `₹${(amt / 1_00_000).toFixed(1)} L`;
+  if (amt >= 1000) return `₹${(amt / 1000).toFixed(0)}K`;
+  return `₹${amt.toFixed(0)}`;
+}
+
+function weekLabel(iso: string): string {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+function monthLabel(iso: string): string {
+  const [y, m] = iso.split("-");
+  return `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][parseInt(m) - 1]}`;
 }
 
 export default function TodayPage() {
@@ -32,12 +53,13 @@ export default function TodayPage() {
       <div className="p-8">
         <div className="animate-pulse space-y-6">
           <div className="h-8 rounded w-48" style={{ backgroundColor: "var(--surface)" }} />
-          <div className="h-32 rounded" style={{ backgroundColor: "var(--surface)" }} />
           <div className="grid grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-24 rounded" style={{ backgroundColor: "var(--surface)" }} />
+              <div key={i} className="h-20 rounded" style={{ backgroundColor: "var(--surface)" }} />
             ))}
           </div>
+          <div className="h-12 rounded" style={{ backgroundColor: "var(--surface)" }} />
+          <div className="h-48 rounded" style={{ backgroundColor: "var(--surface)" }} />
         </div>
       </div>
     );
@@ -59,12 +81,53 @@ export default function TodayPage() {
   const momChange = pctChange(dash.month.received_paise, dash.month.received_last_month_paise);
   const collectionRate = dash.month.collection_rate_pct;
 
+  // Confirmation breakdown
+  const confirmCounts = dash.confirmation ?? {};
+  const inBank = confirmCounts["in_bank"] ?? 0;
+  const gateway = confirmCounts["seen_by_gateway"] ?? 0;
+  const screenshot = confirmCounts["screenshot_only"] ?? 0;
+  const totalConfirm = inBank + gateway + screenshot;
+
+  // Status banner items
+  const bannerParts: string[] = [];
+  if (dash.matching.matched > 0) {
+    bannerParts.push(`${dash.matching.matched} payments matched`);
+  }
+  if (dash.matching.pending_total > 0) {
+    bannerParts.push(`${dash.matching.pending_total} need review`);
+  }
+  if (collectionRate != null) {
+    bannerParts.push(`Collected ${formatMoneyCompact(dash.month.received_paise, "INR")} of ${formatMoneyCompact(dash.month.expected_paise, "INR")} expected: ${Math.round(collectionRate)}%`);
+  }
+  if (dash.risk.high > 0) {
+    bannerParts.push(`${dash.risk.high} high-severity risk flags`);
+  }
+  if (inrCommission && inrCommission.payable_paise && inrCommission.payable_paise > 0) {
+    bannerParts.push(`Commission payout ${formatMoneyCompact(inrCommission.payable_paise, "INR")} ready`);
+  }
+
+  // Collections vs expected chart
+  const monthsData = (dash.months ?? []).map((m) => ({
+    month: monthLabel(m.month),
+    expected: m.expected_paise / 100,
+    collected: m.collected_paise / 100,
+    rawExpected: m.expected_paise,
+    rawCollected: m.collected_paise,
+  }));
+
+  // Forecast chart
+  const forecastData = (dash.forecast ?? []).map((w) => ({
+    week: weekLabel(w.week_start),
+    scheduled: w.scheduled_paise,
+    likely: w.likely_paise,
+  }));
+
   return (
     <div className="p-8">
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <div className="text-sm" style={{ color: "var(--text-tertiary)" }}>{formatDateLong(dash.as_of)}</div>
+          <div className="text-sm" style={{ color: "var(--text-secondary)" }}>{formatDateLong(dash.as_of)}</div>
           <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Today</h1>
         </div>
         <span className="px-3 py-1 text-xs font-medium border rounded-md"
@@ -73,71 +136,185 @@ export default function TodayPage() {
         </span>
       </div>
 
-      {/* Action items — first thing a finance lead sees */}
+      {/* Top KPI strip — big numbers, no card borders */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div>
+          <div className="text-xs uppercase tracking-wider font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+            Received this month
+          </div>
+          <div className="text-3xl font-bold" style={{ color: "var(--accent)" }}>
+            {formatMoney(dash.month.received_paise, "INR")}
+          </div>
+          {momChange && (
+            <div className="text-xs font-medium mt-0.5" style={{ color: momChange.startsWith("+") ? "var(--accent)" : "var(--danger)" }}>
+              {momChange} vs last month
+            </div>
+          )}
+        </div>
+        <div>
+          <div className="text-xs uppercase tracking-wider font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+            Expected this month
+          </div>
+          <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>
+            {formatMoney(dash.month.expected_paise, "INR")}
+          </div>
+        </div>
+        <div>
+          <div className="text-xs uppercase tracking-wider font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+            Spent this month
+          </div>
+          <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>
+            {formatMoney(dash.month.spent_paise, "INR")}
+          </div>
+          <div className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+            Net: {formatMoney(dash.month.received_paise - dash.month.spent_paise, "INR")}
+          </div>
+        </div>
+        <Link href="/reminders">
+          <div className="text-xs uppercase tracking-wider font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+            Overdue
+          </div>
+          <div className="text-3xl font-bold" style={{ color: "var(--danger)" }}>
+            {overdueInr ? formatMoney(overdueInr.amount_paise, "INR") : "₹0"}
+          </div>
+          {overdueInr && overdueInr.count > 0 ? (
+            <div className="text-xs mt-0.5" style={{ color: "var(--danger)" }}>
+              {overdueInr.count} installments · oldest {dash.overdue.oldest_days}d
+            </div>
+          ) : (
+            <div className="text-xs mt-0.5" style={{ color: "var(--accent)" }}>All caught up</div>
+          )}
+        </Link>
+      </div>
+
+      {/* Status banner */}
+      {bannerParts.length > 0 && (
+        <div className="rounded-xl p-4 mb-6 flex items-center justify-between gap-4 flex-wrap"
+          style={{ backgroundColor: "rgba(0, 220, 130, 0.08)", border: "1px solid rgba(0, 220, 130, 0.2)" }}>
+          <div className="flex items-center gap-2 flex-wrap text-sm" style={{ color: "var(--text-secondary)" }}>
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: "var(--accent)" }} />
+            {bannerParts.map((part, i) => (
+              <span key={i}>
+                {i > 0 && <span className="mx-1" style={{ color: "var(--text-tertiary)" }}>·</span>}
+                {part.includes("high-severity") ? (
+                  <span style={{ color: "var(--danger)" }}>{part}</span>
+                ) : part.includes("need review") ? (
+                  <span style={{ color: "var(--warning)" }}>{part}</span>
+                ) : (
+                  <span>{part}</span>
+                )}
+              </span>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {dash.matching.pending_total > 0 && (
+              <Link href="/review"
+                className="px-3 py-1.5 text-xs font-medium rounded-md"
+                style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+                Review {dash.matching.pending_total} payments
+              </Link>
+            )}
+            <Link href="/"
+              className="px-3 py-1.5 text-xs font-medium rounded-md"
+              style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+              Ask a follow-up
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Needs your decision */}
       <div className="mb-6">
         <DecisionList dashboard={dash} />
       </div>
 
-      {/* Collection health row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {/* Received this month */}
+      {/* Confirmation status + Commissions — side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Confirmation status */}
         <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>Received this month</div>
-          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>
-            {formatMoneyCompact(dash.month.received_paise, "INR")}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold" style={{ color: "var(--text)" }}>Confirmation status</h3>
+            <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{totalConfirm} payments total</span>
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            {momChange && (
-              <span className="text-xs font-medium" style={{ color: momChange.startsWith("+") ? "var(--accent)" : "var(--danger)" }}>
-                {momChange} vs last month
-              </span>
-            )}
-            {!momChange && dash.month.received_last_month_paise > 0 && (
-              <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>same as last month</span>
-            )}
-          </div>
+          {/* Stacked bar */}
+          {totalConfirm > 0 && (
+            <div className="mb-4">
+              <div className="flex h-7 rounded-lg overflow-hidden">
+                {inBank > 0 && (
+                  <div className="flex items-center justify-center text-[10px] font-semibold"
+                    style={{ width: `${(inBank / totalConfirm) * 100}%`, backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+                    {Math.round((inBank / totalConfirm) * 100)}%
+                  </div>
+                )}
+                {gateway > 0 && (
+                  <div className="flex items-center justify-center text-[10px] font-semibold"
+                    style={{ width: `${(gateway / totalConfirm) * 100}%`, backgroundColor: "var(--warning)", color: "var(--bg)" }}>
+                    {Math.round((gateway / totalConfirm) * 100)}%
+                  </div>
+                )}
+                {screenshot > 0 && (
+                  <div className="flex items-center justify-center text-[10px] font-semibold"
+                    style={{ width: `${(screenshot / totalConfirm) * 100}%`, backgroundColor: "var(--danger)", color: "var(--bg)" }}>
+                    {Math.round((screenshot / totalConfirm) * 100)}%
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-4 mt-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--accent)" }} />
+                  <span className="text-xs" style={{ color: "var(--text-secondary)" }}>In bank {inBank}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--warning)" }} />
+                  <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Gateway {gateway}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--danger)" }} />
+                  <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Screenshot {screenshot}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Collection rate */}
+        {/* Commissions summary */}
         <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>Collection rate</div>
-          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>
-            {collectionRate != null ? `${Math.round(collectionRate)}%` : "—"}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold" style={{ color: "var(--text)" }}>Commissions</h3>
+            <Link href="/commissions" className="text-xs hover:underline" style={{ color: "var(--accent)" }}>
+              View details
+            </Link>
           </div>
-          <div className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-            of {formatMoneyCompact(dash.month.expected_paise, "INR")} expected
-          </div>
+          {inrCommission ? (
+            <div className="flex items-end gap-6">
+              <div>
+                <div className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Earned</div>
+                <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>
+                  {formatMoney(inrCommission.earned_paise, "INR")}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>TDS</div>
+                <div className="text-lg font-semibold" style={{ color: "var(--text-secondary)" }}>
+                  {formatMoney(inrCommission.tds_paise, "INR")}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Net payable</div>
+                <div className="text-lg font-semibold" style={{ color: "var(--accent)" }}>
+                  {formatMoney(inrCommission.net_paise, "INR")}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm" style={{ color: "var(--text-tertiary)" }}>No commission data</p>
+          )}
+          {inrCommission && inrCommission.counselors > 0 && (
+            <div className="text-xs mt-3" style={{ color: "var(--text-tertiary)" }}>
+              {inrCommission.counselors} counselor{inrCommission.counselors > 1 ? "s" : ""} · TDS at 2% on all payouts
+            </div>
+          )}
         </div>
-
-        {/* Overdue */}
-        <Link href="/reminders" className="rounded-xl border p-5 transition-colors block"
-          style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>Overdue installments</div>
-          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{dash.overdue.count}</div>
-          {overdueInr ? (
-            <div className="text-xs mt-1" style={{ color: "var(--danger)" }}>
-              {formatMoneyCompact(overdueInr.amount_paise, "INR")} · oldest {dash.overdue.oldest_days}d
-            </div>
-          ) : (
-            <div className="text-xs mt-1" style={{ color: "var(--accent)" }}>All caught up</div>
-          )}
-        </Link>
-
-        {/* Expenses this month */}
-        <Link href="/money-out" className="rounded-xl border p-5 transition-colors block"
-          style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>Spent this month</div>
-          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>
-            {formatMoneyCompact(dash.month.spent_paise, "INR")}
-          </div>
-          {inrCommission && inrCommission.payable_paise && inrCommission.payable_paise > 0 ? (
-            <div className="text-xs mt-1" style={{ color: "var(--accent)" }}>
-              {formatMoneyCompact(inrCommission.payable_paise, "INR")} commissions pending
-            </div>
-          ) : (
-            <div className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>Commissions paid up</div>
-          )}
-        </Link>
       </div>
 
       {/* Top owing families + Largest unmatched — side by side */}
@@ -146,7 +323,7 @@ export default function TodayPage() {
         {dash.top_owing.length > 0 && (
           <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold" style={{ color: "var(--text)" }}>Largest outstanding</h3>
+              <h3 className="font-bold" style={{ color: "var(--text)" }}>Top families owing</h3>
               <Link href="/students" className="text-xs hover:underline" style={{ color: "var(--accent)" }}>
                 All students
               </Link>
@@ -166,7 +343,10 @@ export default function TodayPage() {
                     <span className="text-sm font-semibold" style={{ color: "var(--danger)" }}>
                       {formatMoney(s.owed_paise, s.currency)}
                     </span>
-                    <span className="text-xs" style={{ color: "var(--accent)" }}>→</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                      style={{ backgroundColor: "rgba(255, 77, 77, 0.15)", color: "var(--danger)" }}>
+                      Due
+                    </span>
                   </div>
                 </Link>
               ))}
@@ -178,7 +358,7 @@ export default function TodayPage() {
         {dash.largest_unmatched.length > 0 && (
           <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold" style={{ color: "var(--text)" }}>Unmatched payments</h3>
+              <h3 className="font-bold" style={{ color: "var(--text)" }}>Largest unmatched payments</h3>
               <Link href="/review" className="text-xs hover:underline" style={{ color: "var(--accent)" }}>
                 Review queue
               </Link>
@@ -194,9 +374,17 @@ export default function TodayPage() {
                       {formatDate(p.date)}{p.method ? ` · ${p.method}` : ""}
                     </div>
                   </div>
-                  <span className="text-sm font-semibold" style={{ color: "var(--accent)" }}>
-                    {formatMoney(p.amount_paid_paise, p.currency)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold" style={{ color: "var(--accent)" }}>
+                      {formatMoney(p.amount_paid_paise, p.currency)}
+                    </span>
+                    {!p.payer_name && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                        style={{ backgroundColor: "rgba(255, 176, 32, 0.15)", color: "var(--warning)" }}>
+                        New
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -204,9 +392,73 @@ export default function TodayPage() {
         )}
       </div>
 
-      {/* Forecast */}
-      <div className="mb-6">
-        <ForecastChart data={dash.forecast} />
+      {/* Collections vs expected + Cash due next weeks — side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+        {/* Collections vs expected */}
+        <div className="lg:col-span-3 rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="font-bold" style={{ color: "var(--text)" }}>Collections vs expected</h3>
+            <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-tertiary)" }}>
+              <span className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--border)" }} /> Expected
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--accent)" }} /> Collected
+              </span>
+            </div>
+          </div>
+          <p className="text-xs mb-4" style={{ color: "var(--text-tertiary)" }}>
+            Monthly installment due vs payments received
+          </p>
+          {monthsData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={monthsData} barGap={2} barCategoryGap="20%">
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} />
+                <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 11, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} width={50} />
+                <Tooltip
+                  formatter={(value) => [lakhs(Number(value) * 100)]}
+                  labelStyle={{ fontWeight: 600, color: "var(--text)" }}
+                  contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
+                />
+                <Bar dataKey="expected" name="Expected" fill="var(--border)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="collected" name="Collected" radius={[3, 3, 0, 0]}>
+                  {monthsData.map((_, i) => (
+                    <Cell key={i} fill={i === monthsData.length - 1 ? "var(--accent)" : "#3da391"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-sm py-8 text-center" style={{ color: "var(--text-tertiary)" }}>No data yet</div>
+          )}
+        </div>
+
+        {/* Cash due, next weeks */}
+        <div className="lg:col-span-2 rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Cash due, next 5 weeks</h3>
+          <p className="text-xs mb-4" style={{ color: "var(--text-tertiary)" }}>
+            Scheduled installments · Likely ({collectionRate != null ? `${Math.round(collectionRate)}%` : "est."})
+          </p>
+          {forecastData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={forecastData} barGap={2}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
+                <XAxis dataKey="week" tick={{ fontSize: 11, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} />
+                <YAxis tickFormatter={(v) => lakhs(v)} tick={{ fontSize: 11, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} width={50} />
+                <Tooltip
+                  formatter={(value) => [lakhs(Number(value))]}
+                  labelStyle={{ fontWeight: 600, color: "var(--text)" }}
+                  contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
+                />
+                <Bar dataKey="scheduled" name="Scheduled" fill="var(--border)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="likely" name="Likely" fill="var(--accent)" radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-sm py-8 text-center" style={{ color: "var(--text-tertiary)" }}>No forecast data</div>
+          )}
+        </div>
       </div>
 
       {/* Ask */}
