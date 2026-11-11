@@ -247,12 +247,14 @@ function RemindersPage() {
                           {r.parent_phone && (
                             <a href={`https://wa.me/${r.parent_phone.replace(/[^+\d]/g, "")}?text=${encodeURIComponent(r.message)}`}
                               target="_blank" rel="noopener noreferrer"
+                              onClick={() => simulateSend(key)}
                               className="text-xs px-2 py-0.5 rounded border border-green-300 text-green-700 hover:bg-green-50 transition-colors whitespace-nowrap">
                               WhatsApp
                             </a>
                           )}
                           {r.parent_email && (
                             <a href={`mailto:${r.parent_email}?subject=Payment reminder — ${r.enrollment_program}&body=${encodeURIComponent(r.message)}`}
+                              onClick={() => simulateSend(key)}
                               className="text-xs px-2 py-0.5 rounded border border-blue-300 text-blue-700 hover:bg-blue-50 transition-colors whitespace-nowrap">
                               Email
                             </a>
@@ -270,15 +272,10 @@ function RemindersPage() {
                             >
                               {acting === key ? "..." : "Approve"}
                             </button>
-                          ) : r.approved ? (
-                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Sent</span>
-                          ) : isSent ? (
-                            <span className="text-xs text-green-600 font-medium">Sent</span>
+                          ) : r.approved || isSent ? (
+                            <span className="text-xs text-green-600 font-medium">Sent &gt;</span>
                           ) : (
-                            <button onClick={() => simulateSend(key)}
-                              className="text-xs px-2 py-0.5 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors whitespace-nowrap">
-                              Mark sent
-                            </button>
+                            <span className="text-xs text-gray-400">Contact first</span>
                           )}
                           <button onClick={() => toggleExpand(key)}
                             className="text-xs text-gray-400 hover:text-gray-600"

@@ -67,7 +67,7 @@ def list_payments(
     all_allocs = {}  # match_id -> list of installment_ids
     all_inst_ids = set()
     for r in rows:
-        if r["allocations"] and r["match_status"] in ("auto", "approved"):
+        if r["allocations"] and r["match_status"] in ("auto", "approved", "pending_review"):
             parsed = parse_allocations(r["allocations"])
             iids = [int(a["installment_id"]) for a in parsed]
             all_allocs[r["match_id"]] = iids

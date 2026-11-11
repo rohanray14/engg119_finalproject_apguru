@@ -325,8 +325,6 @@ export default function PaymentsPage() {
               className="w-full text-sm border border-gray-300 rounded-md px-3 py-2">
               <option value="">All currencies</option>
               <option value="INR">INR (₹)</option>
-              <option value="USD">USD ($)</option>
-              <option value="AED">AED</option>
             </select>
           </div>
           <div>
@@ -402,7 +400,7 @@ export default function PaymentsPage() {
               </Link>
             )}
             {stats.unmatchedCount > 0 && (
-              <button onClick={() => { clearAll(); setMatch("unmatched"); }}
+              <button onClick={() => { setMatch(match === "unmatched" ? "" : "unmatched"); setPage(0); }}
                 className={`text-left rounded-lg border px-4 py-3 hover:border-gray-400 transition-colors ${match === "unmatched" ? "ring-2 ring-gray-300" : ""}`}
                 style={{ borderColor: "var(--card-border)" }}>
                 <div className="text-xs text-gray-500">Unmatched</div>
@@ -411,7 +409,7 @@ export default function PaymentsPage() {
               </button>
             )}
             {stats.screenshotCount > 0 && (
-              <button onClick={() => { clearAll(); setConfirmation("screenshot_only"); }}
+              <button onClick={() => { setConfirmation(confirmation === "screenshot_only" ? "" : "screenshot_only"); setPage(0); }}
                 className={`text-left bg-red-50 rounded-lg border border-red-200 px-4 py-3 hover:border-red-400 transition-colors ${confirmation === "screenshot_only" ? "ring-2 ring-red-300" : ""}`}>
                 <div className="text-xs text-red-700">Unverified</div>
                 <div className="text-lg font-bold text-red-800">{stats.screenshotCount}</div>
@@ -504,15 +502,25 @@ export default function PaymentsPage() {
                         </td>
                       )}
                       <td className="px-4 py-2.5">
-                        {r.match_id && r.match_status === "pending_review" ? (
-                          <Link href={`/review?id=${r.match_id}`}
-                            className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 inline-block"
-                            style={{
-                              backgroundColor: matchBadge.pending_review.bg,
-                              color: matchBadge.pending_review.text,
-                            }}>
-                            review →
-                          </Link>
+                        {r.matched_student_id ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <Link href={`/students?id=${r.matched_student_id}`}
+                              className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 inline-block"
+                              style={{
+                                backgroundColor: matchBadge[r.match_status]?.bg ?? matchBadge.auto.bg,
+                                color: matchBadge[r.match_status]?.text ?? matchBadge.auto.text,
+                              }}>
+                              {r.matched_student_name ?? "Student"} →
+                            </Link>
+                            {r.match_status === "pending_review" && (
+                              <Link href={`/review?id=${r.match_id}`}
+                                className="text-amber-600 hover:text-amber-800" title="Needs review">
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </Link>
+                            )}
+                          </span>
                         ) : r.match_status === "unmatched" ? (
                           <span className="px-2 py-0.5 rounded text-xs font-medium"
                             style={{
@@ -521,17 +529,6 @@ export default function PaymentsPage() {
                             }}>
                             unmatched
                           </span>
-                        ) : (r.match_status === "auto" || r.match_status === "approved") && (r.matched_student_id || r.payer_name) ? (
-                          <Link href={r.matched_student_id
-                            ? `/students?id=${r.matched_student_id}`
-                            : `/students?search=${encodeURIComponent(r.payer_name!)}`}
-                            className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 inline-block"
-                            style={{
-                              backgroundColor: matchBadge[r.match_status]?.bg ?? "#f3f4f6",
-                              color: matchBadge[r.match_status]?.text ?? "#374151",
-                            }}>
-                            {r.matched_student_name ?? (r.match_status === "auto" ? "matched" : "approved")} →
-                          </Link>
                         ) : (
                           <span className="px-2 py-0.5 rounded text-xs font-medium"
                             style={{
