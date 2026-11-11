@@ -43,14 +43,14 @@ function lakhs(paise: number): string {
 
 // Muted monochrome palette -- teal accent with grays
 const CAT_COLORS: Record<string, string> = {
-  faculty: "#1a2332",
-  ads: "#2d6a5e",
-  software: "#4b8c81",
-  tax: "#6b9e96",
-  refund: "#8fb5af",
-  rent: "#b0ccc8",
-  other: "#94a3b8",
-  commission: "#64748b",
+  faculty: "#3da391",
+  ads: "#00DC82",
+  software: "#5bb8a8",
+  tax: "#7ecdbf",
+  refund: "#FFB020",
+  rent: "#a3e0d5",
+  other: "#8A8A9A",
+  commission: "#4D9EFF",
 };
 
 export default function MoneyOutPage() {
@@ -103,7 +103,7 @@ export default function MoneyOutPage() {
           <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Avg monthly burn</div>
           <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data ? formatMoneyCompact(data.avg_monthly_burn_paise, "INR") : "\u2014"}</div>
           {prevMonthSpend > 0 && (
-            <div className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+            <div className="text-xs font-medium" style={{ color: momPct > 0 ? "var(--danger)" : "var(--accent)" }}>
               {momPct > 0 ? "+" : ""}{momPct.toFixed(0)}% MoM
             </div>
           )}

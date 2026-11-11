@@ -77,9 +77,9 @@ function actionForCategory(category: string): { label: string; page: string; ico
 }
 
 const sevStyle: Record<string, { dot: string; text: string }> = {
-  high: { dot: "var(--text)", text: "var(--text)" },
-  medium: { dot: "var(--text-secondary)", text: "var(--text-secondary)" },
-  low: { dot: "var(--text-tertiary)", text: "var(--text-tertiary)" },
+  high: { dot: "var(--danger)", text: "var(--text)" },
+  medium: { dot: "var(--warning)", text: "var(--text)" },
+  low: { dot: "var(--info)", text: "var(--text-secondary)" },
 };
 
 export default function RiskPage() {
@@ -132,7 +132,7 @@ export default function RiskPage() {
             style={{ backgroundColor: "var(--surface)", borderColor: severity === "medium" ? "var(--text)" : "var(--border)" }}
             onClick={() => setSeverity(severity === "medium" ? "" : "medium")}>
             <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Medium</div>
-            <div className="text-2xl font-bold" style={{ color: "var(--text-secondary)" }}>{data.counts.medium}</div>
+            <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data.counts.medium}</div>
             <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>30\u201390 days, unmatched, oversized</div>
           </div>
           <div className="rounded-xl border p-4 cursor-pointer"
@@ -173,7 +173,7 @@ export default function RiskPage() {
                   <div key={g.student} className="rounded-xl border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: g.maxDays > 90 ? "var(--text)" : "var(--text-secondary)" }} />
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: g.maxDays > 90 ? "var(--danger)" : "var(--warning)" }} />
                         <div>
                           <span className="font-medium" style={{ color: "var(--text)" }}>{g.student}</span>
                           <span className="ml-2 text-sm" style={{ color: "var(--text-secondary)" }}>

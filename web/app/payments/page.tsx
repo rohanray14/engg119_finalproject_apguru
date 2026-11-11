@@ -91,8 +91,8 @@ function Popover({ trigger, children }: { trigger: React.ReactNode; children: Re
       </span>
       {open && (
         <div
-          className="fixed z-[9999] text-white text-xs rounded-lg px-3 py-2 shadow-lg"
-          style={{ top: pos.top, left: pos.left, transform: "translateX(-100%)", backgroundColor: "#1C1C24" }}
+          className="fixed z-[9999] text-xs rounded-lg px-3 py-2"
+          style={{ top: pos.top, left: pos.left, transform: "translateX(-100%)", backgroundColor: "#252530", color: "var(--text)", border: "1px solid var(--border)", boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
         >

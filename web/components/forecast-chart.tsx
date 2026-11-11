@@ -28,11 +28,12 @@ export default function ForecastChart({ data }: { data: ForecastWeek[] }) {
       </p>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={chartData} barGap={2}>
-          <XAxis dataKey="week" tick={{ fontSize: 12 }} />
-          <YAxis tickFormatter={lakhs} tick={{ fontSize: 11 }} width={55} />
+          <XAxis dataKey="week" tick={{ fontSize: 12, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} />
+          <YAxis tickFormatter={lakhs} tick={{ fontSize: 11, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} width={55} />
           <Tooltip
             formatter={(value) => lakhs(Number(value))}
-            labelStyle={{ fontWeight: 600 }}
+            labelStyle={{ fontWeight: 600, color: "var(--text)" }}
+            contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
           />
           <Bar dataKey="expected" name="Expected" fill="var(--accent)" radius={[3, 3, 0, 0]} />
         </BarChart>
