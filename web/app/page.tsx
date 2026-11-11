@@ -178,13 +178,13 @@ export default function TodayPage() {
             <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold" style={{ color: "var(--text)" }}>Top families owing</h3>
-                <Link href="/students" className="text-xs hover:underline" style={{ color: "var(--text)" }}>
-                  All students
+                <Link href="/reminders" className="text-xs hover:underline" style={{ color: "var(--text)" }}>
+                  Reminders
                 </Link>
               </div>
               <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
                 {dash.top_owing.map((s) => (
-                  <Link key={s.student_id} href={`/students?id=${s.student_id}`}
+                  <Link key={s.student_id} href="/reminders"
                     className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 -mx-2 px-2 rounded transition-colors block">
                     <div>
                       <div className="text-sm font-medium" style={{ color: "var(--text)" }}>{s.name}</div>
