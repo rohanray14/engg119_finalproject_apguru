@@ -289,6 +289,16 @@ h2, h3 {
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
+header[data-testid="stHeader"] {
+    background: #0A0A0F !important;
+}
+div[data-testid="stDecoration"] {
+    display: none !important;
+}
+div[data-testid="stStatusWidget"] {
+    background: #141419 !important;
+    color: #F0F0F5 !important;
+}
 </style>
 """
 
