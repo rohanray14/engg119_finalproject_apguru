@@ -252,7 +252,7 @@ export default function RiskPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-400">{g.maxDays}d overdue</span>
                         <button
-                          onClick={() => router.push("/reminders")}
+                          onClick={() => router.push(`/reminders?student=${encodeURIComponent(g.student)}`)}
                           className="px-3 py-1 text-xs font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
                         >
                           Send reminder
