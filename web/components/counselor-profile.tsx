@@ -51,8 +51,13 @@ interface Props {
   onBack: () => void;
 }
 
+interface CommissionsOverview {
+  totals: { currency: string; payable_paise: number }[];
+}
+
 export default function CounselorProfile({ counselorId, onBack }: Props) {
   const { data: counselor, isLoading, mutate } = useSWR<CounselorData>(`/counselors/${counselorId}`, fetcher);
+  const { data: overview, mutate: mutateOverview } = useSWR<CommissionsOverview>("/commissions", fetcher);
   const [payoutStatus, setPayoutStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [payoutMsg, setPayoutMsg] = useState("");
 
@@ -80,20 +85,23 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
   const paidOut = counselor.total_paid_out.find((t) => t.currency === "INR")?.net_paise ?? 0;
   const netOwed = (inr?.net_paise ?? 0) - paidOut;
 
+  const globalPayable = overview?.totals.find((t) => t.currency === "INR")?.payable_paise ?? 0;
+
   async function handleApprovePayout() {
-    if (netOwed <= 0) return;
+    if (globalPayable <= 0) return;
     setPayoutStatus("loading");
     try {
       await apiFetch("/commissions/payout/approve", {
         method: "POST",
-        body: { currency: "INR", expected_payable_paise: netOwed },
+        body: { currency: "INR", expected_payable_paise: globalPayable },
       });
       setPayoutStatus("success");
-      setPayoutMsg(`Payout of ${formatMoney(netOwed, "INR")} approved and logged.`);
+      setPayoutMsg(`Payout of ${formatMoney(globalPayable, "INR")} approved for all counselors.`);
       mutate();
+      mutateOverview();
     } catch (e: unknown) {
       setPayoutStatus("error");
-      setPayoutMsg(e instanceof Error ? e.message : "Failed to approve payout. This is a prototype — the action has been recorded in the audit log.");
+      setPayoutMsg(e instanceof Error ? e.message : "Failed to approve payout.");
     }
   }
 
@@ -189,13 +197,13 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                 {item.severity === "high" ? "!" : item.severity === "medium" ? "!" : "i"}
               </span>
               <span>{item.text}</span>
-              {item.severity === "high" && netOwed > 0 && item.text.includes("payout") && (
+              {item.severity === "high" && globalPayable > 0 && item.text.includes("payout") && (
                 <button
                   onClick={handleApprovePayout}
                   disabled={payoutStatus === "loading" || payoutStatus === "success"}
                   className="shrink-0 ml-auto underline font-medium disabled:opacity-50"
                 >
-                  {payoutStatus === "loading" ? "Approving..." : payoutStatus === "success" ? "Approved" : "Approve payout"}
+                  {payoutStatus === "loading" ? "Approving..." : payoutStatus === "success" ? "Approved" : `Approve all · ${formatMoney(globalPayable, "INR")}`}
                 </button>
               )}
             </div>
@@ -234,16 +242,16 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
         </div>
         <button
           onClick={handleApprovePayout}
-          disabled={payoutStatus === "loading" || payoutStatus === "success" || netOwed <= 0}
+          disabled={payoutStatus === "loading" || payoutStatus === "success" || globalPayable <= 0}
           className="bg-white rounded-lg border p-4 hover:border-red-300 transition-colors text-left disabled:opacity-70"
           style={{ borderColor: "var(--card-border)" }}>
           <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Still owed</div>
           <div className={`text-xl font-bold mt-1 ${netOwed > 0 ? "text-red-600" : "text-green-600"}`}>
             {netOwed > 0 ? formatMoney(netOwed, "INR") : "Settled"}
           </div>
-          {netOwed > 0 && (
+          {globalPayable > 0 && (
             <div className="text-xs mt-1" style={{ color: "var(--accent)" }}>
-              {payoutStatus === "loading" ? "Approving..." : payoutStatus === "success" ? "Approved!" : "Approve payout →"}
+              {payoutStatus === "loading" ? "Approving..." : payoutStatus === "success" ? "Approved!" : `Approve all · ${formatMoney(globalPayable, "INR")} →`}
             </div>
           )}
         </button>
