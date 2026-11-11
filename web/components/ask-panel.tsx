@@ -15,24 +15,13 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   transactions?: Record<string, unknown>[] | null;
-  explanation?: string | null;
 }
 
 const suggestions = [
   "Which families still owe us?",
-  "How much total received?",
   "What is our cash position?",
-  "Who paid the largest amount?",
   "How many installments are overdue?",
-  "How many unmatched payments?",
-  "What are the total expenses?",
   "Expense breakdown by category",
-  "Revenue per student — who brings in the most?",
-  "Seasonal trends — which months see the most payments?",
-  "Gateway comparison — fees by payment method",
-  "Commission cost as a % of total revenue",
-  "Average days to pay after due date",
-  "Which cities generate the most revenue?",
 ];
 
 export default function AskPanel() {
@@ -61,7 +50,6 @@ export default function AskPanel() {
           role: "assistant",
           content: result.answer,
           transactions: result.transactions,
-          explanation: result.how_worked_out,
         },
       ]);
     } catch (e: unknown) {
@@ -161,14 +149,6 @@ export default function AskPanel() {
                       </tbody>
                     </table>
                   </div>
-                )}
-                {msg.explanation && (
-                  <details className="mt-3">
-                    <summary className="text-xs text-gray-400 cursor-pointer">How this was worked out</summary>
-                    <pre className="mt-2 text-xs text-gray-500 whitespace-pre-wrap bg-white p-3 rounded">
-                      {msg.explanation}
-                    </pre>
-                  </details>
                 )}
               </div>
             )

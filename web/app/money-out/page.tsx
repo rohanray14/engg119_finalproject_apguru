@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatMoneyCompact, formatDate } from "@/lib/format";
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, Legend,
+  BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer, CartesianGrid,
 } from "recharts";
 
@@ -13,22 +13,6 @@ interface MonthlySummary {
   month: string;
   total_paise: number;
   by_category: Record<string, number>;
-}
-
-interface RunwayProjection {
-  month: string;
-  current_rate: number;
-  drop_10: number;
-  drop_25: number;
-  drop_50: number;
-}
-
-interface Runway {
-  avg_monthly_expected_paise: number;
-  avg_monthly_received_paise: number;
-  collection_rate_pct: number;
-  avg_monthly_burn_paise: number;
-  projection: RunwayProjection[];
 }
 
 interface MoneyOutData {
@@ -39,7 +23,6 @@ interface MoneyOutData {
   total_received_paise: number;
   avg_monthly_burn_paise: number;
   monthly_spend: MonthlySummary[];
-  runway: Runway;
 }
 
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
@@ -93,15 +76,6 @@ export default function MoneyOutPage() {
     return row;
   });
 
-  // Projection chart data (convert paise to rupees)
-  const projData = (data?.runway.projection ?? []).map((p) => ({
-    month: monthLabel(p.month),
-    "Current rate": p.current_rate / 100,
-    "10% drop": p.drop_10 / 100,
-    "25% drop": p.drop_25 / 100,
-    "50% drop": p.drop_50 / 100,
-  }));
-
   // MoM delta
   const ms = data?.monthly_spend ?? [];
   const lastMonthSpend = ms.length >= 1 ? ms[ms.length - 1].total_paise : 0;
@@ -110,22 +84,13 @@ export default function MoneyOutPage() {
     ? ((lastMonthSpend - prevMonthSpend) / prevMonthSpend * 100)
     : 0;
 
-  const spendRatio = data && data.total_received_paise > 0
-    ? (data.total_spent_paise / data.total_received_paise * 100)
-    : 0;
-
-  const runway = data?.runway;
-  const burnNet = runway
-    ? (runway.avg_monthly_received_paise - runway.avg_monthly_burn_paise)
-    : 0;
-
   if (isLoading) {
     return (
       <div className="p-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-1">Money out</h1>
-        <p className="text-sm text-gray-500 mb-6">Spend trends, burn rate, and runway projections.</p>
+        <p className="text-sm text-gray-500 mb-6">Where money is going, by category and month.</p>
         <div className="animate-pulse space-y-4">
-          <div className="grid grid-cols-4 gap-3">{[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-gray-200 rounded-lg" />)}</div>
+          <div className="grid grid-cols-3 gap-3">{[...Array(3)].map((_, i) => <div key={i} className="h-24 bg-gray-200 rounded-lg" />)}</div>
           <div className="h-64 bg-gray-200 rounded-lg" />
         </div>
       </div>
@@ -135,10 +100,10 @@ export default function MoneyOutPage() {
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-1">Money out</h1>
-      <p className="text-sm text-gray-500 mb-6">Spend trends, burn rate, and runway projections.</p>
+      <p className="text-sm text-gray-500 mb-6">Where money is going, by category and month.</p>
 
       {/* Row 1: Key metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
         <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
           <div className="text-sm text-gray-500">Total spent (all time)</div>
           <div className="text-2xl font-bold text-gray-900">{data ? formatMoneyCompact(data.total_spent_paise, "INR") : "—"}</div>
@@ -159,13 +124,6 @@ export default function MoneyOutPage() {
           {prevMonthSpend > 0 && (
             <div className="text-xs text-gray-400">Prior: {formatMoneyCompact(prevMonthSpend, "INR")}</div>
           )}
-        </div>
-        <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-sm text-gray-500">Spend / Revenue</div>
-          <div className="text-2xl font-bold text-gray-900">{spendRatio.toFixed(0)}%</div>
-          <div className="text-xs font-medium text-gray-500">
-            of {data ? formatMoneyCompact(data.total_received_paise, "INR") : "—"} received
-          </div>
         </div>
       </div>
 
@@ -225,86 +183,7 @@ export default function MoneyOutPage() {
         </div>
       </div>
 
-      {/* Row 3: Cash runway projection */}
-      <div className="bg-white rounded-lg border p-5 mb-6" style={{ borderColor: "var(--card-border)" }}>
-        <h3 className="font-bold text-gray-900 mb-1">Cash runway projection</h3>
-        <p className="text-xs text-gray-500 mb-4">When do outflows overtake inflows if collection rates drop?</p>
-
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500">Avg monthly expected</div>
-            <div className="text-lg font-bold text-gray-900">{runway ? formatMoneyCompact(runway.avg_monthly_expected_paise, "INR") : "—"}</div>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500">Avg monthly collected</div>
-            <div className="text-lg font-bold text-gray-900">{runway ? formatMoneyCompact(runway.avg_monthly_received_paise, "INR") : "—"}</div>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500">Current collection rate</div>
-            <div className="text-lg font-bold text-gray-900">{runway ? `${runway.collection_rate_pct.toFixed(0)}%` : "—"}</div>
-          </div>
-        </div>
-
-        {projData.length > 0 && (
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={projData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 11 }} width={55} />
-              <Tooltip formatter={(value) => `${lakhs(Number(value) * 100)}`} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="Current rate" stroke="#1a2332" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="10% drop" stroke="#2d6a5e" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="25% drop" stroke="#94a3b8" strokeWidth={1.5} dot={false} strokeDasharray="5 5" />
-              <Line type="monotone" dataKey="50% drop" stroke="#cbd5e1" strokeWidth={1.5} dot={false} strokeDasharray="5 5" />
-            </LineChart>
-          </ResponsiveContainer>
-        )}
-
-        {/* Scenario badges */}
-        <div className="flex flex-wrap gap-2 mt-4">
-          {runway && (() => {
-            const r = runway;
-            const scenarios = [
-              { label: "Current rate", drop: 0, color: "green" },
-              { label: "10% drop", drop: 10, color: "amber" },
-              { label: "25% drop", drop: 25, color: "orange" },
-              { label: "50% drop", drop: 50, color: "red" },
-            ];
-            return scenarios.map((s) => {
-              const rate = Math.max(0, r.collection_rate_pct - s.drop) / 100;
-              const monthlyInflow = Math.round(r.avg_monthly_expected_paise * rate);
-              const monthlyNet = monthlyInflow - r.avg_monthly_burn_paise;
-              const isPositive = monthlyNet >= 0;
-              // Find how many months in projection before net goes negative
-              const projKey = s.drop === 0 ? "current_rate" : `drop_${s.drop}`;
-              const proj = r.projection;
-              const deficitIdx = proj.findIndex((p) => {
-                const val = s.drop === 0 ? p.current_rate : s.drop === 10 ? p.drop_10 : s.drop === 25 ? p.drop_25 : p.drop_50;
-                return val < 0;
-              });
-              const monthsLabel = isPositive
-                ? "sustainable"
-                : deficitIdx >= 0
-                ? `deficit in ${deficitIdx + 1}mo`
-                : "deficit";
-              const bgColor = isPositive
-                ? "bg-green-50 text-green-800 border-green-200"
-                : deficitIdx >= 0 && deficitIdx < 3
-                ? "bg-red-50 text-red-800 border-red-200"
-                : "bg-amber-50 text-amber-800 border-amber-200";
-              return (
-                <div key={s.label} className={`text-xs font-medium px-3 py-1.5 rounded-full border ${bgColor}`}>
-                  {s.label}: {monthsLabel}
-                  <span className="ml-1 opacity-70">({isPositive ? "+" : ""}{formatMoneyCompact(Math.abs(monthlyNet), "INR")}/mo)</span>
-                </div>
-              );
-            });
-          })()}
-        </div>
-      </div>
-
-      {/* Row 4: Detail table */}
+      {/* Detail table */}
       <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
         <h3 className="font-bold text-gray-900 mb-4">All outgoing payments</h3>
         <div className="flex gap-3 mb-4">
@@ -312,12 +191,6 @@ export default function MoneyOutPage() {
             className="text-sm border border-gray-300 rounded-md px-3 py-2">
             <option value="">All categories</option>
             {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select value={currency} onChange={(e) => setCurrency(e.target.value)}
-            className="text-sm border border-gray-300 rounded-md px-3 py-2">
-            <option value="">All currencies</option>
-            <option value="INR">INR</option>
-            <option value="USD">USD</option>
           </select>
         </div>
 
