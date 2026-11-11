@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { ReviewDetail as ReviewDetailType, Installment } from "@/lib/types";
-import { formatMoney, formatDate, formatConfidence } from "@/lib/format";
+import { formatMoney, formatDate } from "@/lib/format";
 import { apiFetch } from "@/lib/api";
 
 interface Props {
