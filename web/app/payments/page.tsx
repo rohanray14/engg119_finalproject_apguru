@@ -251,14 +251,22 @@ export default function PaymentsPage() {
     return items;
   }, [filtered, sortKey, sortDir]);
 
-  // Compute summary stats from the filtered set
-  const stats = useMemo(() => {
+  // Global stats from full dataset (cards stay stable regardless of filters)
+  const globalStats = useMemo(() => {
+    if (!data) return { screenshotCount: 0, unmatchedCount: 0, reviewCount: 0, blankCount: 0 };
+    const all = data.items;
+    return {
+      screenshotCount: all.filter((r) => r.confirmation === "screenshot_only").length,
+      unmatchedCount: all.filter((r) => r.match_status === "unmatched").length,
+      reviewCount: all.filter((r) => r.match_status === "pending_review").length,
+      blankCount: all.filter((r) => !r.payer_name).length,
+    };
+  }, [data]);
+
+  // Filtered stats for the "Total received" and "Payments" cards
+  const filteredStats = useMemo(() => {
     const totalReceived = filtered.reduce((s, r) => s + r.amount_in_bank_paise, 0);
-    const screenshotCount = filtered.filter((r) => r.confirmation === "screenshot_only").length;
-    const unmatchedCount = filtered.filter((r) => r.match_status === "unmatched").length;
-    const reviewCount = filtered.filter((r) => r.match_status === "pending_review").length;
-    const blankCount = filtered.filter((r) => !r.payer_name).length;
-    return { totalReceived, screenshotCount, unmatchedCount, reviewCount, blankCount };
+    return { totalReceived };
   }, [filtered]);
 
   // Determine available months from the data for the filter dropdown
@@ -390,7 +398,7 @@ export default function PaymentsPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
             <div className="rounded-xl border px-4 py-3" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Total received</div>
-              <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{formatMoneyCompact(stats.totalReceived, "INR")}</div>
+              <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{formatMoneyCompact(filteredStats.totalReceived, "INR")}</div>
               <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>in bank (INR)</div>
             </div>
             <div className="rounded-xl border px-4 py-3" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
@@ -398,30 +406,30 @@ export default function PaymentsPage() {
               <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{filtered.length}</div>
               <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>{activeFilters > 0 ? "matching filters" : "total"}</div>
             </div>
-            {stats.reviewCount > 0 && (
+            {globalStats.reviewCount > 0 && (
               <Link href="/review"
                 className="rounded-xl border px-4 py-3 transition-colors block"
                 style={{ backgroundColor: "rgba(255, 176, 32, 0.1)", borderColor: "rgba(255, 176, 32, 0.3)" }}>
                 <div className="text-xs" style={{ color: "var(--warning)" }}>Needs review</div>
-                <div className="text-lg font-bold" style={{ color: "var(--warning)" }}>{stats.reviewCount}</div>
+                <div className="text-lg font-bold" style={{ color: "var(--warning)" }}>{globalStats.reviewCount}</div>
                 <div className="text-xs" style={{ color: "var(--warning)" }}>waiting for you →</div>
               </Link>
             )}
-            {stats.unmatchedCount > 0 && (
+            {globalStats.unmatchedCount > 0 && (
               <button onClick={() => { setMatch(match === "unmatched" ? "" : "unmatched"); setConfirmation(""); setPage(0); }}
                 className={`text-left rounded-xl border px-4 py-3 transition-colors ${match === "unmatched" ? "ring-2" : ""}`}
                 style={{ borderColor: "var(--border)" }}>
                 <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Unmatched</div>
-                <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{stats.unmatchedCount}</div>
-                <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>{stats.blankCount > 0 ? `${stats.blankCount} with no payer name` : "no student linked"} →</div>
+                <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{globalStats.unmatchedCount}</div>
+                <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>{globalStats.blankCount > 0 ? `${globalStats.blankCount} with no payer name` : "no student linked"} →</div>
               </button>
             )}
-            {stats.screenshotCount > 0 && (
+            {globalStats.screenshotCount > 0 && (
               <button onClick={() => { setConfirmation(confirmation === "screenshot_only" ? "" : "screenshot_only"); setMatch(""); setPage(0); }}
                 className={`text-left rounded-xl border px-4 py-3 transition-colors ${confirmation === "screenshot_only" ? "ring-2" : ""}`}
                 style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", borderColor: "rgba(255, 77, 77, 0.3)" }}>
                 <div className="text-xs" style={{ color: "var(--danger)" }}>Unverified</div>
-                <div className="text-lg font-bold" style={{ color: "var(--danger)" }}>{stats.screenshotCount}</div>
+                <div className="text-lg font-bold" style={{ color: "var(--danger)" }}>{globalStats.screenshotCount}</div>
                 <div className="text-xs" style={{ color: "var(--danger)" }}>screenshot only — not confirmed →</div>
               </button>
             )}
@@ -603,9 +611,9 @@ export default function PaymentsPage() {
             &ldquo;In Bank&rdquo; shows the amount received after gateway fees, GST, and FX conversion — always in INR (₹).
             Hover over deductions to see the breakdown.
           </p>
-          {stats.blankCount > 0 && (
+          {globalStats.blankCount > 0 && (
             <p className="text-xs mt-2" style={{ color: "var(--text-tertiary)" }}>
-              {stats.blankCount} payment{stats.blankCount > 1 ? "s" : ""} show &ldquo;(blank)&rdquo; as the payer name.
+              {globalStats.blankCount} payment{globalStats.blankCount > 1 ? "s" : ""} show &ldquo;(blank)&rdquo; as the payer name.
               This happens when the bank statement or gateway report does not include the sender&rsquo;s
               name — common with UPI, NEFT batch transfers, and some international gateways. These
               payments need manual review to match them to a student.
