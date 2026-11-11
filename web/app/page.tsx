@@ -9,7 +9,7 @@ import DecisionList from "@/components/decision-list";
 import AskPanel from "@/components/ask-panel";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, Cell,
+  CartesianGrid,
 } from "recharts";
 
 function fetcher<T>(path: string) {
@@ -345,21 +345,17 @@ export default function TodayPage() {
           </p>
           {monthsData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={monthsData} barGap={2} barCategoryGap="20%">
+              <BarChart data={monthsData} barGap={1} barCategoryGap="25%">
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} />
-                <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 11, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} width={50} />
+                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} interval={0} />
+                <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} width={55} tickCount={5} />
                 <Tooltip
                   formatter={(value) => [lakhs(Number(value) * 100)]}
                   labelStyle={{ fontWeight: 600, color: "var(--text)" }}
                   contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
                 />
                 <Bar dataKey="expected" name="Expected" fill="var(--border)" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="collected" name="Collected" radius={[3, 3, 0, 0]}>
-                  {monthsData.map((_, i) => (
-                    <Cell key={i} fill={i === monthsData.length - 1 ? "var(--accent)" : "#3da391"} />
-                  ))}
-                </Bar>
+                <Bar dataKey="collected" name="Collected" fill="var(--accent)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (

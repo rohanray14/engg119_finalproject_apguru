@@ -19,7 +19,7 @@ function buildDecisions(d: Dashboard): DecisionItem[] {
       type: "risk",
       title: `${d.risk.high} high-severity risk flag${d.risk.high > 1 ? "s" : ""}`,
       description: "Review flagged items before proceeding",
-      action: { label: "Check", href: "/risk" },
+      action: { label: "Review", href: "/risk" },
     });
   }
 
@@ -37,7 +37,7 @@ function buildDecisions(d: Dashboard): DecisionItem[] {
       type: "overdue",
       title: `${d.reminders.needs_approval} reminder${d.reminders.needs_approval > 1 ? "s" : ""} need approval`,
       description: `${d.reminders.overdue} overdue reminders drafted`,
-      action: { label: "Read drafts", href: "/reminders" },
+      action: { label: "Review", href: "/reminders" },
     });
   }
 
@@ -48,7 +48,7 @@ function buildDecisions(d: Dashboard): DecisionItem[] {
       type: "commission",
       title: `Commissions ready: ${formatMoney(totalNet, "INR")} to ${counselorCount} counselor${counselorCount > 1 ? "s" : ""}`,
       description: "Review and approve the payout",
-      action: { label: "Open", href: "/commissions" },
+      action: { label: "Review", href: "/commissions" },
     });
   }
 
@@ -79,23 +79,21 @@ export default function DecisionList({ dashboard }: { dashboard: Dashboard }) {
       <h3 className="font-bold mb-4" style={{ color: "var(--text)" }}>Needs your decision</h3>
       <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
         {items.map((item, i) => (
-          <div key={i} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
-            <div className="flex items-start gap-3">
-              <span
-                className="mt-0.5 px-2.5 py-0.5 text-[10px] font-semibold uppercase rounded"
-                style={{ backgroundColor: badgeColors[item.type], color: "var(--bg)" }}
-              >
-                {item.type}
-              </span>
-              <div>
-                <div className="text-sm font-medium" style={{ color: "var(--text)" }}>{item.title}</div>
-                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{item.description}</div>
-              </div>
+          <div key={i} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
+            <span
+              className="shrink-0 w-[82px] text-center px-2.5 py-0.5 text-[10px] font-semibold uppercase rounded"
+              style={{ backgroundColor: badgeColors[item.type], color: "var(--bg)" }}
+            >
+              {item.type}
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium" style={{ color: "var(--text)" }}>{item.title}</div>
+              <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{item.description}</div>
             </div>
             <Link
               href={item.action.href}
-              className="shrink-0 px-4 py-1.5 text-sm border rounded-lg transition-colors"
-              style={{ borderColor: "var(--border)", color: "var(--text-secondary)", backgroundColor: "var(--surface-hover)" }}
+              className="shrink-0 px-5 py-2 text-sm font-medium rounded-lg transition-colors"
+              style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
             >
               {item.action.label}
             </Link>
