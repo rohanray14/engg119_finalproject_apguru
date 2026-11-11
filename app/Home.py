@@ -293,11 +293,12 @@ def main():
         st.markdown("---")
         as_of = st.date_input(
             "As-of date",
-            value=default_as_of,
+            value=st.session_state.get("global_as_of", default_as_of),
             min_value=min_date,
             max_value=max_date,
-            help="All overdue / forecast calculations use this date.",
+            help="All overdue / forecast calculations use this date. Shared across all pages.",
         )
+        st.session_state["global_as_of"] = as_of
         st.markdown("---")
         st.markdown(
             '<p style="color:#8395a7; font-size:0.75rem; margin-top:2rem;">'

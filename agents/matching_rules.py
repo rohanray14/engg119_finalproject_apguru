@@ -353,6 +353,7 @@ def _decide(
 
 
 MAX_STUDENTS_FOR_HIGH = 4  # Max distinct students sharing amount for HIGH confidence
+MIN_NSCORE_FOR_HIGH = 80   # Fuzzy surname overlap (65-79) → MEDIUM; need strong match for HIGH
 
 
 def _single_candidate_decision(
@@ -372,7 +373,7 @@ def _single_candidate_decision(
         # Confidence depends on how many distinct students share this amount.
         # With few students, name matching is reliable enough for auto-match.
         # With many students, name noise makes auto-matching risky.
-        if len(same_amount_student_ids) <= MAX_STUDENTS_FOR_HIGH:
+        if nscore >= MIN_NSCORE_FOR_HIGH and len(same_amount_student_ids) <= MAX_STUDENTS_FOR_HIGH:
             confidence = HIGH_CONFIDENCE
         else:
             confidence = MEDIUM_CONFIDENCE
@@ -428,7 +429,7 @@ def _multi_candidate_decision(
 
         # Only HIGH when this student has exactly 1 matching installment
         # (multiple installments = can't reliably pick which one)
-        if len(top_cands) == 1 and len(same_amount_student_ids) <= MAX_STUDENTS_FOR_HIGH:
+        if len(top_cands) == 1 and best_nscore >= MIN_NSCORE_FOR_HIGH and len(same_amount_student_ids) <= MAX_STUDENTS_FOR_HIGH:
             confidence = HIGH_CONFIDENCE
         else:
             confidence = MEDIUM_CONFIDENCE
@@ -466,7 +467,7 @@ def _multi_candidate_decision(
         inst = winner["inst"]
 
         # Confidence: conservative for multi-student amounts
-        if len(same_amount_student_ids) <= MAX_STUDENTS_FOR_HIGH:
+        if best_nscore >= MIN_NSCORE_FOR_HIGH and len(same_amount_student_ids) <= MAX_STUDENTS_FOR_HIGH:
             confidence = HIGH_CONFIDENCE
         else:
             confidence = LOW_CONFIDENCE

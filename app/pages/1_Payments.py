@@ -20,7 +20,7 @@ with st.sidebar:
     st.caption("Finance Desk")
 
 st.title("Payments")
-st.caption("Every incoming payment with amount paid, deductions, and confirmation level.")
+st.caption("Every incoming payment with amount paid, deductions, and confirmation level. Showing all dates.")
 
 # Filters
 with st.container(border=True):
@@ -85,5 +85,16 @@ if rows:
             "Match": match_status,
         })
     st.dataframe(data, use_container_width=True, hide_index=True)
+
+    # Count blank payers
+    blank_count = sum(1 for d in data if d["Payer"] == "(blank)")
+    if blank_count > 0:
+        st.caption(
+            f'{blank_count} payment(s) show "(blank)" as the payer name. '
+            f"This happens when the bank statement or gateway report does not include "
+            f"the sender's name — common with UPI, NEFT batch transfers, and some "
+            f"international gateways. These payments need manual review to match them "
+            f"to a student."
+        )
 else:
     st.info("No payments match the filters.")

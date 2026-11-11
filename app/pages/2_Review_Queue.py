@@ -132,7 +132,7 @@ pending = conn.execute(
     "p.fx_diff_paise, p.tds_paise "
     "FROM match_result mr "
     "JOIN payment_in p ON mr.payment_id = p.id "
-    "WHERE mr.status = 'pending_review' "
+    "WHERE mr.status = 'pending_review' AND mr.allocations != '[]' "
     "ORDER BY mr.confidence DESC"
 ).fetchall()
 

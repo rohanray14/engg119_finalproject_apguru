@@ -17,12 +17,12 @@ apply_theme()
 
 conn = get_db()
 
-# Use same default date as Home page (midpoint of data range)
+# Use shared as-of date from Home page (or midpoint fallback)
 min_date_row = conn.execute("SELECT MIN(due_date) FROM installment WHERE due_date IS NOT NULL").fetchone()
 max_date_row = conn.execute("SELECT MAX(due_date) FROM installment WHERE due_date IS NOT NULL").fetchone()
 min_date = date.fromisoformat(min_date_row[0]) if min_date_row and min_date_row[0] else date(2025, 4, 1)
 max_date = date.fromisoformat(max_date_row[0]) if max_date_row and max_date_row[0] else date(2026, 9, 30)
-default_as_of = min_date + (max_date - min_date) // 2
+default_as_of = st.session_state.get("global_as_of", min_date + (max_date - min_date) // 2)
 
 with st.sidebar:
     st.markdown("## Educore")
@@ -51,14 +51,44 @@ filtered = flags if severity_filter == "All" else [f for f in flags if f.severit
 
 st.caption(f"Showing {len(filtered)} flags")
 
+def _extract_student_name(flag):
+    """Try to extract student name from a risk flag for navigation."""
+    # Overdue installment flags include student name in explanation
+    if flag.category == "overdue_installment" and flag.entity.startswith("installment:"):
+        inst_id = flag.entity.split(":")[1]
+        row = conn.execute(
+            "SELECT s.name FROM student s "
+            "JOIN enrollment e ON e.student_id = s.id "
+            "JOIN installment i ON i.enrollment_id = e.id "
+            "WHERE i.id = ?", (inst_id,)
+        ).fetchone()
+        return row["name"] if row else None
+    # Payment-based flags: try to find matched student
+    if flag.entity.startswith("payment:"):
+        pid = flag.entity.split(":")[1]
+        row = conn.execute(
+            "SELECT s.name FROM student s "
+            "JOIN enrollment e ON e.student_id = s.id "
+            "JOIN installment i ON i.enrollment_id = e.id "
+            "JOIN match_result mr ON json_extract(mr.allocations, '$[0].installment_id') = i.id "
+            "WHERE mr.payment_id = ?", (pid,)
+        ).fetchone()
+        return row["name"] if row else None
+    return None
+
 for f in filtered:
     sev_colors = {"high": "red", "medium": "orange", "low": "green"}
     color = sev_colors.get(f.severity, "gray")
 
     with st.container(border=True):
-        cols = st.columns([1, 2, 5])
+        cols = st.columns([1, 2, 4, 1])
         cols[0].markdown(badge(f.severity.upper(), color), unsafe_allow_html=True)
         cols[1].markdown(f"**{f.category.replace('_', ' ').title()}**")
         cols[2].write(f.explanation)
         if f.amount_paise:
             cols[2].caption(f"{f.entity} · {fmt_inr(f.amount_paise)} {f.currency}")
+        student_name = _extract_student_name(f)
+        if student_name:
+            if cols[3].button("View student", key=f"view_{f.entity}"):
+                st.session_state["risk_nav_student"] = student_name
+                st.switch_page("pages/3_Students.py")

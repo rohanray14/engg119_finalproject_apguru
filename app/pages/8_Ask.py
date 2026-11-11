@@ -68,6 +68,31 @@ if not st.session_state.messages:
             })
             st.rerun()
 
+    st.write("")
+    st.markdown("#### Additional insights we're working on")
+    st.caption("These deeper analyses are on the roadmap:")
+    insight_suggestions = [
+        "Which program is most profitable?",
+        "Which region brings in the most revenue?",
+        "What are the upcoming payments in December?",
+        "Is SAT enrollment tied to news or trends?",
+        "Are enrollments seasonal? Which months peak?",
+        "Approximate spend and comparison across gateways",
+    ]
+    insight_cols = st.columns(3)
+    for i, insight in enumerate(insight_suggestions):
+        col_idx = i % 3
+        if insight_cols[col_idx].button(insight, key=f"insight_{i}"):
+            st.session_state.messages.append({"role": "user", "content": insight})
+            result = ask(conn, insight)
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": result.answer,
+                "transactions": result.transactions if result.transactions else None,
+                "explanation": result.query_used if result.query_used else None,
+            })
+            st.rerun()
+
 # Input
 st.write("")
 cols = st.columns([8, 1])

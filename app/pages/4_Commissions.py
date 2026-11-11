@@ -23,7 +23,7 @@ with st.sidebar:
 
 # ── Header ──
 st.title("Commissions")
-st.caption("Calculated only on fees that have reached the bank. Unmatched payments are held back.")
+st.caption("Cumulative totals from all matched fees to date. Not filtered by month — this is the all-time position.")
 
 # ── Parse terms for all counselors ──
 counselors = conn.execute("SELECT * FROM counselor ORDER BY name").fetchall()
@@ -92,6 +92,10 @@ if total_net > 0:
         log_audit(conn, "finance_lead", "approve_commission_payout",
                   "commissions", None, f"total_net={total_net}")
         st.toast(f"Payout of {fmt_inr(total_net)} approved and logged!")
+        st.success(
+            f"Payout of {fmt_inr(total_net)} has been approved and recorded in the audit log. "
+            f"(Prototype: no actual transfer is made.)"
+        )
 
 st.write("")
 
@@ -118,18 +122,21 @@ with st.container(border=True):
     st.markdown("### Counselors")
 
     # Table header
-    cols = st.columns([2, 3, 3, 1.5, 1.5, 1.5, 1])
+    cols = st.columns([2, 4, 2, 1.5, 1.5, 1.5, 1])
     cols[0].markdown("**Counselor**")
     cols[1].markdown("**Terms as written**")
-    cols[2].markdown("**Rule the agent read**")
+    cols[2].markdown("**Rule**")
     cols[3].markdown("**Commission**")
     cols[4].markdown("**Net after TDS**")
     cols[5].markdown("**Status**")
 
     st.markdown("---")
 
-    for c in counselor_data:
-        cols = st.columns([2, 3, 3, 1.5, 1.5, 1.5, 1])
+    # Only show counselors with earned commission (remove blank rows)
+    display_data = [c for c in counselor_data if c["earned"] > 0 or c["status"] == "needs_rate"]
+
+    for c in display_data:
+        cols = st.columns([2, 4, 2, 1.5, 1.5, 1.5, 1])
         cols[0].write(c["name"])
 
         # Terms in italics/quotes

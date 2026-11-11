@@ -356,9 +356,14 @@ with st.container(border=True):
         cat_filter = st.selectbox(
             "Category",
             ["All"] + [c["category"] for c in categories],
+            help="Filter by expense category (e.g. salary, rent, marketing).",
         )
     with col2:
-        curr_filter = st.selectbox("Currency", ["All", "INR", "USD", "AED", "GBP"])
+        curr_filter = st.selectbox(
+            "Currency",
+            ["All", "INR", "USD", "AED", "GBP"],
+            help="Filter by payment currency.",
+        )
 
     query = "SELECT * FROM payment_out WHERE date BETWEEN ? AND ?"
     params: list = [filter_start.isoformat(), filter_end.isoformat()]
