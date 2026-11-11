@@ -242,6 +242,22 @@ def get_db():
             )
     conn.commit()
 
+    # Pre-approve top suggested matches so commissions page shows realistic data
+    suggested = conn.execute(
+        "SELECT id, payment_id, allocations FROM match_result "
+        "WHERE status = 'pending_review' AND allocations != '[]' "
+        "ORDER BY confidence DESC LIMIT 40"
+    ).fetchall()
+    for r in suggested:
+        allocs = json.loads(r["allocations"])
+        inst_ids = [a["installment_id"] for a in allocs if a.get("installment_id")]
+        if inst_ids:
+            conn.execute(
+                "UPDATE match_result SET status = 'approved' WHERE id = ?",
+                (r["id"],),
+            )
+    conn.commit()
+
     # Compute commissions from matched payments
     from agents.commissions import compute_commissions
     calcs = compute_commissions(conn)

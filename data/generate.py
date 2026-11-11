@@ -469,12 +469,16 @@ class Generator:
             # - "city_referral": only refers students in their city
             # - "city_all": students are auto-linked later (all students in that city)
             counselor_ids = []
-            if self.rng.random() < 0.60:
+            if self.rng.random() < 0.85:
                 eligible = [c for c in self.counselors if c["type"] in ("referral", "student_referral", "split")]
                 eligible += [c for c in self.counselors
                              if c["type"] == "city_referral" and c["city"] == city]
                 if eligible:
                     counselor_ids = [self.rng.choice(eligible)["id"]]
+                    # 30% chance of a second counselor (co-referral)
+                    if len(eligible) > 1 and self.rng.random() < 0.30:
+                        second = self.rng.choice([c for c in eligible if c["id"] != counselor_ids[0]])
+                        counselor_ids.append(second["id"])
 
             self._family_meta[fid] = {
                 "last_name": last, "parent_name": parent_name,

@@ -1,61 +1,61 @@
 id,date,payee,category,amount_paise,currency
-1,2026-04-09,Dr. Sunita Rao,faculty,9219981,INR
-2,2025-11-14,GST Authority,tax,7132241,INR
-3,2026-07-16,Prof. Vikram Iyer,faculty,2927676,INR
-4,2026-01-29,Zoom Video,software,8885800,INR
-5,2025-08-29,GST Authority,tax,2947304,INR
-6,2025-05-06,AWS,software,5871047,INR
-7,2025-08-05,Prof. Vikram Iyer,faculty,14721530,INR
-8,2026-08-03,GST Authority,tax,8805150,INR
-9,2026-04-21,Prof. Anil Kumar,faculty,14093071,INR
-10,2025-11-02,Dr. Sunita Rao,faculty,12250886,INR
-11,2025-10-01,Google Workspace,software,12703670,INR
-12,2025-09-11,Prof. Anil Kumar,faculty,9692956,INR
-13,2026-06-07,Dr. Meena Pillai,faculty,6343624,INR
-14,2026-05-06,Zoom Video,software,9355760,INR
-15,2026-01-15,GST Authority,tax,12262651,INR
-16,2026-05-09,Neel Shah,refund,2696149,INR
-17,2025-05-26,Prof. Vikram Iyer,faculty,8176121,INR
-18,2025-08-19,GST Authority,tax,12176196,INR
-19,2025-08-27,Greenfield Properties,rent,4159722,INR
-20,2025-10-18,AWS,software,11425960,INR
-21,2025-07-14,Dr. Sunita Rao,faculty,6817557,INR
-22,2026-06-12,Office Supplies Co,other,1445085,INR
-23,2026-07-30,Dr. Sunita Rao,faculty,1380336,INR
-24,2026-09-10,Prof. Vikram Iyer,faculty,10455472,INR
-25,2025-08-31,Metro Realty,rent,4610434,INR
-26,2025-12-03,Dr. Meena Pillai,faculty,8697782,INR
-27,2025-09-24,Dr. Meena Pillai,faculty,13516599,INR
-28,2025-07-01,GST Authority,tax,14227036,INR
-29,2026-01-07,GST Authority,tax,6662658,INR
-30,2025-07-29,Prof. Anil Kumar,faculty,2547685,INR
-31,2026-09-04,Greenfield Properties,rent,886324,INR
-32,2026-08-05,Meta Ads,ads,12138788,INR
-33,2025-10-03,Google Workspace,software,8623384,INR
-34,2026-06-19,Travel Agency,other,10086888,INR
-35,2026-02-28,Prof. Anil Kumar,faculty,12475042,INR
-36,2025-10-07,Esha Sharma,refund,14137660,INR
-37,2026-05-09,GST Authority,tax,1572595,INR
-38,2025-08-06,Google Ads,ads,11549178,INR
-39,2025-10-03,Farhan Kumar,refund,12163787,INR
-40,2026-07-02,Prof. Vikram Iyer,faculty,2564357,INR
-41,2025-10-29,Dr. Sunita Rao,faculty,1973390,INR
-42,2025-05-06,Google Ads,ads,2592406,INR
-43,2026-04-08,LinkedIn Marketing,ads,3379023,INR
-44,2025-04-01,Greenfield Properties,rent,5543230,INR
-45,2026-09-14,Prof. Vikram Iyer,faculty,11558829,INR
-46,2025-08-22,LinkedIn Marketing,ads,8728265,INR
-47,2026-09-18,GST Authority,tax,10669880,INR
-48,2025-11-01,LinkedIn Marketing,ads,2161097,INR
-49,2025-05-16,GST Authority,tax,1116293,INR
-50,2026-02-01,Dr. Sunita Rao,faculty,2751636,INR
-51,2025-11-08,LinkedIn Marketing,ads,6524113,INR
-52,2026-06-07,Prof. Anil Kumar,faculty,9724928,INR
-53,2026-04-26,Dr. Sunita Rao,faculty,7211882,INR
-54,2025-12-17,Metro Realty,rent,12152034,INR
-55,2025-10-26,Prof. Anil Kumar,faculty,11062401,INR
-56,2025-10-15,GST Authority,tax,9956346,INR
-57,2026-09-06,GST Authority,tax,7541170,INR
-58,2026-02-18,Diya Mukherjee,refund,6857590,INR
-59,2025-12-10,Prof. Anil Kumar,faculty,5031949,INR
-60,2025-07-22,Prof. Rajesh Nair,faculty,7324657,INR
+1,2026-01-26,Rajat Chopra,refund,9460751,INR
+2,2026-08-16,Metro Realty,rent,9268884,INR
+3,2026-03-27,Vidya Saxena,refund,9529656,INR
+4,2025-07-11,LinkedIn Marketing,ads,14253345,INR
+5,2025-05-08,Dr. Sunita Rao,faculty,2876783,INR
+6,2025-11-07,Dr. Sunita Rao,faculty,10602306,INR
+7,2026-04-03,Meta Ads,ads,2655739,INR
+8,2026-06-07,GST Authority,tax,9724928,INR
+9,2026-04-26,Dr. Sunita Rao,faculty,7211882,INR
+10,2025-12-17,Metro Realty,rent,12152034,INR
+11,2025-10-26,Prof. Anil Kumar,faculty,11062401,INR
+12,2025-10-15,GST Authority,tax,9956346,INR
+13,2026-09-06,GST Authority,tax,7541170,INR
+14,2026-02-18,Zara Mehta,refund,6857590,INR
+15,2025-12-10,Prof. Anil Kumar,faculty,5031949,INR
+16,2025-07-22,Prof. Rajesh Nair,faculty,7324657,INR
+17,2025-07-01,Prof. Vikram Iyer,faculty,6095492,INR
+18,2025-08-28,Zoom Video,software,5091031,INR
+19,2026-04-22,Dr. Sunita Rao,faculty,6852396,INR
+20,2025-08-05,Office Supplies Co,other,9332796,INR
+21,2026-02-08,GST Authority,tax,2102904,INR
+22,2026-01-14,LinkedIn Marketing,ads,5047530,INR
+23,2025-05-20,Google Ads,ads,5835094,INR
+24,2026-05-04,Office Supplies Co,other,6291040,INR
+25,2026-09-27,AWS,software,10476017,INR
+26,2026-05-18,Akash Srinivasan,refund,10437314,INR
+27,2025-04-10,Prof. Rajesh Nair,faculty,12465890,INR
+28,2025-08-08,Dr. Sunita Rao,faculty,6855220,INR
+29,2025-12-30,Google Ads,ads,12670515,INR
+30,2026-04-15,GST Authority,tax,11878563,INR
+31,2026-07-13,Google Ads,ads,7864526,INR
+32,2026-07-24,Travel Agency,other,5127541,INR
+33,2026-09-16,Office Supplies Co,other,5620195,INR
+34,2025-06-29,GST Authority,tax,7320186,INR
+35,2025-07-02,AWS,software,1833367,INR
+36,2025-12-02,Prof. Anil Kumar,faculty,3270138,INR
+37,2025-06-26,LinkedIn Marketing,ads,5295781,INR
+38,2026-08-18,Google Ads,ads,7613264,INR
+39,2025-08-18,GST Authority,tax,8851785,INR
+40,2026-09-28,LinkedIn Marketing,ads,2591977,INR
+41,2025-10-12,Prof. Anil Kumar,faculty,12481617,INR
+42,2026-09-30,Metro Realty,rent,4597436,INR
+43,2026-09-23,Office Supplies Co,other,10690037,INR
+44,2025-09-20,Greenfield Properties,rent,3432895,INR
+45,2025-08-15,Prof. Rajesh Nair,faculty,6427248,INR
+46,2026-06-07,Travel Agency,other,6860154,INR
+47,2025-07-25,Prof. Vikram Iyer,faculty,11892789,INR
+48,2025-07-30,Prof. Vikram Iyer,faculty,5519373,INR
+49,2025-12-28,Greenfield Properties,rent,537485,INR
+50,2026-05-09,Zoom Video,software,5614027,INR
+51,2026-09-10,Office Supplies Co,other,8268806,INR
+52,2026-08-13,Diya Agarwal,refund,6468395,INR
+53,2026-07-16,Prof. Vikram Iyer,faculty,5505493,INR
+54,2025-04-06,Prof. Vikram Iyer,faculty,12620424,INR
+55,2026-03-30,Prof. Anil Kumar,faculty,2200165,INR
+56,2025-10-20,Greenfield Properties,rent,9376767,INR
+57,2025-09-05,Meta Ads,ads,2577734,INR
+58,2025-04-08,Neel Joshi,refund,13409188,INR
+59,2025-11-18,GST Authority,tax,7133020,INR
+60,2026-04-09,Dr. Meena Pillai,faculty,3556507,INR

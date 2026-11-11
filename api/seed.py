@@ -115,6 +115,48 @@ def recompute_commissions(conn, actor: str = "system") -> int:
     return len(calcs)
 
 
+def _pre_approve_suggested(conn, limit: int = 40) -> int:
+    """Auto-approve the top pending-review matches by confidence.
+
+    This simulates a finance lead who has already reviewed a batch of
+    suggested matches, giving the commissions page realistic data.
+    """
+    from api.allocation import AllocationError, apply_status_changes, plan_allocation
+
+    rows = conn.execute(
+        "SELECT mr.id, mr.payment_id, mr.allocations "
+        "FROM match_result mr "
+        "WHERE mr.status = 'pending_review' AND mr.allocations != '[]' "
+        "ORDER BY mr.confidence DESC LIMIT ?",
+        (limit,),
+    ).fetchall()
+
+    approved = 0
+    for r in rows:
+        allocs = json.loads(r["allocations"])
+        inst_ids = [a["installment_id"] for a in allocs]
+        if not inst_ids:
+            continue
+        pay = conn.execute(
+            "SELECT amount_paid_paise, currency FROM payment_in WHERE id = ?",
+            (r["payment_id"],),
+        ).fetchone()
+        try:
+            plan = plan_allocation(
+                conn, pay["amount_paid_paise"], pay["currency"], inst_ids,
+            )
+        except AllocationError:
+            continue
+        conn.execute(
+            "UPDATE match_result SET status = 'approved', allocations = ? WHERE id = ?",
+            (json.dumps(plan.allocations), r["id"]),
+        )
+        apply_status_changes(conn, plan, "system:seed", "pre_approve")
+        approved += 1
+    conn.commit()
+    return approved
+
+
 def _refuse_if_production(database_url: str) -> None:
     """The database itself says whether it is production; the operator's shell
     doesn't get a say.  The API stamps the marker when it starts with
@@ -151,6 +193,11 @@ def seed(database_url: str, reset: bool = False, data_dir: Path | None = None) -
     conn = load_all(data_dir=data_dir, db_path=database_url)
     set_meta(conn, "environment", "demo")
     counts = run_matching(conn)
+    # Pre-approve a batch of suggested matches so the commissions page has
+    # realistic data.  Picks the top pending matches by confidence that have
+    # non-empty allocations, simulating a finance lead who already reviewed them.
+    n_approved = _pre_approve_suggested(conn, limit=40)
+    counts["pre_approved"] = n_approved
     n_comm = recompute_commissions(conn, actor="system:seed")
     log_audit(conn, "system:seed", "load_demo_data", "ledger", None,
               json.dumps({**counts, "commission_lines": n_comm}), commit=False)

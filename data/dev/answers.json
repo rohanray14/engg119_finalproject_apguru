@@ -1,28 +1,434 @@
 [
   {
-    "payment_id": 288,
+    "payment_id": 234,
     "installment_ids": [
-      387
+      310
     ],
     "allocations": [
       {
-        "installment_id": 387,
-        "allocated_paise": 17700000
+        "installment_id": 310,
+        "allocated_paise": 8850000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 238,
+    "installment_ids": [
+      360
+    ],
+    "allocations": [
+      {
+        "installment_id": 360,
+        "allocated_paise": 3780000
+      }
+    ],
+    "case_types": [
+      "company_payer",
+      "company_tds",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 292,
+    "installment_ids": [
+      311
+    ],
+    "allocations": [
+      {
+        "installment_id": 311,
+        "allocated_paise": 8850000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 356,
+    "installment_ids": [
+      125
+    ],
+    "allocations": [
+      {
+        "installment_id": 125,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 237,
+    "installment_ids": [
+      288
+    ],
+    "allocations": [
+      {
+        "installment_id": 288,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 205,
+    "installment_ids": [
+      34
+    ],
+    "allocations": [
+      {
+        "installment_id": 34,
+        "allocated_paise": 12390000
       }
     ],
     "case_types": [
       "duplicate_amount",
-      "fuzzy_name"
+      "fuzzy_name",
+      "gateway_fees"
     ]
   },
   {
-    "payment_id": 122,
+    "payment_id": 360,
     "installment_ids": [
-      115
+      102
     ],
     "allocations": [
       {
-        "installment_id": 115,
+        "installment_id": 102,
+        "allocated_paise": 14160000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 162,
+    "installment_ids": [
+      336
+    ],
+    "allocations": [
+      {
+        "installment_id": 336,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 248,
+    "installment_ids": [
+      240
+    ],
+    "allocations": [
+      {
+        "installment_id": 240,
+        "allocated_paise": 15000000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 241,
+    "installment_ids": [
+      158
+    ],
+    "allocations": [
+      {
+        "installment_id": 158,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 384,
+    "installment_ids": [
+      293
+    ],
+    "allocations": [
+      {
+        "installment_id": 293,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 56,
+    "installment_ids": [
+      181
+    ],
+    "allocations": [
+      {
+        "installment_id": 181,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 301,
+    "installment_ids": [
+      12
+    ],
+    "allocations": [
+      {
+        "installment_id": 12,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 324,
+    "installment_ids": [
+      279
+    ],
+    "allocations": [
+      {
+        "installment_id": 279,
+        "allocated_paise": 900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 325,
+    "installment_ids": [
+      137
+    ],
+    "allocations": [
+      {
+        "installment_id": 137,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 77,
+    "installment_ids": [
+      43
+    ],
+    "allocations": [
+      {
+        "installment_id": 43,
+        "allocated_paise": 140000
+      }
+    ],
+    "case_types": [
+      "foreign",
+      "fuzzy_name",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 168,
+    "installment_ids": [
+      281
+    ],
+    "allocations": [
+      {
+        "installment_id": 281,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 312,
+    "installment_ids": [
+      345
+    ],
+    "allocations": [
+      {
+        "installment_id": 345,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 204,
+    "installment_ids": [
+      272
+    ],
+    "allocations": [
+      {
+        "installment_id": 272,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 302,
+    "installment_ids": [
+      224
+    ],
+    "allocations": [
+      {
+        "installment_id": 224,
+        "allocated_paise": 15000000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 73,
+    "installment_ids": [
+      320
+    ],
+    "allocations": [
+      {
+        "installment_id": 320,
+        "allocated_paise": 13924000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 220,
+    "installment_ids": [
+      117
+    ],
+    "allocations": [
+      {
+        "installment_id": 117,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 288,
+    "installment_ids": [
+      252
+    ],
+    "allocations": [
+      {
+        "installment_id": 252,
+        "allocated_paise": 75000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign"
+    ]
+  },
+  {
+    "payment_id": 132,
+    "installment_ids": [
+      230
+    ],
+    "allocations": [
+      {
+        "installment_id": 230,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 230,
+    "installment_ids": [
+      100
+    ],
+    "allocations": [
+      {
+        "installment_id": 100,
         "allocated_paise": 11210000
       }
     ],
@@ -33,609 +439,68 @@
     ]
   },
   {
-    "payment_id": 167,
-    "installment_ids": [
-      223
-    ],
-    "allocations": [
-      {
-        "installment_id": 223,
-        "allocated_paise": 7500000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 379,
-    "installment_ids": [
-      96
-    ],
-    "allocations": [
-      {
-        "installment_id": 96,
-        "allocated_paise": 75000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 378,
-    "installment_ids": [
-      243
-    ],
-    "allocations": [
-      {
-        "installment_id": 243,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 238,
-    "installment_ids": [
-      144
-    ],
-    "allocations": [
-      {
-        "installment_id": 144,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 33,
-    "installment_ids": [
-      45
-    ],
-    "allocations": [
-      {
-        "installment_id": 45,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 271,
-    "installment_ids": [
-      418
-    ],
-    "allocations": [
-      {
-        "installment_id": 418,
-        "allocated_paise": 27848000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 368,
-    "installment_ids": [
-      105
-    ],
-    "allocations": [
-      {
-        "installment_id": 105,
-        "allocated_paise": 450000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 121,
-    "installment_ids": [
-      119
-    ],
-    "allocations": [
-      {
-        "installment_id": 119,
-        "allocated_paise": 75000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 399,
-    "installment_ids": [
-      57
-    ],
-    "allocations": [
-      {
-        "installment_id": 57,
-        "allocated_paise": 7500000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 357,
-    "installment_ids": [
-      322
-    ],
-    "allocations": [
-      {
-        "installment_id": 322,
-        "allocated_paise": 8850000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup",
-      "partial",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 319,
-    "installment_ids": [
-      85
-    ],
-    "allocations": [
-      {
-        "installment_id": 85,
-        "allocated_paise": 3750000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 129,
-    "installment_ids": [
-      170
-    ],
-    "allocations": [
-      {
-        "installment_id": 170,
-        "allocated_paise": 6962000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 228,
-    "installment_ids": [
-      131
-    ],
-    "allocations": [
-      {
-        "installment_id": 131,
-        "allocated_paise": 42000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 180,
-    "installment_ids": [
-      293
-    ],
-    "allocations": [
-      {
-        "installment_id": 293,
-        "allocated_paise": 22420000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 232,
-    "installment_ids": [
-      252
-    ],
-    "allocations": [
-      {
-        "installment_id": 252,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 384,
-    "installment_ids": [
-      367
-    ],
-    "allocations": [
-      {
-        "installment_id": 367,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 54,
-    "installment_ids": [
-      273
-    ],
-    "allocations": [
-      {
-        "installment_id": 273,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 220,
-    "installment_ids": [
-      78
-    ],
-    "allocations": [
-      {
-        "installment_id": 78,
-        "allocated_paise": 23600000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 318,
-    "installment_ids": [
-      134
-    ],
-    "allocations": [
-      {
-        "installment_id": 134,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 60,
-    "installment_ids": [
-      77
-    ],
-    "allocations": [
-      {
-        "installment_id": 77,
-        "allocated_paise": 8850000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 116,
-    "installment_ids": [
-      50
-    ],
-    "allocations": [
-      {
-        "installment_id": 50,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 72,
-    "installment_ids": [
-      282
-    ],
-    "allocations": [
-      {
-        "installment_id": 282,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 373,
-    "installment_ids": [
-      84
-    ],
-    "allocations": [
-      {
-        "installment_id": 84,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
     "payment_id": 377,
     "installment_ids": [
-      62
+      53
     ],
     "allocations": [
       {
-        "installment_id": 62,
+        "installment_id": 53,
+        "allocated_paise": 2950000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 358,
+    "installment_ids": [
+      295
+    ],
+    "allocations": [
+      {
+        "installment_id": 295,
         "allocated_paise": 11800000
       }
     ],
     "case_types": [
       "blank_payer",
       "duplicate_amount",
-      "gateway_fees",
       "hourly_topup"
     ]
   },
   {
-    "payment_id": 114,
+    "payment_id": 163,
     "installment_ids": [
-      48
+      237
     ],
     "allocations": [
       {
-        "installment_id": 48,
-        "allocated_paise": 90000
+        "installment_id": 237,
+        "allocated_paise": 7500000
       }
     ],
     "case_types": [
-      "foreign",
+      "duplicate_amount",
       "fuzzy_name",
       "gateway_fees"
     ]
   },
   {
-    "payment_id": 45,
+    "payment_id": 345,
     "installment_ids": [
-      389
+      209
     ],
     "allocations": [
       {
-        "installment_id": 389,
+        "installment_id": 209,
         "allocated_paise": 11800000
       }
     ],
     "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 5,
-    "installment_ids": [
-      98
-    ],
-    "allocations": [
-      {
-        "installment_id": 98,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 347,
-    "installment_ids": [
-      224
-    ],
-    "allocations": [
-      {
-        "installment_id": 224,
-        "allocated_paise": 7500000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 249,
-    "installment_ids": [
-      384
-    ],
-    "allocations": [
-      {
-        "installment_id": 384,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 392,
-    "installment_ids": [
-      6
-    ],
-    "allocations": [
-      {
-        "installment_id": 6,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 32,
-    "installment_ids": [
-      305
-    ],
-    "allocations": [
-      {
-        "installment_id": 305,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 400,
-    "installment_ids": [
-      118
-    ],
-    "allocations": [
-      {
-        "installment_id": 118,
-        "allocated_paise": 75000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 195,
-    "installment_ids": [
-      232
-    ],
-    "allocations": [
-      {
-        "installment_id": 232,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 148,
-    "installment_ids": [
-      422
-    ],
-    "allocations": [
-      {
-        "installment_id": 422,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
       "duplicate_amount",
       "fuzzy_name",
       "gateway_fees",
@@ -643,104 +508,13 @@
     ]
   },
   {
-    "payment_id": 75,
+    "payment_id": 89,
     "installment_ids": [
-      73
+      90
     ],
     "allocations": [
       {
-        "installment_id": 73,
-        "allocated_paise": 112500
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 343,
-    "installment_ids": [
-      272
-    ],
-    "allocations": [
-      {
-        "installment_id": 272,
-        "allocated_paise": 7080000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 41,
-    "installment_ids": [
-      382
-    ],
-    "allocations": [
-      {
-        "installment_id": 382,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 398,
-    "installment_ids": [
-      25
-    ],
-    "allocations": [
-      {
-        "installment_id": 25,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 182,
-    "installment_ids": [
-      56
-    ],
-    "allocations": [
-      {
-        "installment_id": 56,
-        "allocated_paise": 7500000
-      }
-    ],
-    "case_types": [
-      "company_payer",
-      "duplicate_amount"
-    ]
-  },
-  {
-    "payment_id": 328,
-    "installment_ids": [
-      283
-    ],
-    "allocations": [
-      {
-        "installment_id": 283,
+        "installment_id": 90,
         "allocated_paise": 15000000
       }
     ],
@@ -751,175 +525,13 @@
     ]
   },
   {
-    "payment_id": 64,
+    "payment_id": 175,
     "installment_ids": [
-      8
+      213
     ],
     "allocations": [
       {
-        "installment_id": 8,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 267,
-    "installment_ids": [
-      172
-    ],
-    "allocations": [
-      {
-        "installment_id": 172,
-        "allocated_paise": 2950000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 152,
-    "installment_ids": [
-      155
-    ],
-    "allocations": [
-      {
-        "installment_id": 155,
-        "allocated_paise": 450000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 295,
-    "installment_ids": [
-      128
-    ],
-    "allocations": [
-      {
-        "installment_id": 128,
-        "allocated_paise": 75000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name"
-    ]
-  },
-  {
-    "payment_id": 14,
-    "installment_ids": [
-      394
-    ],
-    "allocations": [
-      {
-        "installment_id": 394,
-        "allocated_paise": 2065000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 55,
-    "installment_ids": [
-      164
-    ],
-    "allocations": [
-      {
-        "installment_id": 164,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 308,
-    "installment_ids": [
-      72
-    ],
-    "allocations": [
-      {
-        "installment_id": 72,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 92,
-    "installment_ids": [
-      353
-    ],
-    "allocations": [
-      {
-        "installment_id": 353,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 390,
-    "installment_ids": [
-      169
-    ],
-    "allocations": [
-      {
-        "installment_id": 169,
-        "allocated_paise": 6962000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 141,
-    "installment_ids": [
-      145
-    ],
-    "allocations": [
-      {
-        "installment_id": 145,
+        "installment_id": 213,
         "allocated_paise": 11800000
       }
     ],
@@ -931,690 +543,182 @@
     ]
   },
   {
-    "payment_id": 108,
-    "installment_ids": [
-      102
-    ],
-    "allocations": [
-      {
-        "installment_id": 102,
-        "allocated_paise": 135000
-      }
-    ],
-    "case_types": [
-      "company_payer",
-      "company_tds",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 178,
-    "installment_ids": [
-      91
-    ],
-    "allocations": [
-      {
-        "installment_id": 91,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 81,
-    "installment_ids": [
-      37
-    ],
-    "allocations": [
-      {
-        "installment_id": 37,
-        "allocated_paise": 120000
-      }
-    ],
-    "case_types": [
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 237,
-    "installment_ids": [
-      181
-    ],
-    "allocations": [
-      {
-        "installment_id": 181,
-        "allocated_paise": 2950000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 13,
-    "installment_ids": [
-      74
-    ],
-    "allocations": [
-      {
-        "installment_id": 74,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 311,
-    "installment_ids": [
-      11
-    ],
-    "allocations": [
-      {
-        "installment_id": 11,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 230,
-    "installment_ids": [
-      33,
-      30
-    ],
-    "allocations": [
-      {
-        "installment_id": 33,
-        "allocated_paise": 40000
-      },
-      {
-        "installment_id": 30,
-        "allocated_paise": 180000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings",
-      "split_payment"
-    ]
-  },
-  {
-    "payment_id": 133,
-    "installment_ids": [
-      16
-    ],
-    "allocations": [
-      {
-        "installment_id": 16,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 374,
-    "installment_ids": [
-      87
-    ],
-    "allocations": [
-      {
-        "installment_id": 87,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 138,
-    "installment_ids": [
-      246
-    ],
-    "allocations": [
-      {
-        "installment_id": 246,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 4,
-    "installment_ids": [
-      79
-    ],
-    "allocations": [
-      {
-        "installment_id": 79,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 102,
-    "installment_ids": [
-      323
-    ],
-    "allocations": [
-      {
-        "installment_id": 323,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 294,
-    "installment_ids": [
-      2
-    ],
-    "allocations": [
-      {
-        "installment_id": 2,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 266,
-    "installment_ids": [
-      317
-    ],
-    "allocations": [
-      {
-        "installment_id": 317,
-        "allocated_paise": 12744000
-      }
-    ],
-    "case_types": [
-      "company_payer",
-      "company_tds",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 222,
-    "installment_ids": [
-      184
-    ],
-    "allocations": [
-      {
-        "installment_id": 184,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 349,
-    "installment_ids": [
-      416
-    ],
-    "allocations": [
-      {
-        "installment_id": 416,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 248,
-    "installment_ids": [
-      161
-    ],
-    "allocations": [
-      {
-        "installment_id": 161,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 301,
-    "installment_ids": [
-      10
-    ],
-    "allocations": [
-      {
-        "installment_id": 10,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 265,
-    "installment_ids": [
-      431
-    ],
-    "allocations": [
-      {
-        "installment_id": 431,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 18,
-    "installment_ids": [
-      347
-    ],
-    "allocations": [
-      {
-        "installment_id": 347,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign"
-    ]
-  },
-  {
-    "payment_id": 332,
-    "installment_ids": [
-      309
-    ],
-    "allocations": [
-      {
-        "installment_id": 309,
-        "allocated_paise": 8850000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 59,
-    "installment_ids": [
-      140
-    ],
-    "allocations": [
-      {
-        "installment_id": 140,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 219,
-    "installment_ids": [
-      356
-    ],
-    "allocations": [
-      {
-        "installment_id": 356,
-        "allocated_paise": 75000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 327,
-    "installment_ids": [
-      331
-    ],
-    "allocations": [
-      {
-        "installment_id": 331,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 157,
-    "installment_ids": [
-      123
-    ],
-    "allocations": [
-      {
-        "installment_id": 123,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 224,
-    "installment_ids": [
-      439
-    ],
-    "allocations": [
-      {
-        "installment_id": 439,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 310,
-    "installment_ids": [
-      409
-    ],
-    "allocations": [
-      {
-        "installment_id": 409,
-        "allocated_paise": 9292500
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 192,
-    "installment_ids": [
-      259
-    ],
-    "allocations": [
-      {
-        "installment_id": 259,
-        "allocated_paise": 4425000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 243,
-    "installment_ids": [
-      399
-    ],
-    "allocations": [
-      {
-        "installment_id": 399,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 211,
-    "installment_ids": [
-      425
-    ],
-    "allocations": [
-      {
-        "installment_id": 425,
-        "allocated_paise": 17700000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 140,
-    "installment_ids": [
-      360
-    ],
-    "allocations": [
-      {
-        "installment_id": 360,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 235,
-    "installment_ids": [
-      14
-    ],
-    "allocations": [
-      {
-        "installment_id": 14,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 274,
-    "installment_ids": [
-      289
-    ],
-    "allocations": [
-      {
-        "installment_id": 289,
-        "allocated_paise": 8850000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "hourly_topup",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 341,
-    "installment_ids": [
-      46
-    ],
-    "allocations": [
-      {
-        "installment_id": 46,
-        "allocated_paise": 78000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 303,
-    "installment_ids": [
-      207
-    ],
-    "allocations": [
-      {
-        "installment_id": 207,
-        "allocated_paise": 11210000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 134,
-    "installment_ids": [
-      34
-    ],
-    "allocations": [
-      {
-        "installment_id": 34,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 24,
+    "payment_id": 354,
     "installment_ids": [
       199
     ],
     "allocations": [
       {
         "installment_id": 199,
-        "allocated_paise": 4130000
+        "allocated_paise": 6637500
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "partial",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 250,
+    "installment_ids": [
+      350
+    ],
+    "allocations": [
+      {
+        "installment_id": 350,
+        "allocated_paise": 15000000
       }
     ],
     "case_types": [
       "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 142,
+    "installment_ids": [
+      236
+    ],
+    "allocations": [
+      {
+        "installment_id": 236,
+        "allocated_paise": 22420000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 70,
+    "installment_ids": [
+      357
+    ],
+    "allocations": [
+      {
+        "installment_id": 357,
+        "allocated_paise": 3780000
+      }
+    ],
+    "case_types": [
+      "company_payer",
+      "company_tds",
       "duplicate_amount",
       "gateway_fees",
       "hourly_topup"
     ]
   },
   {
-    "payment_id": 131,
+    "payment_id": 11,
     "installment_ids": [
-      233
+      391
     ],
     "allocations": [
       {
-        "installment_id": 233,
-        "allocated_paise": 4130000
+        "installment_id": 391,
+        "allocated_paise": 7080000
+      }
+    ],
+    "case_types": [
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 59,
+    "installment_ids": [
+      86
+    ],
+    "allocations": [
+      {
+        "installment_id": 86,
+        "allocated_paise": 81000
+      }
+    ],
+    "case_types": [
+      "company_payer",
+      "company_tds",
+      "duplicate_amount",
+      "foreign"
+    ]
+  },
+  {
+    "payment_id": 45,
+    "installment_ids": [
+      28
+    ],
+    "allocations": [
+      {
+        "installment_id": 28,
+        "allocated_paise": 40000
       }
     ],
     "case_types": [
       "blank_payer",
       "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 378,
+    "installment_ids": [
+      13
+    ],
+    "allocations": [
+      {
+        "installment_id": 13,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 309,
+    "installment_ids": [
+      214
+    ],
+    "allocations": [
+      {
+        "installment_id": 214,
+        "allocated_paise": 8850000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 63,
+    "installment_ids": [
+      289
+    ],
+    "allocations": [
+      {
+        "installment_id": 289,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "company_payer",
+      "duplicate_amount",
+      "foreign",
       "gateway_fees",
       "hourly_topup"
     ]
@@ -1622,202 +726,11 @@
   {
     "payment_id": 297,
     "installment_ids": [
-      129
+      127
     ],
     "allocations": [
       {
-        "installment_id": 129,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 252,
-    "installment_ids": [
-      211
-    ],
-    "allocations": [
-      {
-        "installment_id": 211,
-        "allocated_paise": 27848000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 40,
-    "installment_ids": [
-      338
-    ],
-    "allocations": [
-      {
-        "installment_id": 338,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 244,
-    "installment_ids": [
-      111
-    ],
-    "allocations": [
-      {
-        "installment_id": 111,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 218,
-    "installment_ids": [
-      204
-    ],
-    "allocations": [
-      {
-        "installment_id": 204,
-        "allocated_paise": 27848000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount"
-    ]
-  },
-  {
-    "payment_id": 381,
-    "installment_ids": [
-      251
-    ],
-    "allocations": [
-      {
-        "installment_id": 251,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 313,
-    "installment_ids": [
-      114
-    ],
-    "allocations": [
-      {
-        "installment_id": 114,
-        "allocated_paise": 6962000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 90,
-    "installment_ids": [
-      242
-    ],
-    "allocations": [
-      {
-        "installment_id": 242,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 316,
-    "installment_ids": [
-      151
-    ],
-    "allocations": [
-      {
-        "installment_id": 151,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 223,
-    "installment_ids": [
-      270
-    ],
-    "allocations": [
-      {
-        "installment_id": 270,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 123,
-    "installment_ids": [
-      427
-    ],
-    "allocations": [
-      {
-        "installment_id": 427,
-        "allocated_paise": 13924000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 395,
-    "installment_ids": [
-      330
-    ],
-    "allocations": [
-      {
-        "installment_id": 330,
+        "installment_id": 127,
         "allocated_paise": 40000
       }
     ],
@@ -1830,1228 +743,13 @@
     ]
   },
   {
-    "payment_id": 263,
+    "payment_id": 91,
     "installment_ids": [
-      93
+      78
     ],
     "allocations": [
       {
-        "installment_id": 93,
-        "allocated_paise": 2950000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 317,
-    "installment_ids": [
-      379
-    ],
-    "allocations": [
-      {
-        "installment_id": 379,
-        "allocated_paise": 12390000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 186,
-    "installment_ids": [
-      166
-    ],
-    "allocations": [
-      {
-        "installment_id": 166,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 17,
-    "installment_ids": [
-      265,
-      266
-    ],
-    "allocations": [
-      {
-        "installment_id": 265,
-        "allocated_paise": 150000
-      },
-      {
-        "installment_id": 266,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings",
-      "split_payment"
-    ]
-  },
-  {
-    "payment_id": 242,
-    "installment_ids": [
-      432
-    ],
-    "allocations": [
-      {
-        "installment_id": 432,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 27,
-    "installment_ids": [
-      60
-    ],
-    "allocations": [
-      {
-        "installment_id": 60,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 126,
-    "installment_ids": [
-      187
-    ],
-    "allocations": [
-      {
-        "installment_id": 187,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 394,
-    "installment_ids": [
-      413
-    ],
-    "allocations": [
-      {
-        "installment_id": 413,
-        "allocated_paise": 144000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 280,
-    "installment_ids": [
-      227
-    ],
-    "allocations": [
-      {
-        "installment_id": 227,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 352,
-    "installment_ids": [
-      375
-    ],
-    "allocations": [
-      {
-        "installment_id": 375,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 346,
-    "installment_ids": [
-      217
-    ],
-    "allocations": [
-      {
-        "installment_id": 217,
-        "allocated_paise": 130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 165,
-    "installment_ids": [
-      107
-    ],
-    "allocations": [
-      {
-        "installment_id": 107,
-        "allocated_paise": 45000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 240,
-    "installment_ids": [
-      29
-    ],
-    "allocations": [
-      {
-        "installment_id": 29,
-        "allocated_paise": 8850000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 145,
-    "installment_ids": [
-      261
-    ],
-    "allocations": [
-      {
-        "installment_id": 261,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 302,
-    "installment_ids": [
-      124
-    ],
-    "allocations": [
-      {
-        "installment_id": 124,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 307,
-    "installment_ids": [
-      391
-    ],
-    "allocations": [
-      {
-        "installment_id": 391,
-        "allocated_paise": 140000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 162,
-    "installment_ids": [
-      349
-    ],
-    "allocations": [
-      {
-        "installment_id": 349,
-        "allocated_paise": 36000
-      }
-    ],
-    "case_types": [
-      "company_payer",
-      "company_tds",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 375,
-    "installment_ids": [
-      203
-    ],
-    "allocations": [
-      {
-        "installment_id": 203,
-        "allocated_paise": 2950000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 304,
-    "installment_ids": [
-      200
-    ],
-    "allocations": [
-      {
-        "installment_id": 200,
-        "allocated_paise": 23600000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 161,
-    "installment_ids": [
-      247
-    ],
-    "allocations": [
-      {
-        "installment_id": 247,
-        "allocated_paise": 8850000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 181,
-    "installment_ids": [
-      36
-    ],
-    "allocations": [
-      {
-        "installment_id": 36,
-        "allocated_paise": 120000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 205,
-    "installment_ids": [
-      137
-    ],
-    "allocations": [
-      {
-        "installment_id": 137,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 210,
-    "installment_ids": [
-      318
-    ],
-    "allocations": [
-      {
-        "installment_id": 318,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 124,
-    "installment_ids": [
-      336
-    ],
-    "allocations": [
-      {
-        "installment_id": 336,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 47,
-    "installment_ids": [
-      328
-    ],
-    "allocations": [
-      {
-        "installment_id": 328,
-        "allocated_paise": 450000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "foreign"
-    ]
-  },
-  {
-    "payment_id": 150,
-    "installment_ids": [
-      285
-    ],
-    "allocations": [
-      {
-        "installment_id": 285,
-        "allocated_paise": 140000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign"
-    ]
-  },
-  {
-    "payment_id": 86,
-    "installment_ids": [
-      228
-    ],
-    "allocations": [
-      {
-        "installment_id": 228,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 376,
-    "installment_ids": [
-      132
-    ],
-    "allocations": [
-      {
-        "installment_id": 132,
-        "allocated_paise": 70000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 103,
-    "installment_ids": [
-      229,
-      230
-    ],
-    "allocations": [
-      {
-        "installment_id": 229,
-        "allocated_paise": 4130000
-      },
-      {
-        "installment_id": 230,
-        "allocated_paise": 12390000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "hourly_topup",
-      "siblings",
-      "split_payment"
-    ]
-  },
-  {
-    "payment_id": 217,
-    "installment_ids": [
-      363
-    ],
-    "allocations": [
-      {
-        "installment_id": 363,
-        "allocated_paise": 240000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 85,
-    "installment_ids": [
-      277
-    ],
-    "allocations": [
-      {
-        "installment_id": 277,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "hourly_topup",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 259,
-    "installment_ids": [
-      433
-    ],
-    "allocations": [
-      {
-        "installment_id": 433,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 139,
-    "installment_ids": [
-      237
-    ],
-    "allocations": [
-      {
-        "installment_id": 237,
-        "allocated_paise": 2065000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 367,
-    "installment_ids": [
-      290
-    ],
-    "allocations": [
-      {
-        "installment_id": 290,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 344,
-    "installment_ids": [
-      192
-    ],
-    "allocations": [
-      {
-        "installment_id": 192,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 95,
-    "installment_ids": [
-      28
-    ],
-    "allocations": [
-      {
-        "installment_id": 28,
-        "allocated_paise": 8850000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 290,
-    "installment_ids": [
-      262
-    ],
-    "allocations": [
-      {
-        "installment_id": 262,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 96,
-    "installment_ids": [
-      407
-    ],
-    "allocations": [
-      {
-        "installment_id": 407,
-        "allocated_paise": 27848000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 355,
-    "installment_ids": [
-      231
-    ],
-    "allocations": [
-      {
-        "installment_id": 231,
-        "allocated_paise": 12390000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 273,
-    "installment_ids": [
-      5
-    ],
-    "allocations": [
-      {
-        "installment_id": 5,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 128,
-    "installment_ids": [
-      94
-    ],
-    "allocations": [
-      {
-        "installment_id": 94,
-        "allocated_paise": 2950000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 136,
-    "installment_ids": [
-      58
-    ],
-    "allocations": [
-      {
-        "installment_id": 58,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 156,
-    "installment_ids": [
-      212
-    ],
-    "allocations": [
-      {
-        "installment_id": 212,
-        "allocated_paise": 2065000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 260,
-    "installment_ids": [
-      49
-    ],
-    "allocations": [
-      {
-        "installment_id": 49,
-        "allocated_paise": 90000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 20,
-    "installment_ids": [
-      106
-    ],
-    "allocations": [
-      {
-        "installment_id": 106,
-        "allocated_paise": 75000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "foreign",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 187,
-    "installment_ids": [
-      311
-    ],
-    "allocations": [
-      {
-        "installment_id": 311,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 9,
-    "installment_ids": [
-      269
-    ],
-    "allocations": [
-      {
-        "installment_id": 269,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 221,
-    "installment_ids": [
-      112
-    ],
-    "allocations": [
-      {
-        "installment_id": 112,
-        "allocated_paise": 24780000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 323,
-    "installment_ids": [
-      191
-    ],
-    "allocations": [
-      {
-        "installment_id": 191,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 63,
-    "installment_ids": [
-      59
-    ],
-    "allocations": [
-      {
-        "installment_id": 59,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 227,
-    "installment_ids": [
-      157
-    ],
-    "allocations": [
-      {
-        "installment_id": 157,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 287,
-    "installment_ids": [
-      156
-    ],
-    "allocations": [
-      {
-        "installment_id": 156,
-        "allocated_paise": 450000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 351,
-    "installment_ids": [
-      198
-    ],
-    "allocations": [
-      {
-        "installment_id": 198,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 158,
-    "installment_ids": [
-      125
-    ],
-    "allocations": [
-      {
-        "installment_id": 125,
-        "allocated_paise": 70000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 284,
-    "installment_ids": [
-      47
-    ],
-    "allocations": [
-      {
-        "installment_id": 47,
-        "allocated_paise": 130000
-      }
-    ],
-    "case_types": [
-      "company_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 94,
-    "installment_ids": [
-      197
-    ],
-    "allocations": [
-      {
-        "installment_id": 197,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 382,
-    "installment_ids": [
-      52
-    ],
-    "allocations": [
-      {
-        "installment_id": 52,
-        "allocated_paise": 30000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 369,
-    "installment_ids": [
-      188
-    ],
-    "allocations": [
-      {
-        "installment_id": 188,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 73,
-    "installment_ids": [
-      385
-    ],
-    "allocations": [
-      {
-        "installment_id": 385,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 212,
-    "installment_ids": [
-      362
-    ],
-    "allocations": [
-      {
-        "installment_id": 362,
-        "allocated_paise": 240000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 175,
-    "installment_ids": [
-      401
-    ],
-    "allocations": [
-      {
-        "installment_id": 401,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 383,
-    "installment_ids": [
-      193
-    ],
-    "allocations": [
-      {
-        "installment_id": 193,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 144,
-    "installment_ids": [
-      66
-    ],
-    "allocations": [
-      {
-        "installment_id": 66,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 52,
-    "installment_ids": [
-      147
-    ],
-    "allocations": [
-      {
-        "installment_id": 147,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 354,
-    "installment_ids": [
-      110
-    ],
-    "allocations": [
-      {
-        "installment_id": 110,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 299,
-    "installment_ids": [
-      312
-    ],
-    "allocations": [
-      {
-        "installment_id": 312,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 98,
-    "installment_ids": [
-      201
-    ],
-    "allocations": [
-      {
-        "installment_id": 201,
-        "allocated_paise": 5400000
-      }
-    ],
-    "case_types": [
-      "company_payer",
-      "company_tds",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 254,
-    "installment_ids": [
-      343
-    ],
-    "allocations": [
-      {
-        "installment_id": 343,
+        "installment_id": 78,
         "allocated_paise": 7500000
       }
     ],
@@ -3062,341 +760,14 @@
     ]
   },
   {
-    "payment_id": 154,
+    "payment_id": 334,
     "installment_ids": [
-      301
+      175
     ],
     "allocations": [
       {
-        "installment_id": 301,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 169,
-    "installment_ids": [
-      121
-    ],
-    "allocations": [
-      {
-        "installment_id": 121,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 331,
-    "installment_ids": [
-      185
-    ],
-    "allocations": [
-      {
-        "installment_id": 185,
-        "allocated_paise": 140000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 366,
-    "installment_ids": [
-      333
-    ],
-    "allocations": [
-      {
-        "installment_id": 333,
-        "allocated_paise": 450000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 285,
-    "installment_ids": [
-      245
-    ],
-    "allocations": [
-      {
-        "installment_id": 245,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 164,
-    "installment_ids": [
-      434
-    ],
-    "allocations": [
-      {
-        "installment_id": 434,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 207,
-    "installment_ids": [
-      100
-    ],
-    "allocations": [
-      {
-        "installment_id": 100,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 105,
-    "installment_ids": [
-      183
-    ],
-    "allocations": [
-      {
-        "installment_id": 183,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 389,
-    "installment_ids": [
-      154
-    ],
-    "allocations": [
-      {
-        "installment_id": 154,
-        "allocated_paise": 130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 326,
-    "installment_ids": [
-      400
-    ],
-    "allocations": [
-      {
-        "installment_id": 400,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 159,
-    "installment_ids": [
-      281
-    ],
-    "allocations": [
-      {
-        "installment_id": 281,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 233,
-    "installment_ids": [
-      95
-    ],
-    "allocations": [
-      {
-        "installment_id": 95,
-        "allocated_paise": 75000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 291,
-    "installment_ids": [
-      339
-    ],
-    "allocations": [
-      {
-        "installment_id": 339,
-        "allocated_paise": 4425000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 282,
-    "installment_ids": [
-      288
-    ],
-    "allocations": [
-      {
-        "installment_id": 288,
-        "allocated_paise": 23600000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 137,
-    "installment_ids": [
-      369
-    ],
-    "allocations": [
-      {
-        "installment_id": 369,
-        "allocated_paise": 13924000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 11,
-    "installment_ids": [
-      398
-    ],
-    "allocations": [
-      {
-        "installment_id": 398,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 163,
-    "installment_ids": [
-      340
-    ],
-    "allocations": [
-      {
-        "installment_id": 340,
-        "allocated_paise": 27848000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 385,
-    "installment_ids": [
-      182
-    ],
-    "allocations": [
-      {
-        "installment_id": 182,
-        "allocated_paise": 40000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 253,
-    "installment_ids": [
-      189
-    ],
-    "allocations": [
-      {
-        "installment_id": 189,
-        "allocated_paise": 5900000
+        "installment_id": 175,
+        "allocated_paise": 22420000
       }
     ],
     "case_types": [
@@ -3406,237 +777,7 @@
     ]
   },
   {
-    "payment_id": 174,
-    "installment_ids": [
-      238
-    ],
-    "allocations": [
-      {
-        "installment_id": 238,
-        "allocated_paise": 2065000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 338,
-    "installment_ids": [
-      138
-    ],
-    "allocations": [
-      {
-        "installment_id": 138,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 39,
-    "installment_ids": [
-      393
-    ],
-    "allocations": [
-      {
-        "installment_id": 393,
-        "allocated_paise": 480000
-      }
-    ],
-    "case_types": [
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 173,
-    "installment_ids": [
-      377
-    ],
-    "allocations": [
-      {
-        "installment_id": 377,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 69,
-    "installment_ids": [
-      420
-    ],
-    "allocations": [
-      {
-        "installment_id": 420,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 350,
-    "installment_ids": [
-      355
-    ],
-    "allocations": [
-      {
-        "installment_id": 355,
-        "allocated_paise": 240000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 179,
-    "installment_ids": [
-      158
-    ],
-    "allocations": [
-      {
-        "installment_id": 158,
-        "allocated_paise": 3097500
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 359,
-    "installment_ids": [
-      4
-    ],
-    "allocations": [
-      {
-        "installment_id": 4,
-        "allocated_paise": 2478000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 239,
-    "installment_ids": [
-      341
-    ],
-    "allocations": [
-      {
-        "installment_id": 341,
-        "allocated_paise": 23600000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 88,
-    "installment_ids": [
-      67
-    ],
-    "allocations": [
-      {
-        "installment_id": 67,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 190,
-    "installment_ids": [
-      258
-    ],
-    "allocations": [
-      {
-        "installment_id": 258,
-        "allocated_paise": 8850000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 36,
-    "installment_ids": [
-      24
-    ],
-    "allocations": [
-      {
-        "installment_id": 24,
-        "allocated_paise": 180000
-      }
-    ],
-    "case_types": [
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 171,
-    "installment_ids": [
-      40
-    ],
-    "allocations": [
-      {
-        "installment_id": 40,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 106,
+    "payment_id": 66,
     "installment_ids": [
       358
     ],
@@ -3654,14 +795,286 @@
     ]
   },
   {
-    "payment_id": 268,
+    "payment_id": 348,
     "installment_ids": [
-      249
+      309
     ],
     "allocations": [
       {
-        "installment_id": 249,
+        "installment_id": 309,
+        "allocated_paise": 13924000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 352,
+    "installment_ids": [
+      382
+    ],
+    "allocations": [
+      {
+        "installment_id": 382,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 225,
+    "installment_ids": [
+      42
+    ],
+    "allocations": [
+      {
+        "installment_id": 42,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 164,
+    "installment_ids": [
+      386,
+      387
+    ],
+    "allocations": [
+      {
+        "installment_id": 386,
+        "allocated_paise": 27848000
+      },
+      {
+        "installment_id": 387,
+        "allocated_paise": 22420000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "siblings",
+      "split_payment"
+    ]
+  },
+  {
+    "payment_id": 344,
+    "installment_ids": [
+      178
+    ],
+    "allocations": [
+      {
+        "installment_id": 178,
         "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 100,
+    "installment_ids": [
+      17
+    ],
+    "allocations": [
+      {
+        "installment_id": 17,
+        "allocated_paise": 2950000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 239,
+    "installment_ids": [
+      52
+    ],
+    "allocations": [
+      {
+        "installment_id": 52,
+        "allocated_paise": 6962000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 2,
+    "installment_ids": [
+      296
+    ],
+    "allocations": [
+      {
+        "installment_id": 296,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 357,
+    "installment_ids": [
+      218
+    ],
+    "allocations": [
+      {
+        "installment_id": 218,
+        "allocated_paise": 2065000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name"
+    ]
+  },
+  {
+    "payment_id": 210,
+    "installment_ids": [
+      48
+    ],
+    "allocations": [
+      {
+        "installment_id": 48,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 65,
+    "installment_ids": [
+      32
+    ],
+    "allocations": [
+      {
+        "installment_id": 32,
+        "allocated_paise": 14160000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 343,
+    "installment_ids": [
+      123
+    ],
+    "allocations": [
+      {
+        "installment_id": 123,
+        "allocated_paise": 6637500
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "partial",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 129,
+    "installment_ids": [
+      223
+    ],
+    "allocations": [
+      {
+        "installment_id": 223,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 10,
+    "installment_ids": [
+      280
+    ],
+    "allocations": [
+      {
+        "installment_id": 280,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 109,
+    "installment_ids": [
+      226
+    ],
+    "allocations": [
+      {
+        "installment_id": 226,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 270,
+    "installment_ids": [
+      207
+    ],
+    "allocations": [
+      {
+        "installment_id": 207,
+        "allocated_paise": 11800000
       }
     ],
     "case_types": [
@@ -3672,14 +1085,31 @@
     ]
   },
   {
-    "payment_id": 56,
+    "payment_id": 110,
     "installment_ids": [
-      226
+      334
     ],
     "allocations": [
       {
-        "installment_id": 226,
-        "allocated_paise": 11800000
+        "installment_id": 334,
+        "allocated_paise": 6962000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 338,
+    "installment_ids": [
+      95
+    ],
+    "allocations": [
+      {
+        "installment_id": 95,
+        "allocated_paise": 4130000
       }
     ],
     "case_types": [
@@ -3691,30 +1121,160 @@
     ]
   },
   {
-    "payment_id": 292,
+    "payment_id": 49,
     "installment_ids": [
-      326
+      241
     ],
     "allocations": [
       {
-        "installment_id": 326,
-        "allocated_paise": 7500000
+        "installment_id": 241,
+        "allocated_paise": 2065000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount"
+    ]
+  },
+  {
+    "payment_id": 112,
+    "installment_ids": [
+      177
+    ],
+    "allocations": [
+      {
+        "installment_id": 177,
+        "allocated_paise": 20000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 75,
+    "installment_ids": [
+      147,
+      146
+    ],
+    "allocations": [
+      {
+        "installment_id": 147,
+        "allocated_paise": 8850000
+      },
+      {
+        "installment_id": 146,
+        "allocated_paise": 8850000
+      }
+    ],
+    "case_types": [
+      "fuzzy_name",
+      "siblings",
+      "split_payment"
+    ]
+  },
+  {
+    "payment_id": 26,
+    "installment_ids": [
+      144
+    ],
+    "allocations": [
+      {
+        "installment_id": 144,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 161,
+    "installment_ids": [
+      251
+    ],
+    "allocations": [
+      {
+        "installment_id": 251,
+        "allocated_paise": 75000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name"
+    ]
+  },
+  {
+    "payment_id": 22,
+    "installment_ids": [
+      354
+    ],
+    "allocations": [
+      {
+        "installment_id": 354,
+        "allocated_paise": 4130000
       }
     ],
     "case_types": [
       "duplicate_amount",
       "fuzzy_name",
-      "gateway_fees"
+      "gateway_fees",
+      "hourly_topup"
     ]
   },
   {
-    "payment_id": 293,
+    "payment_id": 261,
     "installment_ids": [
-      325
+      10
     ],
     "allocations": [
       {
-        "installment_id": 325,
+        "installment_id": 10,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 12,
+    "installment_ids": [
+      188
+    ],
+    "allocations": [
+      {
+        "installment_id": 188,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 227,
+    "installment_ids": [
+      172
+    ],
+    "allocations": [
+      {
+        "installment_id": 172,
         "allocated_paise": 5900000
       }
     ],
@@ -3726,13 +1286,13 @@
     ]
   },
   {
-    "payment_id": 76,
+    "payment_id": 191,
     "installment_ids": [
-      361
+      342
     ],
     "allocations": [
       {
-        "installment_id": 361,
+        "installment_id": 342,
         "allocated_paise": 22420000
       }
     ],
@@ -3743,67 +1303,526 @@
     ]
   },
   {
-    "payment_id": 23,
+    "payment_id": 28,
     "installment_ids": [
-      236
+      265
     ],
     "allocations": [
       {
-        "installment_id": 236,
-        "allocated_paise": 130000
+        "installment_id": 265,
+        "allocated_paise": 11800000
       }
     ],
     "case_types": [
-      "blank_payer",
-      "foreign",
-      "gateway_fees",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 365,
-    "installment_ids": [
-      334
-    ],
-    "allocations": [
-      {
-        "installment_id": 334,
-        "allocated_paise": 450000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
       "duplicate_amount",
-      "foreign",
+      "fuzzy_name",
       "gateway_fees"
     ]
   },
   {
-    "payment_id": 286,
+    "payment_id": 346,
     "installment_ids": [
-      284
+      61
     ],
     "allocations": [
       {
-        "installment_id": 284,
+        "installment_id": 61,
         "allocated_paise": 180000
       }
     ],
     "case_types": [
       "blank_payer",
       "duplicate_amount",
+      "foreign"
+    ]
+  },
+  {
+    "payment_id": 388,
+    "installment_ids": [
+      385
+    ],
+    "allocations": [
+      {
+        "installment_id": 385,
+        "allocated_paise": 7080000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 307,
+    "installment_ids": [
+      38
+    ],
+    "allocations": [
+      {
+        "installment_id": 38,
+        "allocated_paise": 70000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
       "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 39,
+    "installment_ids": [
+      351
+    ],
+    "allocations": [
+      {
+        "installment_id": 351,
+        "allocated_paise": 27848000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 368,
+    "installment_ids": [
+      107
+    ],
+    "allocations": [
+      {
+        "installment_id": 107,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 94,
+    "installment_ids": [
+      304
+    ],
+    "allocations": [
+      {
+        "installment_id": 304,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 183,
+    "installment_ids": [
+      115
+    ],
+    "allocations": [
+      {
+        "installment_id": 115,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 16,
+    "installment_ids": [
+      248
+    ],
+    "allocations": [
+      {
+        "installment_id": 248,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 122,
+    "installment_ids": [
+      273
+    ],
+    "allocations": [
+      {
+        "installment_id": 273,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 350,
+    "installment_ids": [
+      356
+    ],
+    "allocations": [
+      {
+        "installment_id": 356,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 362,
+    "installment_ids": [
+      305
+    ],
+    "allocations": [
+      {
+        "installment_id": 305,
+        "allocated_paise": 13924000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 158,
+    "installment_ids": [
+      192
+    ],
+    "allocations": [
+      {
+        "installment_id": 192,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 284,
+    "installment_ids": [
+      235
+    ],
+    "allocations": [
+      {
+        "installment_id": 235,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 376,
+    "installment_ids": [
+      262
+    ],
+    "allocations": [
+      {
+        "installment_id": 262,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 316,
+    "installment_ids": [
+      330
+    ],
+    "allocations": [
+      {
+        "installment_id": 330,
+        "allocated_paise": 70000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 231,
+    "installment_ids": [
+      372
+    ],
+    "allocations": [
+      {
+        "installment_id": 372,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 289,
+    "installment_ids": [
+      118
+    ],
+    "allocations": [
+      {
+        "installment_id": 118,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
       "gateway_fees"
     ]
   },
   {
     "payment_id": 279,
     "installment_ids": [
-      437
+      131
     ],
     "allocations": [
       {
-        "installment_id": 437,
+        "installment_id": 131,
+        "allocated_paise": 75000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 282,
+    "installment_ids": [
+      222
+    ],
+    "allocations": [
+      {
+        "installment_id": 222,
+        "allocated_paise": 3097500
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 218,
+    "installment_ids": [
+      379
+    ],
+    "allocations": [
+      {
+        "installment_id": 379,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 173,
+    "installment_ids": [
+      232
+    ],
+    "allocations": [
+      {
+        "installment_id": 232,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 304,
+    "installment_ids": [
+      378
+    ],
+    "allocations": [
+      {
+        "installment_id": 378,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 85,
+    "installment_ids": [
+      141
+    ],
+    "allocations": [
+      {
+        "installment_id": 141,
+        "allocated_paise": 7500000
+      }
+    ],
+    "case_types": [
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 180,
+    "installment_ids": [
+      266
+    ],
+    "allocations": [
+      {
+        "installment_id": 266,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 84,
+    "installment_ids": [
+      367
+    ],
+    "allocations": [
+      {
+        "installment_id": 367,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 125,
+    "installment_ids": [
+      200
+    ],
+    "allocations": [
+      {
+        "installment_id": 200,
+        "allocated_paise": 14160000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 228,
+    "installment_ids": [
+      16
+    ],
+    "allocations": [
+      {
+        "installment_id": 16,
+        "allocated_paise": 2950000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 212,
+    "installment_ids": [
+      179
+    ],
+    "allocations": [
+      {
+        "installment_id": 179,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 9,
+    "installment_ids": [
+      211
+    ],
+    "allocations": [
+      {
+        "installment_id": 211,
         "allocated_paise": 40000
       }
     ],
@@ -3816,31 +1835,121 @@
     ]
   },
   {
-    "payment_id": 99,
+    "payment_id": 365,
     "installment_ids": [
-      92
+      82
     ],
     "allocations": [
       {
-        "installment_id": 92,
-        "allocated_paise": 8354400
+        "installment_id": 82,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 133,
+    "installment_ids": [
+      196
+    ],
+    "allocations": [
+      {
+        "installment_id": 196,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 108,
+    "installment_ids": [
+      388
+    ],
+    "allocations": [
+      {
+        "installment_id": 388,
+        "allocated_paise": 480000
       }
     ],
     "case_types": [
       "duplicate_amount",
+      "foreign",
       "fuzzy_name",
-      "gateway_fees",
-      "partial"
+      "gateway_fees"
     ]
   },
   {
-    "payment_id": 44,
+    "payment_id": 20,
     "installment_ids": [
-      296
+      298
     ],
     "allocations": [
       {
-        "installment_id": 296,
+        "installment_id": 298,
+        "allocated_paise": 240000
+      }
+    ],
+    "case_types": [
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 105,
+    "installment_ids": [
+      254
+    ],
+    "allocations": [
+      {
+        "installment_id": 254,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 277,
+    "installment_ids": [
+      109
+    ],
+    "allocations": [
+      {
+        "installment_id": 109,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name"
+    ]
+  },
+  {
+    "payment_id": 90,
+    "installment_ids": [
+      303
+    ],
+    "allocations": [
+      {
+        "installment_id": 303,
         "allocated_paise": 11800000
       }
     ],
@@ -3852,13 +1961,63 @@
     ]
   },
   {
-    "payment_id": 353,
+    "payment_id": 81,
     "installment_ids": [
-      302
+      143
     ],
     "allocations": [
       {
-        "installment_id": 302,
+        "installment_id": 143,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 219,
+    "installment_ids": [
+      194
+    ],
+    "allocations": [
+      {
+        "installment_id": 194,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 260,
+    "installment_ids": [
+      1
+    ],
+    "allocations": [
+      {
+        "installment_id": 1,
+        "allocated_paise": 23600000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name"
+    ]
+  },
+  {
+    "payment_id": 281,
+    "installment_ids": [
+      261
+    ],
+    "allocations": [
+      {
+        "installment_id": 261,
         "allocated_paise": 5900000
       }
     ],
@@ -3870,14 +2029,311 @@
     ]
   },
   {
-    "payment_id": 229,
+    "payment_id": 335,
     "installment_ids": [
-      104
+      193
     ],
     "allocations": [
       {
-        "installment_id": 104,
-        "allocated_paise": 450000
+        "installment_id": 193,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 266,
+    "installment_ids": [
+      116
+    ],
+    "allocations": [
+      {
+        "installment_id": 116,
+        "allocated_paise": 27848000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 328,
+    "installment_ids": [
+      318
+    ],
+    "allocations": [
+      {
+        "installment_id": 318,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 36,
+    "installment_ids": [
+      340
+    ],
+    "allocations": [
+      {
+        "installment_id": 340,
+        "allocated_paise": 27848000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 182,
+    "installment_ids": [
+      292
+    ],
+    "allocations": [
+      {
+        "installment_id": 292,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 1,
+    "installment_ids": [
+      4
+    ],
+    "allocations": [
+      {
+        "installment_id": 4,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 60,
+    "installment_ids": [
+      19
+    ],
+    "allocations": [
+      {
+        "installment_id": 19,
+        "allocated_paise": 2065000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 319,
+    "installment_ids": [
+      275
+    ],
+    "allocations": [
+      {
+        "installment_id": 275,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 25,
+    "installment_ids": [
+      270
+    ],
+    "allocations": [
+      {
+        "installment_id": 270,
+        "allocated_paise": 24780000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 53,
+    "installment_ids": [
+      294
+    ],
+    "allocations": [
+      {
+        "installment_id": 294,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 259,
+    "installment_ids": [
+      39
+    ],
+    "allocations": [
+      {
+        "installment_id": 39,
+        "allocated_paise": 70000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "foreign",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 315,
+    "installment_ids": [
+      96
+    ],
+    "allocations": [
+      {
+        "installment_id": 96,
+        "allocated_paise": 3540000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 321,
+    "installment_ids": [
+      208
+    ],
+    "allocations": [
+      {
+        "installment_id": 208,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 149,
+    "installment_ids": [
+      206
+    ],
+    "allocations": [
+      {
+        "installment_id": 206,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 34,
+    "installment_ids": [
+      242
+    ],
+    "allocations": [
+      {
+        "installment_id": 242,
+        "allocated_paise": 2065000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount"
+    ]
+  },
+  {
+    "payment_id": 181,
+    "installment_ids": [
+      352
+    ],
+    "allocations": [
+      {
+        "installment_id": 352,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 119,
+    "installment_ids": [
+      205
+    ],
+    "allocations": [
+      {
+        "installment_id": 205,
+        "allocated_paise": 17700000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 114,
+    "installment_ids": [
+      136
+    ],
+    "allocations": [
+      {
+        "installment_id": 136,
+        "allocated_paise": 40000
       }
     ],
     "case_types": [
@@ -3885,17 +2341,572 @@
       "foreign",
       "fuzzy_name",
       "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 178,
+    "installment_ids": [
+      106
+    ],
+    "allocations": [
+      {
+        "installment_id": 106,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 38,
+    "installment_ids": [
+      40
+    ],
+    "allocations": [
+      {
+        "installment_id": 40,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
       "siblings"
     ]
   },
   {
-    "payment_id": 117,
+    "payment_id": 229,
     "installment_ids": [
-      234
+      98
     ],
     "allocations": [
       {
-        "installment_id": 234,
+        "installment_id": 98,
+        "allocated_paise": 6962000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 317,
+    "installment_ids": [
+      319
+    ],
+    "allocations": [
+      {
+        "installment_id": 319,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 194,
+    "installment_ids": [
+      15
+    ],
+    "allocations": [
+      {
+        "installment_id": 15,
+        "allocated_paise": 24780000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 7,
+    "installment_ids": [
+      257
+    ],
+    "allocations": [
+      {
+        "installment_id": 257,
+        "allocated_paise": 15000000
+      }
+    ],
+    "case_types": [
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 42,
+    "installment_ids": [
+      297
+    ],
+    "allocations": [
+      {
+        "installment_id": 297,
+        "allocated_paise": 240000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 50,
+    "installment_ids": [
+      233
+    ],
+    "allocations": [
+      {
+        "installment_id": 233,
+        "allocated_paise": 480000
+      }
+    ],
+    "case_types": [
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 144,
+    "installment_ids": [
+      220
+    ],
+    "allocations": [
+      {
+        "installment_id": 220,
+        "allocated_paise": 13924000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 349,
+    "installment_ids": [
+      349
+    ],
+    "allocations": [
+      {
+        "installment_id": 349,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 13,
+    "installment_ids": [
+      18
+    ],
+    "allocations": [
+      {
+        "installment_id": 18,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 128,
+    "installment_ids": [
+      290
+    ],
+    "allocations": [
+      {
+        "installment_id": 290,
+        "allocated_paise": 20000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 222,
+    "installment_ids": [
+      110
+    ],
+    "allocations": [
+      {
+        "installment_id": 110,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 339,
+    "installment_ids": [
+      282
+    ],
+    "allocations": [
+      {
+        "installment_id": 282,
+        "allocated_paise": 15000000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name"
+    ]
+  },
+  {
+    "payment_id": 326,
+    "installment_ids": [
+      338
+    ],
+    "allocations": [
+      {
+        "installment_id": 338,
+        "allocated_paise": 90000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 130,
+    "installment_ids": [
+      7
+    ],
+    "allocations": [
+      {
+        "installment_id": 7,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 252,
+    "installment_ids": [
+      203
+    ],
+    "allocations": [
+      {
+        "installment_id": 203,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 246,
+    "installment_ids": [
+      253
+    ],
+    "allocations": [
+      {
+        "installment_id": 253,
+        "allocated_paise": 13275000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 366,
+    "installment_ids": [
+      21
+    ],
+    "allocations": [
+      {
+        "installment_id": 21,
+        "allocated_paise": 8496000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 93,
+    "installment_ids": [
+      190
+    ],
+    "allocations": [
+      {
+        "installment_id": 190,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 251,
+    "installment_ids": [
+      287
+    ],
+    "allocations": [
+      {
+        "installment_id": 287,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 383,
+    "installment_ids": [
+      202
+    ],
+    "allocations": [
+      {
+        "installment_id": 202,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 320,
+    "installment_ids": [
+      227
+    ],
+    "allocations": [
+      {
+        "installment_id": 227,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 249,
+    "installment_ids": [
+      114
+    ],
+    "allocations": [
+      {
+        "installment_id": 114,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 143,
+    "installment_ids": [
+      167
+    ],
+    "allocations": [
+      {
+        "installment_id": 167,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 24,
+    "installment_ids": [
+      73
+    ],
+    "allocations": [
+      {
+        "installment_id": 73,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 216,
+    "installment_ids": [
+      368
+    ],
+    "allocations": [
+      {
+        "installment_id": 368,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 141,
+    "installment_ids": [
+      157
+    ],
+    "allocations": [
+      {
+        "installment_id": 157,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 254,
+    "installment_ids": [
+      140
+    ],
+    "allocations": [
+      {
+        "installment_id": 140,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 255,
+    "installment_ids": [
+      337
+    ],
+    "allocations": [
+      {
+        "installment_id": 337,
+        "allocated_paise": 54000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 203,
+    "installment_ids": [
+      23
+    ],
+    "allocations": [
+      {
+        "installment_id": 23,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 262,
+    "installment_ids": [
+      163
+    ],
+    "allocations": [
+      {
+        "installment_id": 163,
         "allocated_paise": 4130000
       }
     ],
@@ -3909,356 +2920,102 @@
   {
     "payment_id": 43,
     "installment_ids": [
-      12
+      160
     ],
     "allocations": [
       {
-        "installment_id": 12,
-        "allocated_paise": 4130000
+        "installment_id": 160,
+        "allocated_paise": 27848000
       }
     ],
     "case_types": [
       "blank_payer",
       "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 97,
-    "installment_ids": [
-      219
-    ],
-    "allocations": [
-      {
-        "installment_id": 219,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 231,
-    "installment_ids": [
-      76
-    ],
-    "allocations": [
-      {
-        "installment_id": 76,
-        "allocated_paise": 8850000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
       "gateway_fees"
     ]
   },
   {
-    "payment_id": 166,
+    "payment_id": 92,
     "installment_ids": [
-      221
+      229
     ],
     "allocations": [
       {
-        "installment_id": 221,
-        "allocated_paise": 240000
+        "installment_id": 229,
+        "allocated_paise": 40000
       }
     ],
     "case_types": [
       "blank_payer",
-      "foreign"
-    ]
-  },
-  {
-    "payment_id": 247,
-    "installment_ids": [
-      101
-    ],
-    "allocations": [
-      {
-        "installment_id": 101,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
       "duplicate_amount",
       "foreign",
-      "fuzzy_name",
       "gateway_fees",
       "hourly_topup",
       "siblings"
     ]
   },
   {
-    "payment_id": 3,
+    "payment_id": 136,
     "installment_ids": [
-      257
+      50
     ],
     "allocations": [
       {
-        "installment_id": 257,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 393,
-    "installment_ids": [
-      414
-    ],
-    "allocations": [
-      {
-        "installment_id": 414,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 339,
-    "installment_ids": [
-      43
-    ],
-    "allocations": [
-      {
-        "installment_id": 43,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 146,
-    "installment_ids": [
-      372
-    ],
-    "allocations": [
-      {
-        "installment_id": 372,
+        "installment_id": 50,
         "allocated_paise": 5900000
       }
     ],
     "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 58,
-    "installment_ids": [
-      61
-    ],
-    "allocations": [
-      {
-        "installment_id": 61,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
       "blank_payer",
       "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
+      "gateway_fees"
     ]
   },
   {
-    "payment_id": 330,
+    "payment_id": 127,
     "installment_ids": [
-      44
+      135
     ],
     "allocations": [
       {
-        "installment_id": 44,
-        "allocated_paise": 11800000
+        "installment_id": 135,
+        "allocated_paise": 40000
       }
     ],
     "case_types": [
       "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 49,
-    "installment_ids": [
-      165
-    ],
-    "allocations": [
-      {
-        "installment_id": 165,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 198,
-    "installment_ids": [
-      260
-    ],
-    "allocations": [
-      {
-        "installment_id": 260,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 155,
-    "installment_ids": [
-      206
-    ],
-    "allocations": [
-      {
-        "installment_id": 206,
-        "allocated_paise": 260000
-      }
-    ],
-    "case_types": [
       "foreign",
       "fuzzy_name",
-      "gateway_fees"
+      "gateway_fees",
+      "hourly_topup"
     ]
   },
   {
-    "payment_id": 256,
+    "payment_id": 268,
     "installment_ids": [
-      292
+      74
     ],
     "allocations": [
       {
-        "installment_id": 292,
+        "installment_id": 74,
         "allocated_paise": 11800000
       }
     ],
     "case_types": [
       "blank_payer",
       "duplicate_amount",
-      "gateway_fees"
+      "hourly_topup"
     ]
   },
   {
-    "payment_id": 176,
+    "payment_id": 166,
     "installment_ids": [
       324
     ],
     "allocations": [
       {
         "installment_id": 324,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 51,
-    "installment_ids": [
-      99
-    ],
-    "allocations": [
-      {
-        "installment_id": 99,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "foreign",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings"
-    ]
-  },
-  {
-    "payment_id": 251,
-    "installment_ids": [
-      435,
-      436
-    ],
-    "allocations": [
-      {
-        "installment_id": 435,
-        "allocated_paise": 5900000
-      },
-      {
-        "installment_id": 436,
-        "allocated_paise": 27848000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup",
-      "siblings",
-      "split_payment"
-    ]
-  },
-  {
-    "payment_id": 111,
-    "installment_ids": [
-      239
-    ],
-    "allocations": [
-      {
-        "installment_id": 239,
-        "allocated_paise": 17700000
-      }
-    ],
-    "case_types": [
-      "blank_payer"
-    ]
-  },
-  {
-    "payment_id": 335,
-    "installment_ids": [
-      396
-    ],
-    "allocations": [
-      {
-        "installment_id": 396,
-        "allocated_paise": 4130000
+        "allocated_paise": 2950000
       }
     ],
     "case_types": [
@@ -4268,144 +3025,66 @@
     ]
   },
   {
-    "payment_id": 10,
+    "payment_id": 276,
     "installment_ids": [
-      159
+      269
     ],
     "allocations": [
       {
-        "installment_id": 159,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 168,
-    "installment_ids": [
-      176,
-      177
-    ],
-    "allocations": [
-      {
-        "installment_id": 176,
-        "allocated_paise": 5900000
-      },
-      {
-        "installment_id": 177,
+        "installment_id": 269,
         "allocated_paise": 5900000
       }
     ],
     "case_types": [
-      "blank_payer",
       "duplicate_amount",
-      "gateway_fees",
-      "siblings",
-      "split_payment"
+      "fuzzy_name",
+      "gateway_fees"
     ]
   },
   {
-    "payment_id": 358,
+    "payment_id": 389,
     "installment_ids": [
-      313
+      45
     ],
     "allocations": [
       {
-        "installment_id": 313,
-        "allocated_paise": 150000
+        "installment_id": 45,
+        "allocated_paise": 75000
       }
     ],
     "case_types": [
       "blank_payer",
       "duplicate_amount",
       "foreign",
-      "gateway_fees",
-      "hourly_topup"
+      "gateway_fees"
     ]
   },
   {
-    "payment_id": 329,
+    "payment_id": 347,
     "installment_ids": [
-      7
+      84
     ],
     "allocations": [
       {
-        "installment_id": 7,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 277,
-    "installment_ids": [
-      190
-    ],
-    "allocations": [
-      {
-        "installment_id": 190,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount"
-    ]
-  },
-  {
-    "payment_id": 196,
-    "installment_ids": [
-      194
-    ],
-    "allocations": [
-      {
-        "installment_id": 194,
+        "installment_id": 84,
         "allocated_paise": 150000
       }
     ],
     "case_types": [
-      "blank_payer",
       "duplicate_amount",
       "foreign",
-      "gateway_fees",
-      "hourly_topup"
+      "fuzzy_name",
+      "gateway_fees"
     ]
   },
   {
-    "payment_id": 200,
+    "payment_id": 27,
     "installment_ids": [
-      408
+      239
     ],
     "allocations": [
       {
-        "installment_id": 408,
-        "allocated_paise": 6195000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "partial"
-    ]
-  },
-  {
-    "payment_id": 74,
-    "installment_ids": [
-      139
-    ],
-    "allocations": [
-      {
-        "installment_id": 139,
+        "installment_id": 239,
         "allocated_paise": 11800000
       }
     ],
@@ -4417,49 +3096,84 @@
     ]
   },
   {
-    "payment_id": 149,
+    "payment_id": 58,
     "installment_ids": [
-      310
+      149
     ],
     "allocations": [
       {
-        "installment_id": 310,
-        "allocated_paise": 8100000
+        "installment_id": 149,
+        "allocated_paise": 13924000
       }
     ],
     "case_types": [
-      "company_payer",
-      "company_tds",
-      "duplicate_amount",
-      "gateway_fees"
+      "fuzzy_name",
+      "gateway_fees",
+      "siblings"
     ]
   },
   {
-    "payment_id": 372,
+    "payment_id": 118,
     "installment_ids": [
-      374
+      238
     ],
     "allocations": [
       {
-        "installment_id": 374,
-        "allocated_paise": 5900000
+        "installment_id": 238,
+        "allocated_paise": 7500000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name"
+    ]
+  },
+  {
+    "payment_id": 169,
+    "installment_ids": [
+      47
+    ],
+    "allocations": [
+      {
+        "installment_id": 47,
+        "allocated_paise": 30000
       }
     ],
     "case_types": [
       "blank_payer",
       "duplicate_amount",
+      "foreign",
       "gateway_fees",
-      "hourly_topup"
+      "hourly_topup",
+      "partial"
     ]
   },
   {
-    "payment_id": 16,
+    "payment_id": 57,
     "installment_ids": [
-      421
+      151
     ],
     "allocations": [
       {
-        "installment_id": 421,
+        "installment_id": 151,
+        "allocated_paise": 65000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 106,
+    "installment_ids": [
+      212
+    ],
+    "allocations": [
+      {
+        "installment_id": 212,
         "allocated_paise": 4130000
       }
     ],
@@ -4471,13 +3185,177 @@
     ]
   },
   {
-    "payment_id": 270,
+    "payment_id": 146,
     "installment_ids": [
-      214
+      276
     ],
     "allocations": [
       {
-        "installment_id": 214,
+        "installment_id": 276,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 290,
+    "installment_ids": [
+      161
+    ],
+    "allocations": [
+      {
+        "installment_id": 161,
+        "allocated_paise": 2950000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 278,
+    "installment_ids": [
+      94
+    ],
+    "allocations": [
+      {
+        "installment_id": 94,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 55,
+    "installment_ids": [
+      216
+    ],
+    "allocations": [
+      {
+        "installment_id": 216,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 80,
+    "installment_ids": [
+      355
+    ],
+    "allocations": [
+      {
+        "installment_id": 355,
+        "allocated_paise": 3780000
+      }
+    ],
+    "case_types": [
+      "company_payer",
+      "company_tds",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 82,
+    "installment_ids": [
+      130
+    ],
+    "allocations": [
+      {
+        "installment_id": 130,
+        "allocated_paise": 75000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 217,
+    "installment_ids": [
+      339
+    ],
+    "allocations": [
+      {
+        "installment_id": 339,
+        "allocated_paise": 900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 294,
+    "installment_ids": [
+      316
+    ],
+    "allocations": [
+      {
+        "installment_id": 316,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 107,
+    "installment_ids": [
+      197
+    ],
+    "allocations": [
+      {
+        "installment_id": 197,
+        "allocated_paise": 24780000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 283,
+    "installment_ids": [
+      246
+    ],
+    "allocations": [
+      {
+        "installment_id": 246,
         "allocated_paise": 4130000
       }
     ],
@@ -4489,14 +3367,14 @@
     ]
   },
   {
-    "payment_id": 93,
+    "payment_id": 64,
     "installment_ids": [
-      55
+      134
     ],
     "allocations": [
       {
-        "installment_id": 55,
-        "allocated_paise": 150000
+        "installment_id": 134,
+        "allocated_paise": 40000
       }
     ],
     "case_types": [
@@ -4510,154 +3388,12 @@
   {
     "payment_id": 314,
     "installment_ids": [
-      397
+      25
     ],
     "allocations": [
       {
-        "installment_id": 397,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 206,
-    "installment_ids": [
-      75
-    ],
-    "allocations": [
-      {
-        "installment_id": 75,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 132,
-    "installment_ids": [
-      250
-    ],
-    "allocations": [
-      {
-        "installment_id": 250,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 147,
-    "installment_ids": [
-      208
-    ],
-    "allocations": [
-      {
-        "installment_id": 208,
-        "allocated_paise": 11210000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 324,
-    "installment_ids": [
-      70
-    ],
-    "allocations": [
-      {
-        "installment_id": 70,
-        "allocated_paise": 150000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "foreign",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 79,
-    "installment_ids": [
-      126
-    ],
-    "allocations": [
-      {
-        "installment_id": 126,
-        "allocated_paise": 70000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "foreign"
-    ]
-  },
-  {
-    "payment_id": 262,
-    "installment_ids": [
-      395
-    ],
-    "allocations": [
-      {
-        "installment_id": 395,
-        "allocated_paise": 22420000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees"
-    ]
-  },
-  {
-    "payment_id": 120,
-    "installment_ids": [
-      241
-    ],
-    "allocations": [
-      {
-        "installment_id": 241,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 197,
-    "installment_ids": [
-      163
-    ],
-    "allocations": [
-      {
-        "installment_id": 163,
-        "allocated_paise": 2478000
+        "installment_id": 25,
+        "allocated_paise": 3097500
       }
     ],
     "case_types": [
@@ -4669,31 +3405,13 @@
     ]
   },
   {
-    "payment_id": 289,
+    "payment_id": 150,
     "installment_ids": [
-      417
+      26
     ],
     "allocations": [
       {
-        "installment_id": 417,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 306,
-    "installment_ids": [
-      21
-    ],
-    "allocations": [
-      {
-        "installment_id": 21,
+        "installment_id": 26,
         "allocated_paise": 40000
       }
     ],
@@ -4702,119 +3420,36 @@
       "duplicate_amount",
       "foreign",
       "gateway_fees",
-      "hourly_topup"
+      "hourly_topup",
+      "siblings"
     ]
   },
   {
-    "payment_id": 202,
+    "payment_id": 140,
     "installment_ids": [
-      253
+      111
     ],
     "allocations": [
       {
-        "installment_id": 253,
-        "allocated_paise": 11800000
+        "installment_id": 111,
+        "allocated_paise": 240000
       }
     ],
     "case_types": [
       "blank_payer",
       "duplicate_amount",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 320,
-    "installment_ids": [
-      86
-    ],
-    "allocations": [
-      {
-        "installment_id": 86,
-        "allocated_paise": 7500000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount",
+      "foreign",
       "gateway_fees"
     ]
   },
   {
-    "payment_id": 189,
+    "payment_id": 167,
     "installment_ids": [
-      404
+      174
     ],
     "allocations": [
       {
-        "installment_id": 404,
-        "allocated_paise": 4130000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name"
-    ]
-  },
-  {
-    "payment_id": 208,
-    "installment_ids": [
-      297
-    ],
-    "allocations": [
-      {
-        "installment_id": 297,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 188,
-    "installment_ids": [
-      307
-    ],
-    "allocations": [
-      {
-        "installment_id": 307,
-        "allocated_paise": 12390000
-      }
-    ],
-    "case_types": [
-      "blank_payer",
-      "duplicate_amount"
-    ]
-  },
-  {
-    "payment_id": 29,
-    "installment_ids": [
-      160
-    ],
-    "allocations": [
-      {
-        "installment_id": 160,
-        "allocated_paise": 11800000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 257,
-    "installment_ids": [
-      383
-    ],
-    "allocations": [
-      {
-        "installment_id": 383,
+        "installment_id": 174,
         "allocated_paise": 5900000
       }
     ],
@@ -4826,13 +3461,133 @@
     ]
   },
   {
-    "payment_id": 8,
+    "payment_id": 68,
+    "installment_ids": [
+      371
+    ],
+    "allocations": [
+      {
+        "installment_id": 371,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 171,
+    "installment_ids": [
+      308
+    ],
+    "allocations": [
+      {
+        "installment_id": 308,
+        "allocated_paise": 13924000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 14,
+    "installment_ids": [
+      20
+    ],
+    "allocations": [
+      {
+        "installment_id": 20,
+        "allocated_paise": 2065000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 244,
+    "installment_ids": [
+      37
+    ],
+    "allocations": [
+      {
+        "installment_id": 37,
+        "allocated_paise": 24780000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 32,
+    "installment_ids": [
+      46
+    ],
+    "allocations": [
+      {
+        "installment_id": 46,
+        "allocated_paise": 75000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 99,
+    "installment_ids": [
+      271
+    ],
+    "allocations": [
+      {
+        "installment_id": 271,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 235,
     "installment_ids": [
       376
     ],
     "allocations": [
       {
         "installment_id": 376,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 299,
+    "installment_ids": [
+      264
+    ],
+    "allocations": [
+      {
+        "installment_id": 264,
         "allocated_paise": 5900000
       }
     ],
@@ -4844,83 +3599,50 @@
     ]
   },
   {
-    "payment_id": 360,
+    "payment_id": 367,
     "installment_ids": [
-      130
+      36
     ],
     "allocations": [
       {
-        "installment_id": 130,
-        "allocated_paise": 11800000
+        "installment_id": 36,
+        "allocated_paise": 4130000
       }
     ],
     "case_types": [
+      "blank_payer",
       "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 215,
-    "installment_ids": [
-      280
-    ],
-    "allocations": [
-      {
-        "installment_id": 280,
-        "allocated_paise": 5900000
-      }
-    ],
-    "case_types": [
-      "duplicate_amount",
-      "fuzzy_name",
-      "gateway_fees",
-      "hourly_topup"
-    ]
-  },
-  {
-    "payment_id": 61,
-    "installment_ids": [
-      81
-    ],
-    "allocations": [
-      {
-        "installment_id": 81,
-        "allocated_paise": 6962000
-      }
-    ],
-    "case_types": [
-      "fuzzy_name",
       "gateway_fees"
     ]
   },
   {
-    "payment_id": 104,
+    "payment_id": 151,
     "installment_ids": [
-      316
+      66
     ],
     "allocations": [
       {
-        "installment_id": 316,
-        "allocated_paise": 10443000
+        "installment_id": 66,
+        "allocated_paise": 30000
       }
     ],
     "case_types": [
+      "blank_payer",
       "duplicate_amount",
-      "fuzzy_name",
+      "foreign",
       "gateway_fees",
+      "hourly_topup",
       "partial"
     ]
   },
   {
-    "payment_id": 42,
+    "payment_id": 184,
     "installment_ids": [
-      411
+      299
     ],
     "allocations": [
       {
-        "installment_id": 411,
+        "installment_id": 299,
         "allocated_paise": 75000
       }
     ],
@@ -4932,13 +3654,402 @@
     ]
   },
   {
-    "payment_id": 78,
+    "payment_id": 199,
     "installment_ids": [
-      294
+      164
     ],
     "allocations": [
       {
-        "installment_id": 294,
+        "installment_id": 164,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 243,
+    "installment_ids": [
+      383
+    ],
+    "allocations": [
+      {
+        "installment_id": 383,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 213,
+    "installment_ids": [
+      183
+    ],
+    "allocations": [
+      {
+        "installment_id": 183,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 35,
+    "installment_ids": [
+      323
+    ],
+    "allocations": [
+      {
+        "installment_id": 323,
+        "allocated_paise": 15000000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 327,
+    "installment_ids": [
+      191
+    ],
+    "allocations": [
+      {
+        "installment_id": 191,
+        "allocated_paise": 260000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 117,
+    "installment_ids": [
+      283
+    ],
+    "allocations": [
+      {
+        "installment_id": 283,
+        "allocated_paise": 12390000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount"
+    ]
+  },
+  {
+    "payment_id": 4,
+    "installment_ids": [
+      375
+    ],
+    "allocations": [
+      {
+        "installment_id": 375,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 62,
+    "installment_ids": [
+      156
+    ],
+    "allocations": [
+      {
+        "installment_id": 156,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 387,
+    "installment_ids": [
+      363
+    ],
+    "allocations": [
+      {
+        "installment_id": 363,
+        "allocated_paise": 240000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 47,
+    "installment_ids": [
+      274
+    ],
+    "allocations": [
+      {
+        "installment_id": 274,
+        "allocated_paise": 112500
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 115,
+    "installment_ids": [
+      60
+    ],
+    "allocations": [
+      {
+        "installment_id": 60,
+        "allocated_paise": 22420000
+      }
+    ],
+    "case_types": [
+      "blank_payer"
+    ]
+  },
+  {
+    "payment_id": 322,
+    "installment_ids": [
+      302
+    ],
+    "allocations": [
+      {
+        "installment_id": 302,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 102,
+    "installment_ids": [
+      44
+    ],
+    "allocations": [
+      {
+        "installment_id": 44,
+        "allocated_paise": 240000
+      }
+    ],
+    "case_types": [
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 340,
+    "installment_ids": [
+      2
+    ],
+    "allocations": [
+      {
+        "installment_id": 2,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 148,
+    "installment_ids": [
+      69
+    ],
+    "allocations": [
+      {
+        "installment_id": 69,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 296,
+    "installment_ids": [
+      129
+    ],
+    "allocations": [
+      {
+        "installment_id": 129,
+        "allocated_paise": 20000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 258,
+    "installment_ids": [
+      128
+    ],
+    "allocations": [
+      {
+        "installment_id": 128,
+        "allocated_paise": 20000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 83,
+    "installment_ids": [
+      68
+    ],
+    "allocations": [
+      {
+        "installment_id": 68,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 37,
+    "installment_ids": [
+      343
+    ],
+    "allocations": [
+      {
+        "installment_id": 343,
+        "allocated_paise": 162000
+      }
+    ],
+    "case_types": [
+      "company_payer",
+      "company_tds",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 153,
+    "installment_ids": [
+      321
+    ],
+    "allocations": [
+      {
+        "installment_id": 321,
+        "allocated_paise": 12390000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 265,
+    "installment_ids": [
+      85
+    ],
+    "allocations": [
+      {
+        "installment_id": 85,
+        "allocated_paise": 90000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 306,
+    "installment_ids": [
+      59
+    ],
+    "allocations": [
+      {
+        "installment_id": 59,
+        "allocated_paise": 90000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign"
+    ]
+  },
+  {
+    "payment_id": 48,
+    "installment_ids": [
+      6
+    ],
+    "allocations": [
+      {
+        "installment_id": 6,
         "allocated_paise": 40000
       }
     ],
@@ -4951,30 +4062,318 @@
     ]
   },
   {
-    "payment_id": 380,
+    "payment_id": 245,
     "installment_ids": [
-      315
+      139
     ],
     "allocations": [
       {
-        "installment_id": 315,
-        "allocated_paise": 7500000
+        "installment_id": 139,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 313,
+    "installment_ids": [
+      215
+    ],
+    "allocations": [
+      {
+        "installment_id": 215,
+        "allocated_paise": 7080000
       }
     ],
     "case_types": [
       "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 23,
+    "installment_ids": [
+      41
+    ],
+    "allocations": [
+      {
+        "installment_id": 41,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 330,
+    "installment_ids": [
+      201
+    ],
+    "allocations": [
+      {
+        "installment_id": 201,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 374,
+    "installment_ids": [
+      180
+    ],
+    "allocations": [
+      {
+        "installment_id": 180,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 159,
+    "installment_ids": [
+      62
+    ],
+    "allocations": [
+      {
+        "installment_id": 62,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 215,
+    "installment_ids": [
+      76
+    ],
+    "allocations": [
+      {
+        "installment_id": 76,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 342,
+    "installment_ids": [
+      258
+    ],
+    "allocations": [
+      {
+        "installment_id": 258,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 364,
+    "installment_ids": [
+      187
+    ],
+    "allocations": [
+      {
+        "installment_id": 187,
+        "allocated_paise": 7080000
+      }
+    ],
+    "case_types": [
       "duplicate_amount"
     ]
   },
   {
-    "payment_id": 201,
+    "payment_id": 3,
     "installment_ids": [
-      38
+      256
     ],
     "allocations": [
       {
-        "installment_id": 38,
-        "allocated_paise": 180000
+        "installment_id": 256,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "company_payer",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 269,
+    "installment_ids": [
+      133
+    ],
+    "allocations": [
+      {
+        "installment_id": 133,
+        "allocated_paise": 75000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 179,
+    "installment_ids": [
+      267
+    ],
+    "allocations": [
+      {
+        "installment_id": 267,
+        "allocated_paise": 6962000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 267,
+    "installment_ids": [
+      51
+    ],
+    "allocations": [
+      {
+        "installment_id": 51,
+        "allocated_paise": 6962000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name"
+    ]
+  },
+  {
+    "payment_id": 6,
+    "installment_ids": [
+      365
+    ],
+    "allocations": [
+      {
+        "installment_id": 365,
+        "allocated_paise": 120000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 95,
+    "installment_ids": [
+      329
+    ],
+    "allocations": [
+      {
+        "installment_id": 329,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 74,
+    "installment_ids": [
+      14
+    ],
+    "allocations": [
+      {
+        "installment_id": 14,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 88,
+    "installment_ids": [
+      374
+    ],
+    "allocations": [
+      {
+        "installment_id": 374,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 333,
+    "installment_ids": [
+      341
+    ],
+    "allocations": [
+      {
+        "installment_id": 341,
+        "allocated_paise": 900000
       }
     ],
     "case_types": [
@@ -4985,29 +4384,68 @@
     ]
   },
   {
-    "payment_id": 199,
+    "payment_id": 318,
     "installment_ids": [
-      1
+      225
     ],
     "allocations": [
       {
-        "installment_id": 1,
-        "allocated_paise": 27848000
+        "installment_id": 225,
+        "allocated_paise": 5900000
       }
     ],
     "case_types": [
       "duplicate_amount",
-      "fuzzy_name"
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
     ]
   },
   {
-    "payment_id": 35,
+    "payment_id": 33,
     "installment_ids": [
-      240
+      126
     ],
     "allocations": [
       {
-        "installment_id": 240,
+        "installment_id": 126,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 72,
+    "installment_ids": [
+      150
+    ],
+    "allocations": [
+      {
+        "installment_id": 150,
+        "allocated_paise": 15000000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "siblings"
+    ]
+  },
+  {
+    "payment_id": 232,
+    "installment_ids": [
+      165
+    ],
+    "allocations": [
+      {
+        "installment_id": 165,
         "allocated_paise": 4130000
       }
     ],
@@ -5019,13 +4457,169 @@
     ]
   },
   {
-    "payment_id": 387,
+    "payment_id": 54,
     "installment_ids": [
-      271
+      170
     ],
     "allocations": [
       {
-        "installment_id": 271,
+        "installment_id": 170,
+        "allocated_paise": 130000
+      }
+    ],
+    "case_types": [
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 329,
+    "installment_ids": [
+      312
+    ],
+    "allocations": [
+      {
+        "installment_id": 312,
+        "allocated_paise": 10620000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "partial"
+    ]
+  },
+  {
+    "payment_id": 17,
+    "installment_ids": [
+      361
+    ],
+    "allocations": [
+      {
+        "installment_id": 361,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 207,
+    "installment_ids": [
+      286
+    ],
+    "allocations": [
+      {
+        "installment_id": 286,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 247,
+    "installment_ids": [
+      260
+    ],
+    "allocations": [
+      {
+        "installment_id": 260,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 196,
+    "installment_ids": [
+      169
+    ],
+    "allocations": [
+      {
+        "installment_id": 169,
+        "allocated_paise": 180000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 337,
+    "installment_ids": [
+      54
+    ],
+    "allocations": [
+      {
+        "installment_id": 54,
+        "allocated_paise": 2950000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 370,
+    "installment_ids": [
+      184
+    ],
+    "allocations": [
+      {
+        "installment_id": 184,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 139,
+    "installment_ids": [
+      217
+    ],
+    "allocations": [
+      {
+        "installment_id": 217,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 242,
+    "installment_ids": [
+      389
+    ],
+    "allocations": [
+      {
+        "installment_id": 389,
         "allocated_paise": 11800000
       }
     ],
@@ -5034,6 +4628,218 @@
       "duplicate_amount",
       "gateway_fees",
       "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 275,
+    "installment_ids": [
+      234
+    ],
+    "allocations": [
+      {
+        "installment_id": 234,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 224,
+    "installment_ids": [
+      359
+    ],
+    "allocations": [
+      {
+        "installment_id": 359,
+        "allocated_paise": 5900000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 300,
+    "installment_ids": [
+      384
+    ],
+    "allocations": [
+      {
+        "installment_id": 384,
+        "allocated_paise": 7080000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 185,
+    "installment_ids": [
+      57
+    ],
+    "allocations": [
+      {
+        "installment_id": 57,
+        "allocated_paise": 150000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 303,
+    "installment_ids": [
+      112
+    ],
+    "allocations": [
+      {
+        "installment_id": 112,
+        "allocated_paise": 180000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 172,
+    "installment_ids": [
+      3
+    ],
+    "allocations": [
+      {
+        "installment_id": 3,
+        "allocated_paise": 40000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "foreign",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 272,
+    "installment_ids": [
+      353
+    ],
+    "allocations": [
+      {
+        "installment_id": 353,
+        "allocated_paise": 4130000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount",
+      "gateway_fees",
+      "hourly_topup"
+    ]
+  },
+  {
+    "payment_id": 206,
+    "installment_ids": [
+      97
+    ],
+    "allocations": [
+      {
+        "installment_id": 97,
+        "allocated_paise": 24780000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 341,
+    "installment_ids": [
+      219
+    ],
+    "allocations": [
+      {
+        "installment_id": 219,
+        "allocated_paise": 2065000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 170,
+    "installment_ids": [
+      81
+    ],
+    "allocations": [
+      {
+        "installment_id": 81,
+        "allocated_paise": 480000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "foreign",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 280,
+    "installment_ids": [
+      104
+    ],
+    "allocations": [
+      {
+        "installment_id": 104,
+        "allocated_paise": 11800000
+      }
+    ],
+    "case_types": [
+      "duplicate_amount",
+      "fuzzy_name",
+      "gateway_fees"
+    ]
+  },
+  {
+    "payment_id": 138,
+    "installment_ids": [
+      245
+    ],
+    "allocations": [
+      {
+        "installment_id": 245,
+        "allocated_paise": 17700000
+      }
+    ],
+    "case_types": [
+      "blank_payer",
+      "duplicate_amount"
     ]
   }
 ]
