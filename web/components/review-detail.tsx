@@ -277,10 +277,10 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
             </span>
             <span className="text-xs px-2 py-1 rounded font-medium"
               style={{
-                backgroundColor: detail.confidence >= 0.95 ? "#dcfce7" : "#fef3c7",
-                color: detail.confidence >= 0.95 ? "#166534" : "#92400e",
+                backgroundColor: detail.confidence >= 0.85 ? "#dcfce7" : "#fef3c7",
+                color: detail.confidence >= 0.85 ? "#166534" : "#92400e",
               }}>
-              {formatConfidence(detail.confidence)} sure · auto-match needs 95%
+              {detail.confidence >= 0.85 ? "Strong match" : "Weak match"} · {formatConfidence(detail.confidence)}
             </span>
           </div>
           {suggested.map((inst) => (

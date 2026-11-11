@@ -171,13 +171,6 @@ function RemindersPage() {
       )}
 
       <div className="flex gap-3 mb-6 items-center">
-        <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setApprovalFilter(""); }}
-          className="text-sm border border-gray-300 rounded-md px-3 py-2">
-          <option value="">All types</option>
-          <option value="pre_due">Pre-due</option>
-          <option value="on_due">Due today</option>
-          <option value="overdue">Overdue</option>
-        </select>
         <select value={approvalFilter} onChange={(e) => { setApprovalFilter(e.target.value); if (e.target.value) setTypeFilter(""); }}
           className="text-sm border border-gray-300 rounded-md px-3 py-2">
           <option value="">All</option>

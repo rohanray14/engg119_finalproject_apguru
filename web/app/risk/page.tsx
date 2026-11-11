@@ -85,19 +85,13 @@ const sevStyle: Record<string, { dot: string; text: string }> = {
 export default function RiskPage() {
   const router = useRouter();
   const [severity, setSeverity] = useState("");
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const params = severity ? `?severity=${severity}` : "";
   const { data, isLoading } = useSWR<RiskData>(`/risk${params}`, fetcher);
 
-  function flagKey(f: RiskFlag) { return `${f.category}:${f.entity}:${f.explanation}`; }
-  function dismiss(f: RiskFlag) {
-    setDismissed((prev) => new Set(prev).add(flagKey(f)));
-  }
-
   const activeItems = useMemo(() => {
     if (!data) return [];
-    return data.items.filter((f) => !dismissed.has(flagKey(f)));
-  }, [data, dismissed]);
+    return data.items;
+  }, [data]);
 
   // Compute action summary
   const actionSummary = useMemo(() => {
@@ -119,73 +113,6 @@ export default function RiskPage() {
     <div className="p-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-1">Risk flags</h1>
       <p className="text-sm text-gray-500 mb-6">Issues detected automatically — each with a next step.</p>
-
-      {/* Action summary bar */}
-      {actionSummary && (
-        <div className="bg-white rounded-lg border p-5 mb-6" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">What needs doing</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {actionSummary.overdueGroups.length > 0 && (
-              <button
-                onClick={() => router.push("/reminders")}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-400 transition text-left"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-700">
-                  {actionSummary.overdueGroups.length}
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">Students need reminders</div>
-                  <div className="text-xs text-gray-500">
-                    {actionSummary.overdue.length} overdue installments
-                  </div>
-                </div>
-              </button>
-            )}
-            {actionSummary.unmatched.length > 0 && (
-              <button
-                onClick={() => router.push("/match-review")}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-400 transition text-left"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-700">
-                  {actionSummary.unmatched.length}
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">Payments need matching</div>
-                  <div className="text-xs text-gray-500">Unmatched for &gt;14 days</div>
-                </div>
-              </button>
-            )}
-            {actionSummary.duplicates.length > 0 && (
-              <button
-                onClick={() => router.push("/payments")}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-400 transition text-left"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-700">
-                  {actionSummary.duplicates.length}
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">Possible duplicates</div>
-                  <div className="text-xs text-gray-500">Same amount + payer + date</div>
-                </div>
-              </button>
-            )}
-            {actionSummary.suspicious.length > 0 && (
-              <button
-                onClick={() => router.push("/payments")}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-400 transition text-left"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-700">
-                  {actionSummary.suspicious.length}
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">Need verification</div>
-                  <div className="text-xs text-gray-500">Large unconfirmed or suspicious</div>
-                </div>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Severity counts */}
       {data && (
@@ -218,22 +145,12 @@ export default function RiskPage() {
         </div>
       )}
 
-      {/* Severity filter */}
-      <div className="flex items-center gap-3 mb-6">
-        <select value={severity} onChange={(e) => setSeverity(e.target.value)}
-          className="text-sm border border-gray-300 rounded-md px-3 py-2">
-          <option value="">All severities</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
-        {dismissed.size > 0 && (
-          <button onClick={() => setDismissed(new Set())}
-            className="text-xs text-gray-500 hover:text-gray-700 underline">
-            Show {dismissed.size} dismissed
-          </button>
-        )}
-      </div>
+      {severity && (
+        <div className="flex items-center gap-2 mb-6">
+          <span className="text-sm text-gray-500">Showing: <span className="font-medium text-gray-900 capitalize">{severity}</span></span>
+          <button onClick={() => setSeverity("")} className="text-xs text-gray-500 hover:text-gray-700 underline">Clear</button>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="animate-pulse space-y-3">
@@ -241,17 +158,7 @@ export default function RiskPage() {
         </div>
       ) : activeItems.length === 0 ? (
         <div className="bg-white rounded-lg border p-8 text-center" style={{ borderColor: "var(--card-border)" }}>
-          <p className="text-gray-500">
-            {dismissed.size > 0
-              ? `All flags dismissed. ${dismissed.size} hidden.`
-              : "No risk flags."}
-          </p>
-          {dismissed.size > 0 && (
-            <button onClick={() => setDismissed(new Set())}
-              className="mt-2 text-xs text-gray-500 underline hover:text-gray-700">
-              Show all again
-            </button>
-          )}
+          <p className="text-gray-500">No risk flags.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -288,11 +195,6 @@ export default function RiskPage() {
                         >
                           View student
                         </button>
-                        <button
-                          onClick={() => g.flags.forEach((f) => dismiss(f))}
-                          className="px-2 py-1 text-xs text-gray-400 hover:text-gray-600 transition"
-                          title="Dismiss this flag for now"
-                        >✕</button>
                       </div>
                     </div>
                     {g.flags.length > 1 && (
@@ -367,11 +269,6 @@ export default function RiskPage() {
                           >
                             {action.label}
                           </button>
-                          <button
-                            onClick={() => dismiss(f)}
-                            className="px-2 py-1 text-xs text-gray-400 hover:text-gray-600 transition"
-                            title="Dismiss this flag for now"
-                          >✕</button>
                         </div>
                       </div>
                     );

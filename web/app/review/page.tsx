@@ -4,7 +4,7 @@ import { Suspense, useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import type { ReviewQueue, ReviewDetail as ReviewDetailType, BulkResult } from "@/lib/types";
+import type { ReviewQueue, ReviewDetail as ReviewDetailType } from "@/lib/types";
 import { useAppUser } from "@/app/providers";
 import ReviewList from "@/components/review-list";
 import ReviewDetailComponent from "@/components/review-detail";
@@ -25,8 +25,8 @@ type FilterKey = "all" | "high" | "medium" | "low";
 
 const FILTER_OPTIONS: { value: FilterKey; label: string }[] = [
   { value: "all", label: "All items" },
-  { value: "high", label: "High confidence (85%+)" },
-  { value: "medium", label: "Medium (50–84%)" },
+  { value: "high", label: "Strong match" },
+  { value: "medium", label: "Weak match" },
   { value: "low", label: "No suggestion" },
 ];
 
@@ -41,9 +41,6 @@ function ReviewContent() {
   );
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [bulkSelected, setBulkSelected] = useState<Set<number>>(new Set());
-  const [bulkActing, setBulkActing] = useState(false);
-  const [bulkResult, setBulkResult] = useState<BulkResult | null>(null);
   const [reviewedCount, setReviewedCount] = useState(0);
   const [filter, setFilter] = useState<FilterKey>("all");
   const [listSearch, setListSearch] = useState("");
@@ -102,49 +99,6 @@ function ReviewContent() {
   // Queue position
   const activeIndex = filteredItems.findIndex((i) => i.match_id === activeId);
 
-  const eligibleForBulk = items.filter(
-    (i) => i.has_suggestion && i.confidence >= (queue?.bulk_approve_min_confidence ?? 0.9)
-  );
-
-  async function handleBulkApprove() {
-    const ids = Array.from(bulkSelected);
-    if (ids.length === 0) return;
-    setBulkActing(true);
-    setBulkResult(null);
-    try {
-      const result = await apiFetch<BulkResult>("/review/bulk-approve", {
-        method: "POST",
-        body: { match_ids: ids },
-      });
-      setBulkResult(result);
-      setBulkSelected(new Set());
-      setReviewedCount((c) => c + result.approved.length);
-      mutateQueue();
-    } catch (e: unknown) {
-      setBulkResult(null);
-      alert(e instanceof Error ? e.message : "Bulk approve failed");
-    } finally {
-      setBulkActing(false);
-    }
-  }
-
-  function toggleBulk(id: number) {
-    setBulkSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  function selectAllBulk() {
-    if (bulkSelected.size === eligibleForBulk.length) {
-      setBulkSelected(new Set());
-    } else {
-      setBulkSelected(new Set(eligibleForBulk.map((i) => i.match_id)));
-    }
-  }
-
   if (isLoading) {
     return (
       <div className="p-8">
@@ -188,45 +142,6 @@ function ReviewContent() {
         )}
       </div>
 
-      {/* Bulk approve bar */}
-      {canApprove && eligibleForBulk.length > 0 && (
-        <div className="bg-white rounded-lg border p-4 mb-6 flex items-center justify-between"
-          style={{ borderColor: "var(--card-border)" }}>
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={bulkSelected.size === eligibleForBulk.length && eligibleForBulk.length > 0}
-              onChange={selectAllBulk}
-              className="rounded"
-            />
-            <span className="text-sm text-gray-700">
-              {eligibleForBulk.length} items above {Math.round((queue?.bulk_approve_min_confidence ?? 0.9) * 100)}%
-              confidence
-            </span>
-            {bulkSelected.size > 0 && (
-              <span className="text-sm font-medium text-gray-900">
-                ({bulkSelected.size} selected)
-              </span>
-            )}
-          </div>
-          <button
-            onClick={handleBulkApprove}
-            disabled={bulkSelected.size === 0 || bulkActing}
-            className="px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50"
-            style={{ backgroundColor: "var(--accent)" }}
-          >
-            {bulkActing ? "Approving..." : `Bulk approve ${bulkSelected.size}`}
-          </button>
-        </div>
-      )}
-
-      {/* Bulk result toast */}
-      {bulkResult && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 text-sm text-green-800">
-          Approved {bulkResult.approved.length} payments.
-          {bulkResult.skipped.length > 0 && ` Skipped ${bulkResult.skipped.length}.`}
-        </div>
-      )}
 
       {items.length === 0 ? (
         <div className="bg-white rounded-lg border p-12 text-center" style={{ borderColor: "var(--card-border)" }}>
@@ -265,26 +180,14 @@ function ReviewContent() {
               <div className="space-y-0">
                 {filteredItems.map((item) => {
                   const active = item.match_id === activeId;
-                  const eligible = item.has_suggestion && item.confidence >= (queue?.bulk_approve_min_confidence ?? 0.9);
                   return (
-                    <div key={item.match_id} className="flex items-center gap-2"
+                    <div key={item.match_id}
                       ref={active ? (el) => { el?.scrollIntoView({ block: "nearest", behavior: "smooth" }); } : undefined}>
-                      {canApprove && eligible && (
-                        <input
-                          type="checkbox"
-                          checked={bulkSelected.has(item.match_id)}
-                          onChange={() => toggleBulk(item.match_id)}
-                          className="shrink-0 rounded"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      )}
-                      <div className="flex-1">
-                        <ReviewList
-                          items={[item]}
-                          selectedId={active ? item.match_id : null}
-                          onSelect={setSelectedId}
-                        />
-                      </div>
+                      <ReviewList
+                        items={[item]}
+                        selectedId={active ? item.match_id : null}
+                        onSelect={setSelectedId}
+                      />
                     </div>
                   );
                 })}
