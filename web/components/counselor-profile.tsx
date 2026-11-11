@@ -60,6 +60,7 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
   const { data: overview, mutate: mutateOverview } = useSWR<CommissionsOverview>("/commissions", fetcher);
   const [payoutStatus, setPayoutStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [payoutMsg, setPayoutMsg] = useState("");
+  const [tab, setTab] = useState<"students" | "commissions" | "payouts">("students");
 
   if (isLoading) {
     return (
@@ -257,12 +258,27 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
         </button>
       </div>
 
+      {/* Tabs */}
+      <div className="flex border-b mb-4" style={{ borderColor: "var(--card-border)" }}>
+        {([
+          ["students", `Students (${counselor.students.length})`],
+          ["commissions", `Commissions (${counselor.commission_lines.length})`],
+          ["payouts", `Payouts (${counselor.payouts.length})`],
+        ] as const).map(([key, label]) => (
+          <button key={key} onClick={() => setTab(key)}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
+              tab === key
+                ? "border-gray-900 text-gray-900"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}>
+            {label}
+          </button>
+        ))}
+      </div>
+
       {/* Referred students */}
+      {tab === "students" && (
       <div className="bg-white rounded-lg border p-5 mb-4" style={{ borderColor: "var(--card-border)" }}>
-        <h3 className="font-bold text-gray-900 mb-3">
-          Referred students
-          <span className="text-sm font-normal text-gray-500 ml-2">{counselor.students.length} students</span>
-        </h3>
         {counselor.students.length === 0 ? (
           <p className="text-sm text-gray-500">No students linked to this counselor.</p>
         ) : (
@@ -320,14 +336,11 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
         )}
       </div>
 
+      )}
+
       {/* Commission lines */}
+      {tab === "commissions" && (
       <div className="bg-white rounded-lg border p-5 mb-4" style={{ borderColor: "var(--card-border)" }}>
-        <h3 className="font-bold text-gray-900 mb-3">
-          Commission lines
-          <span className="text-sm font-normal text-gray-500 ml-2">
-            {counselor.commission_lines.length} payments
-          </span>
-        </h3>
         {counselor.commission_lines.length === 0 ? (
           <p className="text-sm text-gray-500">No commissions calculated yet.</p>
         ) : (
@@ -360,29 +373,36 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
         )}
       </div>
 
+      )}
+
       {/* Payout history */}
-      {counselor.payouts.length > 0 && (
-        <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-          <h3 className="font-bold text-gray-900 mb-3">Payout history</h3>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-xs text-gray-500 border-b" style={{ borderColor: "var(--card-border)" }}>
-                <th className="pb-2 font-medium">Approved</th>
-                <th className="pb-2 font-medium">By</th>
-                <th className="pb-2 font-medium text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--card-border)" }}>
-              {counselor.payouts.map((p) => (
-                <tr key={`${p.id}-${p.currency}`}>
-                  <td className="py-2.5">{formatDate(p.approved_at)}</td>
-                  <td className="py-2.5 text-gray-700">{p.actor}</td>
-                  <td className="py-2.5 text-right font-medium">{formatMoney(p.net_paise, p.currency)}</td>
+      {tab === "payouts" && (
+        counselor.payouts.length === 0 ? (
+          <div className="bg-white rounded-lg border p-8 text-center" style={{ borderColor: "var(--card-border)" }}>
+            <p className="text-gray-500">No payouts approved yet.</p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-500 border-b" style={{ borderColor: "var(--card-border)" }}>
+                  <th className="pb-2 font-medium">Approved</th>
+                  <th className="pb-2 font-medium">By</th>
+                  <th className="pb-2 font-medium text-right">Amount</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y" style={{ borderColor: "var(--card-border)" }}>
+                {counselor.payouts.map((p) => (
+                  <tr key={`${p.id}-${p.currency}`}>
+                    <td className="py-2.5">{formatDate(p.approved_at)}</td>
+                    <td className="py-2.5 text-gray-700">{p.actor}</td>
+                    <td className="py-2.5 text-right font-medium">{formatMoney(p.net_paise, p.currency)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
       )}
     </div>
   );

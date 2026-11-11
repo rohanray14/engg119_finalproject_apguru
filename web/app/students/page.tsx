@@ -1,11 +1,14 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate, displayLocation } from "@/lib/format";
 import StudentProfile from "@/components/student-profile";
+
+type SortKey = "name" | "owed" | "next_due" | "enrollment_count" | "status" | null;
+type SortDir = "asc" | "desc";
 
 interface StudentRow {
   id: number; name: string; city: string | null; country: string | null;
@@ -38,11 +41,57 @@ function StudentsContent() {
   const params = new URLSearchParams({ limit: "200" });
   if (search) params.set("search", search);
 
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  function toggleSort(key: SortKey) {
+    if (sortKey === key) {
+      if (sortDir === "asc") setSortDir("desc");
+      else { setSortKey(null); }
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
   const { data } = useSWR<{ total: number; items: StudentRow[] }>(
     `/students?${params}`, fetcher
   );
 
-  const students = data?.items ?? [];
+  const students = useMemo(() => {
+    const items = [...(data?.items ?? [])];
+    if (!sortKey) return items;
+    items.sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case "name": cmp = a.name.localeCompare(b.name); break;
+        case "owed": {
+          const aOwed = a.owed.reduce((s, o) => s + o.amount_paise, 0);
+          const bOwed = b.owed.reduce((s, o) => s + o.amount_paise, 0);
+          cmp = aOwed - bOwed;
+          break;
+        }
+        case "next_due": cmp = (a.next_due ?? "9999").localeCompare(b.next_due ?? "9999"); break;
+        case "enrollment_count": cmp = a.enrollment_count - b.enrollment_count; break;
+        case "status": cmp = a.status.localeCompare(b.status); break;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return items;
+  }, [data, sortKey, sortDir]);
+
+  function SortHeader({ label, field, align }: { label: string; field: SortKey; align?: string }) {
+    const active = sortKey === field;
+    return (
+      <th className={`px-4 py-3 font-medium cursor-pointer hover:text-gray-700 select-none ${align === "right" ? "text-right" : ""}`}
+        onClick={() => toggleSort(field)}>
+        {label}
+        {active
+          ? <span className="ml-1 text-gray-900">{sortDir === "asc" ? "↑" : "↓"}</span>
+          : <span className="ml-1 text-gray-300">↕</span>}
+      </th>
+    );
+  }
 
   // Show profile view
   if (selectedId !== null) {
@@ -68,12 +117,12 @@ function StudentsContent() {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-gray-500 border-b bg-gray-50">
-              <th className="px-4 py-3 font-medium">Name</th>
+              <SortHeader label="Name" field="name" />
               <th className="px-4 py-3 font-medium">Location</th>
-              <th className="px-4 py-3 font-medium text-right">Owed</th>
-              <th className="px-4 py-3 font-medium">Next due</th>
-              <th className="px-4 py-3 font-medium">Enrollments</th>
-              <th className="px-4 py-3 font-medium">Status</th>
+              <SortHeader label="Owed" field="owed" align="right" />
+              <SortHeader label="Next due" field="next_due" />
+              <SortHeader label="Enrollments" field="enrollment_count" />
+              <SortHeader label="Status" field="status" />
             </tr>
           </thead>
           <tbody className="divide-y">

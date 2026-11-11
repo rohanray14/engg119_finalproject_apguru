@@ -190,6 +190,7 @@ export default function PaymentsPage() {
   const [sortKey, setSortKey] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(0);
+  const [showDetails, setShowDetails] = useState(false);
 
   const params = new URLSearchParams();
   if (source) params.set("source", source);
@@ -424,6 +425,10 @@ export default function PaymentsPage() {
               {totalPages > 1 && ` · page ${page + 1} of ${totalPages}`}
             </p>
             <div className="flex items-center gap-3">
+              <button onClick={() => setShowDetails((v) => !v)}
+                className={`px-3 py-1.5 text-xs font-medium border rounded-md hover:bg-gray-50 ${showDetails ? "border-gray-900 bg-gray-100" : "border-gray-300"}`}>
+                {showDetails ? "Hide details" : "Show details"}
+              </button>
               <button onClick={() => exportCSV(sorted)}
                 className="px-3 py-1.5 text-xs font-medium border border-gray-300 rounded-md hover:bg-gray-50">
                 Export CSV
@@ -451,10 +456,10 @@ export default function PaymentsPage() {
                   <SortHeader label="Date" field="date" />
                   <SortHeader label="Payer" field="payer_name" />
                   <SortHeader label="Amount" field="amount_paid_paise" align="right" />
-                  <th className="px-4 py-3 font-medium text-right">Deductions</th>
+                  {showDetails && <th className="px-4 py-3 font-medium text-right">Deductions</th>}
                   <SortHeader label="In Bank (₹)" field="amount_in_bank_paise" align="right" />
-                  <th className="px-4 py-3 font-medium">Method</th>
-                  <th className="px-4 py-3 font-medium">Confirmation</th>
+                  {showDetails && <th className="px-4 py-3 font-medium">Method</th>}
+                  {showDetails && <th className="px-4 py-3 font-medium">Confirmation</th>}
                   <th className="px-4 py-3 font-medium">Match</th>
                 </tr>
               </thead>
@@ -480,16 +485,20 @@ export default function PaymentsPage() {
                       <td className="px-4 py-2.5 text-right whitespace-nowrap font-medium">
                         {formatMoney(r.amount_paid_paise, r.currency)}
                       </td>
-                      <td className="px-4 py-2.5 text-right whitespace-nowrap text-gray-500">
-                        <DeductionBreakdown r={r} />
-                      </td>
+                      {showDetails && (
+                        <td className="px-4 py-2.5 text-right whitespace-nowrap text-gray-500">
+                          <DeductionBreakdown r={r} />
+                        </td>
+                      )}
                       <td className="px-4 py-2.5 text-right whitespace-nowrap">
                         {r.amount_in_bank_paise > 0 ? formatMoney(r.amount_in_bank_paise, "INR") : "—"}
                       </td>
-                      <td className="px-4 py-2.5 text-xs">{friendlyMethod(r.method, r.source)}</td>
-                      <td className="px-4 py-2.5">
-                        <ConfirmBadge confirmation={r.confirmation} />
-                      </td>
+                      {showDetails && <td className="px-4 py-2.5 text-xs">{friendlyMethod(r.method, r.source)}</td>}
+                      {showDetails && (
+                        <td className="px-4 py-2.5">
+                          <ConfirmBadge confirmation={r.confirmation} />
+                        </td>
+                      )}
                       <td className="px-4 py-2.5">
                         {r.match_id && r.match_status === "pending_review" ? (
                           <Link href={`/review?id=${r.match_id}`}

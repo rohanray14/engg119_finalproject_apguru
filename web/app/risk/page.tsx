@@ -85,7 +85,6 @@ const sevStyle: Record<string, { dot: string; text: string }> = {
 export default function RiskPage() {
   const router = useRouter();
   const [severity, setSeverity] = useState("");
-  const [view, setView] = useState<"grouped" | "all">("grouped");
   const params = severity ? `?severity=${severity}` : "";
   const { data, isLoading } = useSWR<RiskData>(`/risk${params}`, fetcher);
 
@@ -210,7 +209,7 @@ export default function RiskPage() {
         </div>
       )}
 
-      {/* View toggle + filter */}
+      {/* Severity filter */}
       <div className="flex items-center gap-3 mb-6">
         <select value={severity} onChange={(e) => setSeverity(e.target.value)}
           className="text-sm border border-gray-300 rounded-md px-3 py-2">
@@ -219,16 +218,6 @@ export default function RiskPage() {
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
-        <div className="flex rounded-md border border-gray-300 overflow-hidden text-sm">
-          <button
-            onClick={() => setView("grouped")}
-            className={`px-3 py-1.5 ${view === "grouped" ? "bg-gray-900 text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}
-          >Grouped</button>
-          <button
-            onClick={() => setView("all")}
-            className={`px-3 py-1.5 border-l border-gray-300 ${view === "all" ? "bg-gray-900 text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}
-          >All flags</button>
-        </div>
       </div>
 
       {isLoading ? (
@@ -239,8 +228,7 @@ export default function RiskPage() {
         <div className="bg-white rounded-lg border p-8 text-center" style={{ borderColor: "var(--card-border)" }}>
           <p className="text-gray-500">No risk flags.</p>
         </div>
-      ) : view === "grouped" ? (
-        /* ── Grouped view ── */
+      ) : (
         <div className="space-y-6">
           {/* Overdue: grouped by student */}
           {actionSummary && actionSummary.overdueGroups.length > 0 && (
@@ -355,40 +343,6 @@ export default function RiskPage() {
               </div>
             ));
           })()}
-        </div>
-      ) : (
-        /* ── All flags view (flat list) ── */
-        <div className="space-y-2">
-          {data.items.map((f, i) => {
-            const sev = sevStyle[f.severity] ?? sevStyle.low;
-            const action = actionForCategory(f.category);
-            return (
-              <div key={i} className="bg-white rounded-lg border p-4 flex items-center justify-between" style={{ borderColor: "var(--card-border)" }}>
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${sev.dot}`} />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold uppercase text-gray-400">{f.severity}</span>
-                      <span className="text-xs text-gray-300">·</span>
-                      <span className="text-xs text-gray-400 capitalize">{f.category.replace(/_/g, " ")}</span>
-                    </div>
-                    <div className={`text-sm mt-0.5 ${sev.text}`}>{f.explanation}</div>
-                    {f.amount_paise != null && (
-                      <div className="text-xs text-gray-400 mt-0.5">
-                        {f.entity} · {formatMoney(f.amount_paise, f.currency)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <button
-                  onClick={() => router.push(action.page)}
-                  className="px-3 py-1 text-xs font-medium rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition shrink-0 ml-3"
-                >
-                  {action.label}
-                </button>
-              </div>
-            );
-          })}
         </div>
       )}
     </div>
