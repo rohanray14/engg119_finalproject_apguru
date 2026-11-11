@@ -166,7 +166,7 @@ const MONTHS = [
 ];
 
 function exportCSV(items: PaymentRow[]) {
-  const headers = ["Date", "Payer", "Amount", "Currency", "Gateway Fee", "GST on Fee", "TDS", "FX Diff", "Deductions", "In Bank (INR)", "Method", "Confirmation", "Match Status"];
+  const headers = ["Date", "Payer", "Amount", "Currency", "Gateway Fee", "GST on Fee", "TDS", "FX Diff", "Deductions", "In Bank (INR)", "Method", "Confirmation", "Match Status", "Matched Student"];
   const rows = items.map((r) => [
     r.date,
     r.payer_name ?? "",
@@ -181,6 +181,7 @@ function exportCSV(items: PaymentRow[]) {
     r.method || r.source,
     r.confirmation,
     r.match_status,
+    r.matched_student_name ?? "",
   ]);
   const csv = [headers, ...rows].map((row) => row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
@@ -194,7 +195,6 @@ function exportCSV(items: PaymentRow[]) {
 
 export default function PaymentsPage() {
   const [source, setSource] = useState("");
-  const [currency, setCurrency] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [match, setMatch] = useState("");
   const [search, setSearch] = useState("");
@@ -206,8 +206,7 @@ export default function PaymentsPage() {
 
   const params = new URLSearchParams();
   if (source) params.set("source", source);
-  if (currency) params.set("currency", currency);
-  if (confirmation) params.set("confirmation", confirmation);
+if (confirmation) params.set("confirmation", confirmation);
   if (match) params.set("match", match);
   if (search) params.set("search", search);
   params.set("limit", "500");
@@ -217,10 +216,10 @@ export default function PaymentsPage() {
     fetcher
   );
 
-  const activeFilters = [source, currency, confirmation, match, search, month].filter(Boolean).length;
+  const activeFilters = [source, confirmation, match, search, month].filter(Boolean).length;
 
   function clearAll() {
-    setSource(""); setCurrency(""); setConfirmation(""); setMatch(""); setSearch(""); setMonth(""); setPage(0);
+    setSource(""); setConfirmation(""); setMatch(""); setSearch(""); setMonth(""); setPage(0);
   }
 
   function toggleSort(key: SortKey) {
@@ -264,11 +263,6 @@ export default function PaymentsPage() {
   // Global stats from API (always unfiltered, cards stay stable)
   const summary = data?.summary;
 
-  // Filtered total received for the "Total received" card
-  const filteredTotalReceived = useMemo(() => {
-    return filtered.reduce((s, r) => s + r.amount_in_bank_paise, 0);
-  }, [filtered]);
-
   // Determine available months from the data for the filter dropdown
   const availableMonths = useMemo(() => {
     if (!data) return [];
@@ -292,8 +286,8 @@ export default function PaymentsPage() {
       >
         {label}
         {active
-          ? <span className="ml-1" style={{ color: "var(--text)" }}>{sortDir === "asc" ? "\u2191" : "\u2193"}</span>
-          : <span className="ml-1" style={{ color: "var(--text-tertiary)" }}>{"\u2195"}</span>}
+          ? <span className="ml-1" style={{ color: "var(--text)" }}>{sortDir === "asc" ? "↑" : "↓"}</span>
+          : <span className="ml-1" style={{ color: "var(--text-tertiary)" }}>↕</span>}
       </th>
     );
   }
@@ -316,7 +310,7 @@ export default function PaymentsPage() {
             </button>
           )}
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div>
             <label className="block text-xs mb-1" style={{ color: "var(--text-secondary)" }}>How they paid</label>
             <select value={source} onChange={(e) => { setSource(e.target.value); setPage(0); }}
@@ -327,15 +321,6 @@ export default function PaymentsPage() {
               <option value="gateway">Gateway (Stripe/PayGlocal/Razorpay)</option>
               <option value="cash">Cash</option>
               <option value="screenshot">Screenshot only</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Currency</label>
-            <select value={currency} onChange={(e) => { setCurrency(e.target.value); setPage(0); }}
-              className="w-full text-sm rounded-md px-3 py-2"
-              style={{ backgroundColor: "var(--surface-hover)", border: "1px solid var(--border)", color: "var(--text)" }}>
-              <option value="">All currencies</option>
-              <option value="INR">INR (₹)</option>
             </select>
           </div>
           <div>
@@ -398,13 +383,13 @@ export default function PaymentsPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
             <div className="rounded-xl border px-4 py-3" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Total received</div>
-              <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{formatMoneyCompact(filteredTotalReceived, "INR")}</div>
+              <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{formatMoneyCompact(summary?.total_received ?? 0, "INR")}</div>
               <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>in bank (INR)</div>
             </div>
             <div className="rounded-xl border px-4 py-3" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Payments</div>
-              <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{filtered.length}</div>
-              <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>{activeFilters > 0 ? "matching filters" : "total"}</div>
+              <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{summary?.total_payments ?? 0}</div>
+              <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>total{activeFilters > 0 ? ` · ${filtered.length} shown` : ""}</div>
             </div>
             {(summary?.review_count ?? 0) > 0 && (
               <Link href="/review"
@@ -416,16 +401,20 @@ export default function PaymentsPage() {
               </Link>
             )}
             {(summary?.unmatched_count ?? 0) > 0 && (
-              <button onClick={() => { setMatch(match === "unmatched" ? "" : "unmatched"); setConfirmation(""); setPage(0); }}
+              <button onClick={() => { setMatch(match === "unmatched" ? "" : "unmatched"); setPage(0); }}
                 className={`text-left rounded-xl border px-4 py-3 transition-colors ${match === "unmatched" ? "ring-2" : ""}`}
                 style={{ borderColor: "var(--border)" }}>
                 <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Unmatched</div>
                 <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{summary?.unmatched_count ?? 0}</div>
-                <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>{(summary?.blank_count ?? 0) > 0 ? `${summary?.blank_count} with no payer name` : "no student linked"} →</div>
+                <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+                  {(summary?.blank_count ?? 0) > 0
+                    ? `${(summary?.unmatched_count ?? 0) - (summary?.blank_count ?? 0)} with payer name · ${summary?.blank_count} blank`
+                    : "no student linked"} →
+                </div>
               </button>
             )}
             {(summary?.screenshot_count ?? 0) > 0 && (
-              <button onClick={() => { setConfirmation(confirmation === "screenshot_only" ? "" : "screenshot_only"); setMatch(""); setPage(0); }}
+              <button onClick={() => { setConfirmation(confirmation === "screenshot_only" ? "" : "screenshot_only"); setPage(0); }}
                 className={`text-left rounded-xl border px-4 py-3 transition-colors ${confirmation === "screenshot_only" ? "ring-2" : ""}`}
                 style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", borderColor: "rgba(255, 77, 77, 0.3)" }}>
                 <div className="text-xs" style={{ color: "var(--danger)" }}>Unverified</div>
@@ -449,7 +438,7 @@ export default function PaymentsPage() {
                   backgroundColor: showDetails ? "var(--surface-hover)" : "transparent",
                   color: "var(--text)",
                 }}>
-                {showDetails ? "Hide details" : "Show details"}
+                {showDetails ? "Hide deductions" : "Show deductions"}
               </button>
               <button onClick={() => exportCSV(sorted)}
                 className="px-3 py-1.5 text-xs font-medium rounded-md"
@@ -485,8 +474,8 @@ export default function PaymentsPage() {
                   <SortHeader label="Amount" field="amount_paid_paise" align="right" />
                   {showDetails && <th className="px-4 py-3 font-medium text-right">Deductions</th>}
                   <SortHeader label="In Bank (₹)" field="amount_in_bank_paise" align="right" />
-                  {showDetails && <th className="px-4 py-3 font-medium">Method</th>}
-                  {showDetails && <th className="px-4 py-3 font-medium">Confirmation</th>}
+                  <th className="px-4 py-3 font-medium">Method</th>
+                  <th className="px-4 py-3 font-medium">Verified</th>
                   <th className="px-4 py-3 font-medium">Match</th>
                 </tr>
               </thead>
@@ -525,12 +514,10 @@ export default function PaymentsPage() {
                       <td className="px-4 py-2.5 text-right whitespace-nowrap">
                         {r.amount_in_bank_paise > 0 ? formatMoney(r.amount_in_bank_paise, "INR") : "—"}
                       </td>
-                      {showDetails && <td className="px-4 py-2.5 text-xs">{friendlyMethod(r.method, r.source)}</td>}
-                      {showDetails && (
-                        <td className="px-4 py-2.5">
+                      <td className="px-4 py-2.5 text-xs whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>{friendlyMethod(r.method, r.source)}</td>
+                      <td className="px-4 py-2.5">
                           <ConfirmBadge confirmation={r.confirmation} />
                         </td>
-                      )}
                       <td className="px-4 py-2.5">
                         {r.matched_student_id ? (
                           <span className="inline-flex items-center gap-1.5">
