@@ -41,15 +41,15 @@ function buildDecisions(d: Dashboard): DecisionItem[] {
     });
   }
 
-  for (const c of d.commissions) {
-    if (c.net_paise > 0) {
-      items.push({
-        type: "commission",
-        title: `Commissions ready: ${formatMoney(c.net_paise, c.currency)} to ${c.counselors} counselor${c.counselors > 1 ? "s" : ""}`,
-        description: "Review and approve the payout",
-        action: { label: "Open", href: "/commissions" },
-      });
-    }
+  const totalNet = d.commissions.reduce((sum, c) => sum + c.net_paise, 0);
+  const counselorCount = Math.max(...d.commissions.map((c) => c.counselors), 0);
+  if (totalNet > 0) {
+    items.push({
+      type: "commission",
+      title: `Commissions ready: ${formatMoney(totalNet, "INR")} to ${counselorCount} counselor${counselorCount > 1 ? "s" : ""}`,
+      description: "Review and approve the payout",
+      action: { label: "Open", href: "/commissions" },
+    });
   }
 
   return items;
