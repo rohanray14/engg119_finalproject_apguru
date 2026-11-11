@@ -404,7 +404,7 @@ export default function PaymentsPage() {
                 style={{ backgroundColor: "rgba(255, 176, 32, 0.1)", borderColor: "rgba(255, 176, 32, 0.3)" }}>
                 <div className="text-xs" style={{ color: "var(--warning)" }}>Needs review</div>
                 <div className="text-lg font-bold" style={{ color: "var(--warning)" }}>{stats.reviewCount}</div>
-                <div className="text-xs" style={{ color: "var(--warning)", opacity: 0.8 }}>waiting for you →</div>
+                <div className="text-xs" style={{ color: "var(--warning)" }}>waiting for you →</div>
               </Link>
             )}
             {stats.unmatchedCount > 0 && (
@@ -422,7 +422,7 @@ export default function PaymentsPage() {
                 style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", borderColor: "rgba(255, 77, 77, 0.3)" }}>
                 <div className="text-xs" style={{ color: "var(--danger)" }}>Unverified</div>
                 <div className="text-lg font-bold" style={{ color: "var(--danger)" }}>{stats.screenshotCount}</div>
-                <div className="text-xs" style={{ color: "var(--danger)", opacity: 0.8 }}>screenshot only — not confirmed →</div>
+                <div className="text-xs" style={{ color: "var(--danger)" }}>screenshot only — not confirmed →</div>
               </button>
             )}
           </div>

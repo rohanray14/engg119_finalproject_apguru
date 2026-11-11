@@ -110,7 +110,7 @@ export default function Sidebar() {
                 </span>
                 <svg
                   className="w-3 h-3 transition-transform"
-                  style={{ color: "var(--text-tertiary)", opacity: 0.5, transform: open[section.heading] ? "rotate(180deg)" : "rotate(0deg)" }}
+                  style={{ color: "var(--text-tertiary)", transform: open[section.heading] ? "rotate(180deg)" : "rotate(0deg)" }}
                   fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -148,11 +148,11 @@ export default function Sidebar() {
 
       <div className="mt-auto pt-8">
         <div className="text-xs leading-relaxed" style={{ color: "var(--text-tertiary)" }}>
-          <div className="font-semibold mb-1.5 text-[10px] uppercase tracking-wider opacity-70">Data sources</div>
+          <div className="font-semibold mb-1.5 text-[10px] uppercase tracking-wider">Data sources</div>
           <div>Bank statement</div>
           <div>PayGlocal, Stripe, Razorpay</div>
           <div>Fee tracker</div>
-          <div className="mt-1 opacity-50 text-[10px]">All synced on load</div>
+          <div className="mt-1 text-[10px]">All synced on load</div>
         </div>
       </div>
     </aside>

@@ -49,7 +49,7 @@ const CAT_COLORS: Record<string, string> = {
   tax: "#7ecdbf",
   refund: "#FFB020",
   rent: "#a3e0d5",
-  other: "#8A8A9A",
+  other: "#B0B0C0",
   commission: "#4D9EFF",
 };
 
@@ -131,7 +131,7 @@ export default function MoneyOutPage() {
                 <Tooltip formatter={(value) => `${lakhs(Number(value) * 100)}`} contentStyle={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)" }} />
                 <Legend iconType="square" wrapperStyle={{ fontSize: 11 }} />
                 {allCats.map((c) => (
-                  <Bar key={c} dataKey={c} stackId="a" fill={CAT_COLORS[c] || "#94a3b8"} name={c} />
+                  <Bar key={c} dataKey={c} stackId="a" fill={CAT_COLORS[c] || "#B0B0C0"} name={c} />
                 ))}
               </BarChart>
             </ResponsiveContainer>
@@ -152,7 +152,7 @@ export default function MoneyOutPage() {
                 <div key={i}>
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: CAT_COLORS[s.category] || "#94a3b8" }} />
+                      <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: CAT_COLORS[s.category] || "#B0B0C0" }} />
                       <span className="font-medium capitalize" style={{ color: "var(--text)" }}>{s.category}</span>
                     </div>
                     <div className="flex items-center gap-3">
@@ -163,7 +163,7 @@ export default function MoneyOutPage() {
                   <div className="mt-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--surface-hover)" }}>
                     <div
                       className="h-full rounded-full"
-                      style={{ width: `${pct}%`, backgroundColor: CAT_COLORS[s.category] || "#94a3b8" }}
+                      style={{ width: `${pct}%`, backgroundColor: CAT_COLORS[s.category] || "#B0B0C0" }}
                     />
                   </div>
                 </div>
