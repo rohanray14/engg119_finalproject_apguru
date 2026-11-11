@@ -23,6 +23,8 @@ interface PaymentRow {
   match_id: number | null;
   match_status: string;
   deductions_paise: number;
+  matched_student_id: number | null;
+  matched_student_name: string | null;
 }
 
 interface PaymentsResponse {
@@ -476,7 +478,9 @@ export default function PaymentsPage() {
                       <td className="px-4 py-2.5 whitespace-nowrap">{formatDate(r.date)}</td>
                       <td className="px-4 py-2.5 font-medium text-gray-900 max-w-[200px] truncate">
                         {r.payer_name ? (
-                          <Link href={`/students?search=${encodeURIComponent(r.payer_name)}`}
+                          <Link href={r.matched_student_id
+                            ? `/students?id=${r.matched_student_id}`
+                            : `/students?search=${encodeURIComponent(r.payer_name)}`}
                             className="hover:underline hover:text-teal-700">
                             {r.payer_name}
                           </Link>
@@ -517,14 +521,16 @@ export default function PaymentsPage() {
                             }}>
                             unmatched
                           </span>
-                        ) : r.payer_name && (r.match_status === "auto" || r.match_status === "approved") ? (
-                          <Link href={`/students?search=${encodeURIComponent(r.payer_name)}`}
+                        ) : (r.match_status === "auto" || r.match_status === "approved") && (r.matched_student_id || r.payer_name) ? (
+                          <Link href={r.matched_student_id
+                            ? `/students?id=${r.matched_student_id}`
+                            : `/students?search=${encodeURIComponent(r.payer_name!)}`}
                             className="px-2 py-0.5 rounded text-xs font-medium hover:opacity-80 inline-block"
                             style={{
                               backgroundColor: matchBadge[r.match_status]?.bg ?? "#f3f4f6",
                               color: matchBadge[r.match_status]?.text ?? "#374151",
                             }}>
-                            {r.match_status === "auto" ? "matched" : "approved"} →
+                            {r.matched_student_name ?? (r.match_status === "auto" ? "matched" : "approved")} →
                           </Link>
                         ) : (
                           <span className="px-2 py-0.5 rounded text-xs font-medium"

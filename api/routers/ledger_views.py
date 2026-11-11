@@ -57,16 +57,50 @@ def list_payments(
     rows = conn.execute(
         "SELECT p.id, p.source, p.method, p.payer_name, p.date, p.amount_paid_paise, p.currency, "
         "p.gateway_fee_paise, p.gst_on_fee_paise, p.fx_diff_paise, p.tds_paise, "
-        "p.amount_in_bank_paise, p.confirmation, mr.id AS match_id, mr.status AS match_status "
+        "p.amount_in_bank_paise, p.confirmation, mr.id AS match_id, mr.status AS match_status, "
+        "mr.allocations "
         f"{base} ORDER BY p.date DESC, p.id DESC LIMIT ? OFFSET ?",
         [*params, limit, offset],
     ).fetchall()
+
+    # Resolve matched student for each payment via allocations → installment → enrollment → student
+    all_allocs = {}  # match_id -> list of installment_ids
+    all_inst_ids = set()
+    for r in rows:
+        if r["allocations"] and r["match_status"] in ("auto", "approved"):
+            parsed = parse_allocations(r["allocations"])
+            iids = [int(a["installment_id"]) for a in parsed]
+            all_allocs[r["match_id"]] = iids
+            all_inst_ids.update(iids)
+
+    # Batch lookup: installment_id -> (student_id, student_name)
+    inst_to_student: dict[int, tuple[int, str]] = {}
+    if all_inst_ids:
+        marks = ",".join("?" * len(all_inst_ids))
+        for r2 in conn.execute(
+            "SELECT i.id AS inst_id, s.id AS student_id, s.name AS student_name "
+            "FROM installment i JOIN enrollment e ON i.enrollment_id = e.id "
+            f"JOIN student s ON e.student_id = s.id WHERE i.id IN ({marks})",
+            list(all_inst_ids),
+        ).fetchall():
+            inst_to_student[r2["inst_id"]] = (r2["student_id"], r2["student_name"])
+
     items = []
     for r in rows:
         d = dict(r)
+        d.pop("allocations", None)
         d["deductions_paise"] = (r["gateway_fee_paise"] + r["gst_on_fee_paise"]
                                  + r["fx_diff_paise"] + r["tds_paise"])
         d["match_status"] = r["match_status"] or "unmatched"
+        # Attach matched student info
+        d["matched_student_id"] = None
+        d["matched_student_name"] = None
+        if r["match_id"] in all_allocs:
+            for iid in all_allocs[r["match_id"]]:
+                if iid in inst_to_student:
+                    d["matched_student_id"] = inst_to_student[iid][0]
+                    d["matched_student_name"] = inst_to_student[iid][1]
+                    break
         items.append(d)
     return {"total": total, "limit": limit, "offset": offset, "items": items}
 
