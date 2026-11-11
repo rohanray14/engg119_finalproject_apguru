@@ -8,20 +8,20 @@
   --border: #2A2A35;
   --border-subtle: #1E1E28;
   --text: #F0F0F5;
-  --text-secondary: #8A8A9A;
-  --text-tertiary: #55556A;
+  --text-secondary: #B0B0C0;
+  --text-tertiary: #808098;
   --accent: #00DC82;
   --accent-hover: #00C472;
   --danger: #FF4D4D;
   --warning: #FFB020;
   --info: #4D9EFF;
-  --muted: #55556A;
+  --muted: #808098;
   --card-border: #2A2A35;
   --badge-teal: #00DC82;
   --badge-orange: #FFB020;
   --badge-red: #FF4D4D;
   --badge-blue: #4D9EFF;
-  --sidebar-text: #8A8A9A;
+  --sidebar-text: #C0C0D0;
   --sidebar-active: #F0F0F5;
   --sidebar-active-bg: rgba(0, 220, 130, 0.08);
 }
