@@ -143,7 +143,7 @@ with st.container(border=True):
         terms_display = f'"{c["terms"]}"' if c["terms"] else "—"
         if c["status"] == "needs_rate":
             cols[1].markdown(
-                f'<span style="color:#e67e22;">{terms_display}</span>',
+                f'<span style="color:#FFB020;">{terms_display}</span>',
                 unsafe_allow_html=True,
             )
         else:

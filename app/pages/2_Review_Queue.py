@@ -192,10 +192,10 @@ with left:
             # Highlight selected
             if idx == st.session_state.selected_idx:
                 st.markdown(
-                    f'<div style="background:#1a2332; color:white; padding:12px 16px; '
+                    f'<div style="background:#1C1C24; color:#F0F0F5; padding:12px 16px; '
                     f'border-radius:8px; margin-bottom:8px;">'
                     f'<b>{payer}</b> <span style="float:right;">{amount}</span><br>'
-                    f'<span style="color:#8395a7; font-size:0.8rem;">'
+                    f'<span style="color:#8A8A9A; font-size:0.8rem;">'
                     f'{method} · {date_str} · {conf}</span></div>',
                     unsafe_allow_html=True,
                 )
@@ -221,18 +221,18 @@ with right:
     # Bank statement card
     with st.container(border=True):
         st.markdown(
-            f'<p style="color:#636e72; font-size:0.75rem; font-weight:600; '
+            f'<p style="color:#8A8A9A; font-size:0.75rem; font-weight:600; '
             f'letter-spacing:0.08em; margin-bottom:4px;">FROM THE BANK STATEMENT</p>',
             unsafe_allow_html=True,
         )
         col_a, col_b = st.columns([2, 1])
         col_a.markdown(
-            f'<p style="font-size:2rem; font-weight:700; color:#1a2332; margin:0;">'
+            f'<p style="font-size:2rem; font-weight:700; color:#F0F0F5; margin:0;">'
             f'{fmt_amount(row["amount_paid_paise"], row["currency"])}</p>',
             unsafe_allow_html=True,
         )
         col_b.markdown(
-            f'<p style="text-align:right; color:#636e72; margin-top:12px;">'
+            f'<p style="text-align:right; color:#8A8A9A; margin-top:12px;">'
             f'{fmt_date_display(row["date"])} · {(row["pay_method"] or row["source"] or "").upper()}</p>',
             unsafe_allow_html=True,
         )
@@ -246,7 +246,7 @@ with right:
         needs = "auto-match needs 95%"
         header_cols = st.columns([3, 2])
         header_cols[0].markdown(
-            f'<p style="color:#1a6b5a; font-size:0.75rem; font-weight:600; '
+            f'<p style="color:#00DC82; font-size:0.75rem; font-weight:600; '
             f'letter-spacing:0.08em;">MATCHING AGENT SUGGESTS</p>',
             unsafe_allow_html=True,
         )
@@ -272,7 +272,7 @@ with right:
             if insts:
                 inst = insts[0]
                 st.markdown(
-                    f'<p style="font-size:1.3rem; font-weight:600; color:#1a2332;">'
+                    f'<p style="font-size:1.3rem; font-weight:600; color:#F0F0F5;">'
                     f'{inst["student_name"]} — {inst["program"]}</p>',
                     unsafe_allow_html=True,
                 )
@@ -432,7 +432,7 @@ with right:
 
     # Bug 4: keyboard shortcuts hint
     st.markdown(
-        '<p style="color:#8395a7; font-size:0.8rem; margin-top:16px;">'
+        '<p style="color:#55556A; font-size:0.8rem; margin-top:16px;">'
         'Keyboard: A=approve, N=next, R=reject</p>',
         unsafe_allow_html=True,
     )

@@ -30,7 +30,7 @@ if "messages" not in st.session_state:
 for msg in st.session_state.messages:
     if msg["role"] == "user":
         st.markdown(
-            f'<div style="background:#1a2332; color:white; padding:12px 20px; '
+            f'<div style="background:#1C1C24; color:#F0F0F5; padding:12px 20px; '
             f'border-radius:12px; margin:8px 0; max-width:70%; margin-left:auto; '
             f'text-align:right;">{msg["content"]}</div>',
             unsafe_allow_html=True,

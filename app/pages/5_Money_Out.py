@@ -162,7 +162,7 @@ with col3:
     if prev_month_spend > 0:
         st.markdown(metric_subtitle(f"Prior: {fmt_inr(prev_month_spend)}"), unsafe_allow_html=True)
 with col4:
-    color = "#27ae60" if spend_ratio < 50 else "#e67e22" if spend_ratio < 75 else "#e74c3c"
+    color = "#00DC82" if spend_ratio < 50 else "#FFB020" if spend_ratio < 75 else "#FF4D4D"
     st.metric("Spend / Revenue", f"{spend_ratio:.0f}%")
     st.markdown(
         f'<p style="color:{color}; font-size:0.8rem; margin-top:-8px;">'
@@ -203,14 +203,14 @@ with right:
             cols[0].markdown(f"**{c['category'].title()}**")
             cols[1].markdown(fmt_inr(c["total"]))
             cols[2].markdown(
-                f'<span style="color:#636e72; font-size:0.85rem;">{pct:.0f}%</span>',
+                f'<span style="color:#8A8A9A; font-size:0.85rem;">{pct:.0f}%</span>',
                 unsafe_allow_html=True,
             )
         # Simple bar
         cat_df = pd.DataFrame([{"Category": c["category"].title(), "Amount": c["total"] / 100} for c in categories])
         if not cat_df.empty:
             cat_df = cat_df.set_index("Category")
-            st.bar_chart(cat_df, color=["#1a6b5a"])
+            st.bar_chart(cat_df, color=["#00DC82"])
 
 st.write("")
 
@@ -292,7 +292,7 @@ with st.container(border=True):
             strokeWidth=2.5 if i == 0 else 1.8,
             opacity=_opacities[i],
             strokeDash=_dashes[i],
-            color="#1a6b5a",
+            color="#00DC82",
         )
         for i, name in enumerate(scenario_names)
     ])
@@ -309,14 +309,14 @@ with st.container(border=True):
         ],
     ).add_params(nearest)
 
-    rule = base.mark_rule(color="#ccc", strokeWidth=0.5).encode(
+    rule = base.mark_rule(color="#2A2A35", strokeWidth=0.5).encode(
         x="Month:T",
     ).transform_filter(nearest)
 
     chart = (lines + rule + points).properties(height=320).configure_view(
         strokeWidth=0,
     ).configure_axis(
-        grid=True, gridColor="#f0f0f0", labelColor="#636e72", titleColor="#636e72",
+        grid=True, gridColor="#1E1E28", labelColor="#8A8A9A", titleColor="#8A8A9A",
     )
 
     st.altair_chart(chart, use_container_width=True)
@@ -337,9 +337,9 @@ with st.container(border=True):
                 status = f"+{fmt_inr(monthly_net)}/mo surplus"
             st.markdown(
                 f'<div style="padding:4px 0;">'
-                f'<span style="font-size:0.85rem; color:rgba(26,107,90,{opacity}); font-weight:600;">'
+                f'<span style="font-size:0.85rem; color:rgba(0,220,130,{opacity}); font-weight:600;">'
                 f'{dash_label} {scenario_name}</span><br>'
-                f'<span style="font-size:0.78rem; color:#636e72;">{status}</span>'
+                f'<span style="font-size:0.78rem; color:#8A8A9A;">{status}</span>'
                 f'</div>',
                 unsafe_allow_html=True,
             )

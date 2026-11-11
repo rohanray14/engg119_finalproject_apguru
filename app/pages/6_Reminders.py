@@ -87,7 +87,7 @@ def _render_reminders(reminder_list, tab_key):
             cols[0].markdown(badge(label, color), unsafe_allow_html=True)
             cols[1].markdown(
                 f"**{r.student_name}** — {r.enrollment_program}<br>"
-                f'<span style="color:#636e72; font-size:0.85rem;">'
+                f'<span style="color:#8A8A9A; font-size:0.85rem;">'
                 f'{fmt_amount(r.amount_due_paise, r.currency)} · due {fmt_date_display(str(r.due_date))}'
                 f'</span>',
                 unsafe_allow_html=True,

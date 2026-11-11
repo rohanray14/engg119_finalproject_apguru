@@ -317,7 +317,7 @@ def main():
         st.session_state["global_as_of"] = as_of
         st.markdown("---")
         st.markdown(
-            '<p style="color:#8395a7; font-size:0.75rem; margin-top:2rem;">'
+            '<p style="color:#55556A; font-size:0.75rem; margin-top:2rem;">'
             '<b>Data sources</b><br>'
             'Bank statement · synced on load<br>'
             'PayGlocal, Stripe, Razorpay · synced on load<br>'
@@ -347,7 +347,7 @@ def main():
     with st.container(border=True):
         st.markdown(
             f'{badge("BRIEFING", "teal")} &nbsp; '
-            f'<span style="color:#636e72;">Generated from the ledger</span>',
+            f'<span style="color:#8A8A9A;">Generated from the ledger</span>',
             unsafe_allow_html=True,
         )
         # Build a concise briefing
@@ -372,6 +372,71 @@ def main():
 
     st.write("")
 
+    # ── Needs your decision (actions first) ──
+    with st.container(border=True):
+        st.markdown("### Needs your decision")
+
+        items_shown = 0
+
+        # Risk items (highest urgency)
+        for f in high_risk[:2]:
+            cols = st.columns([1, 5, 1])
+            cols[0].markdown(badge("Risk", "red"), unsafe_allow_html=True)
+            cols[1].markdown(
+                f"**{f.explanation[:80]}**<br>"
+                f'<span style="color:#8A8A9A; font-size:0.85rem;">{f.category}'
+                f'{" · " + fmt_inr(f.amount_paise) if f.amount_paise else ""}</span>',
+                unsafe_allow_html=True,
+            )
+            if cols[2].button("Check", key=f"risk_{f.entity}"):
+                st.switch_page("pages/7_Risk.py")
+            st.markdown("---")
+            items_shown += 1
+
+        # Match review items (show amount at stake)
+        pending_rows = conn.execute(
+            "SELECT mr.id, mr.payment_id, mr.confidence, mr.reason, "
+            "p.payer_name, p.amount_paid_paise, p.currency, p.method, p.date "
+            "FROM match_result mr "
+            "JOIN payment_in p ON mr.payment_id = p.id "
+            "WHERE mr.status = 'pending_review' AND mr.allocations != '[]' "
+            "ORDER BY p.amount_paid_paise DESC LIMIT 3"
+        ).fetchall()
+        for row in pending_rows:
+            cols = st.columns([1, 5, 1])
+            cols[0].markdown(badge("Match", "teal"), unsafe_allow_html=True)
+            cols[1].markdown(
+                f"**{fmt_amount(row['amount_paid_paise'], row['currency'])}** from "
+                f"{row['payer_name'] or '(blank)'}<br>"
+                f'<span style="color:#8A8A9A; font-size:0.85rem;">'
+                f"{row['confidence']:.0%} confident · {fmt_date_display(row['date'])}"
+                f"</span>",
+                unsafe_allow_html=True,
+            )
+            if cols[2].button("Review", key=f"match_{row['id']}"):
+                st.switch_page("pages/2_Review_Queue.py")
+            st.markdown("---")
+            items_shown += 1
+
+        # Overdue reminders
+        if overdue_reminders:
+            cols = st.columns([1, 5, 1])
+            cols[0].markdown(badge("Overdue", "orange"), unsafe_allow_html=True)
+            cols[1].markdown(
+                f"**{len(overdue_reminders)} overdue** — reminders drafted<br>"
+                f'<span style="color:#8A8A9A; font-size:0.85rem;">'
+                f"Total: {fmt_inr(stats['overdue_amount'])}</span>",
+                unsafe_allow_html=True,
+            )
+            if cols[2].button("Read drafts", key="overdue_drafts"):
+                st.switch_page("pages/6_Reminders.py")
+            items_shown += 1
+
+        if items_shown == 0:
+            st.success("Nothing needs your attention right now.")
+
+    st.write("")
+
     # ── Row 1: This month snapshot ──
     col1, col2, col3, col4 = st.columns(4)
 
@@ -392,13 +457,13 @@ def main():
     with col3:
         st.metric(f"Spent ({month_label})", fmt_inr(stats["spent_this_month"]))
         net_this = stats["received_this_month"] - stats["spent_this_month"]
-        color = "#27ae60" if net_this >= 0 else "#e74c3c"
+        color = "#00DC82" if net_this >= 0 else "#FF4D4D"
         st.markdown(f'<p style="color:{color}; font-size:0.8rem; margin-top:-8px;">Net: {fmt_inr(net_this)}</p>', unsafe_allow_html=True)
     with col4:
         st.metric("Overdue", f"{overdue_count}")
         if overdue_count > 0:
             st.markdown(
-                f'<p style="color:#e74c3c; font-size:0.8rem; margin-top:-8px;">'
+                f'<p style="color:#FF4D4D; font-size:0.8rem; margin-top:-8px;">'
                 f'{fmt_inr(stats["overdue_amount"])} · oldest {stats["oldest_overdue_days"]}d</p>',
                 unsafe_allow_html=True,
             )
@@ -420,9 +485,9 @@ def main():
             if total > 0:
                 st.markdown(
                     f'<div style="display:flex; height:28px; border-radius:6px; overflow:hidden; margin:12px 0;">'
-                    f'<div style="background:#27ae60; width:{in_bank/total*100:.0f}%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.75rem; font-weight:600;">{in_bank/total*100:.0f}%</div>'
-                    f'<div style="background:#f39c12; width:{by_gateway/total*100:.0f}%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.75rem; font-weight:600;">{by_gateway/total*100:.0f}%</div>'
-                    f'<div style="background:#e74c3c; width:{screenshot/total*100:.0f}%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.75rem; font-weight:600;">{screenshot/total*100:.0f}%</div>'
+                    f'<div style="background:#00DC82; width:{in_bank/total*100:.0f}%; display:flex; align-items:center; justify-content:center; color:#0A0A0F; font-size:0.75rem; font-weight:600;">{in_bank/total*100:.0f}%</div>'
+                    f'<div style="background:#FFB020; width:{by_gateway/total*100:.0f}%; display:flex; align-items:center; justify-content:center; color:#0A0A0F; font-size:0.75rem; font-weight:600;">{by_gateway/total*100:.0f}%</div>'
+                    f'<div style="background:#FF4D4D; width:{screenshot/total*100:.0f}%; display:flex; align-items:center; justify-content:center; color:#0A0A0F; font-size:0.75rem; font-weight:600;">{screenshot/total*100:.0f}%</div>'
                     f'</div>',
                     unsafe_allow_html=True,
                 )
@@ -475,7 +540,7 @@ def main():
                     cols[1].markdown(f"**{row['payer_name'] or '(blank)'}**")
                     cols[2].markdown(fmt_amount(row['amount_paid_paise'], row['currency']))
                     cols[3].markdown(
-                        f'<span style="color:#636e72; font-size:0.8rem;">{fmt_date_display(row["date"])}</span>',
+                        f'<span style="color:#8A8A9A; font-size:0.8rem;">{fmt_date_display(row["date"])}</span>',
                         unsafe_allow_html=True,
                     )
                 st.caption(f"These payments have no match — review or assign them manually.")
@@ -495,7 +560,7 @@ def main():
             df = pd.DataFrame(stats["months_data"])
             if not df.empty:
                 df = df.set_index("Month")
-                st.bar_chart(df, color=["#dfe6e9", "#1a6b5a"])
+                st.bar_chart(df, color=["#2A2A35", "#00DC82"])
             else:
                 st.info("No data in this date range.")
 
@@ -507,74 +572,9 @@ def main():
             df_fc = pd.DataFrame(stats["forecast_weeks"])
             if not df_fc.empty and df_fc["Scheduled"].sum() > 0:
                 df_fc = df_fc.set_index("Week")
-                st.bar_chart(df_fc, color=["#1a6b5a", "#b2dfdb"])
+                st.bar_chart(df_fc, color=["#00DC82", "#1C4A3A"])
             else:
                 st.caption("No installments due in the next 6 weeks.")
-
-    st.write("")
-
-    # ── Row 5: Needs your decision ──
-    with st.container(border=True):
-        st.markdown("### Needs your decision")
-
-        items_shown = 0
-
-        # Risk items (highest urgency)
-        for f in high_risk[:2]:
-            cols = st.columns([1, 5, 1])
-            cols[0].markdown(badge("Risk", "red"), unsafe_allow_html=True)
-            cols[1].markdown(
-                f"**{f.explanation[:80]}**<br>"
-                f'<span style="color:#636e72; font-size:0.85rem;">{f.category}'
-                f'{" · " + fmt_inr(f.amount_paise) if f.amount_paise else ""}</span>',
-                unsafe_allow_html=True,
-            )
-            if cols[2].button("Check", key=f"risk_{f.entity}"):
-                st.switch_page("pages/7_Risk.py")
-            st.markdown("---")
-            items_shown += 1
-
-        # Match review items (show amount at stake)
-        pending_rows = conn.execute(
-            "SELECT mr.id, mr.payment_id, mr.confidence, mr.reason, "
-            "p.payer_name, p.amount_paid_paise, p.currency, p.method, p.date "
-            "FROM match_result mr "
-            "JOIN payment_in p ON mr.payment_id = p.id "
-            "WHERE mr.status = 'pending_review' AND mr.allocations != '[]' "
-            "ORDER BY p.amount_paid_paise DESC LIMIT 3"
-        ).fetchall()
-        for row in pending_rows:
-            cols = st.columns([1, 5, 1])
-            cols[0].markdown(badge("Match", "teal"), unsafe_allow_html=True)
-            cols[1].markdown(
-                f"**{fmt_amount(row['amount_paid_paise'], row['currency'])}** from "
-                f"{row['payer_name'] or '(blank)'}<br>"
-                f'<span style="color:#636e72; font-size:0.85rem;">'
-                f"{row['confidence']:.0%} confident · {fmt_date_display(row['date'])}"
-                f"</span>",
-                unsafe_allow_html=True,
-            )
-            if cols[2].button("Review", key=f"match_{row['id']}"):
-                st.switch_page("pages/2_Review_Queue.py")
-            st.markdown("---")
-            items_shown += 1
-
-        # Overdue reminders
-        if overdue_reminders:
-            cols = st.columns([1, 5, 1])
-            cols[0].markdown(badge("Overdue", "orange"), unsafe_allow_html=True)
-            cols[1].markdown(
-                f"**{len(overdue_reminders)} overdue** — reminders drafted<br>"
-                f'<span style="color:#636e72; font-size:0.85rem;">'
-                f"Total: {fmt_inr(stats['overdue_amount'])}</span>",
-                unsafe_allow_html=True,
-            )
-            if cols[2].button("Read drafts", key="overdue_drafts"):
-                st.switch_page("pages/6_Reminders.py")
-            items_shown += 1
-
-        if items_shown == 0:
-            st.success("Nothing needs your attention right now.")
 
     st.write("")
 
@@ -582,7 +582,7 @@ def main():
     with st.container(border=True):
         cols = st.columns([1, 8, 1])
         cols[0].markdown(
-            '<p style="font-weight:600; color:#1a2332; margin-top:8px;">Ask</p>',
+            '<p style="font-weight:600; color:#F0F0F5; margin-top:8px;">Ask</p>',
             unsafe_allow_html=True,
         )
         question = cols[1].text_input(
