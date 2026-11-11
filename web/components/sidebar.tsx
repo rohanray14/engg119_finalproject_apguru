@@ -56,6 +56,7 @@ export default function Sidebar() {
       items: [
         { href: "/reminders", label: "Reminders" },
         { href: "/risk", label: "Risk" },
+        { href: "/insights", label: "Insights" },
         { href: "/audit", label: "Audit log" },
       ],
     },

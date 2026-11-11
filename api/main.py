@@ -23,7 +23,7 @@ from fastapi.responses import FileResponse, JSONResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
 from api.database import close_pool, get_conn  # noqa: E402
-from api.routers import actions, dashboard, ledger_views, review  # noqa: E402
+from api.routers import actions, dashboard, insights, ledger_views, review  # noqa: E402
 from api.settings import get_settings  # noqa: E402
 
 log = logging.getLogger("finance_desk")
@@ -94,7 +94,7 @@ def create_app() -> FastAPI:
         conn.execute("SELECT 1").fetchone()
         return {"ok": True}
 
-    for r in (dashboard.router, review.router, ledger_views.router, actions.router):
+    for r in (dashboard.router, review.router, ledger_views.router, actions.router, insights.router):
         app.include_router(r, prefix="/api")
 
     # Serve the Next.js static export if the build output exists.
