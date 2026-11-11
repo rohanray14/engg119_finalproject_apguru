@@ -41,7 +41,7 @@ function lakhs(paise: number): string {
   return `${sign}${amt.toFixed(0)}`;
 }
 
-// Muted monochrome palette — teal accent with grays
+// Muted monochrome palette -- teal accent with grays
 const CAT_COLORS: Record<string, string> = {
   faculty: "#1a2332",
   ads: "#2d6a5e",
@@ -77,11 +77,11 @@ export default function MoneyOutPage() {
   if (isLoading) {
     return (
       <div className="p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-1">Money out</h1>
-        <p className="text-sm text-gray-500 mb-6">Where money is going, by category and month.</p>
+        <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Money out</h1>
+        <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Where money is going, by category and month.</p>
         <div className="animate-pulse space-y-4">
-          <div className="grid grid-cols-3 gap-3">{[...Array(3)].map((_, i) => <div key={i} className="h-24 bg-gray-200 rounded-lg" />)}</div>
-          <div className="h-64 bg-gray-200 rounded-lg" />
+          <div className="grid grid-cols-3 gap-3">{[...Array(3)].map((_, i) => <div key={i} className="h-24 rounded-lg" style={{ backgroundColor: "var(--surface)" }} />)}</div>
+          <div className="h-64 rounded-lg" style={{ backgroundColor: "var(--surface)" }} />
         </div>
       </div>
     );
@@ -89,46 +89,46 @@ export default function MoneyOutPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-1">Money out</h1>
-      <p className="text-sm text-gray-500 mb-6">Where money is going, by category and month.</p>
+      <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Money out</h1>
+      <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Where money is going, by category and month.</p>
 
       {/* Row 1: Key metrics */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-        <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-sm text-gray-500">Total spent (all time)</div>
-          <div className="text-2xl font-bold text-gray-900">{data ? formatMoneyCompact(data.total_spent_paise, "INR") : "—"}</div>
-          <div className="text-xs text-gray-400">{data?.total ?? 0} payments</div>
+        <div className="rounded-xl border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Total spent (all time)</div>
+          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data ? formatMoneyCompact(data.total_spent_paise, "INR") : "\u2014"}</div>
+          <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>{data?.total ?? 0} payments</div>
         </div>
-        <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-sm text-gray-500">Avg monthly burn</div>
-          <div className="text-2xl font-bold text-gray-900">{data ? formatMoneyCompact(data.avg_monthly_burn_paise, "INR") : "—"}</div>
+        <div className="rounded-xl border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Avg monthly burn</div>
+          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data ? formatMoneyCompact(data.avg_monthly_burn_paise, "INR") : "\u2014"}</div>
           {prevMonthSpend > 0 && (
-            <div className="text-xs font-medium text-gray-500">
+            <div className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
               {momPct > 0 ? "+" : ""}{momPct.toFixed(0)}% MoM
             </div>
           )}
         </div>
-        <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-sm text-gray-500">Last month</div>
-          <div className="text-2xl font-bold text-gray-900">{formatMoneyCompact(lastMonthSpend, "INR")}</div>
+        <div className="rounded-xl border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Last month</div>
+          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{formatMoneyCompact(lastMonthSpend, "INR")}</div>
           {prevMonthSpend > 0 && (
-            <div className="text-xs text-gray-400">Prior: {formatMoneyCompact(prevMonthSpend, "INR")}</div>
+            <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>Prior: {formatMoneyCompact(prevMonthSpend, "INR")}</div>
           )}
         </div>
       </div>
 
       {/* Row 2: Monthly trend + Category breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
-        <div className="lg:col-span-3 bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-          <h3 className="font-bold text-gray-900 mb-1">Monthly spend trend</h3>
-          <p className="text-xs text-gray-500 mb-4">Month-over-month outflows by category</p>
+        <div className="lg:col-span-3 rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Monthly spend trend</h3>
+          <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>Month-over-month outflows by category</p>
           {trendData.length > 0 ? (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={trendData} barGap={1}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 11 }} width={50} />
-                <Tooltip formatter={(value) => `${lakhs(Number(value) * 100)}`} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--text-secondary)" }} />
+                <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 11, fill: "var(--text-secondary)" }} width={50} />
+                <Tooltip formatter={(value) => `${lakhs(Number(value) * 100)}`} contentStyle={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)" }} />
                 <Legend iconType="square" wrapperStyle={{ fontSize: 11 }} />
                 {allCats.map((c) => (
                   <Bar key={c} dataKey={c} stackId="a" fill={CAT_COLORS[c] || "#94a3b8"} name={c} />
@@ -136,13 +136,13 @@ export default function MoneyOutPage() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="text-sm text-gray-400 py-8 text-center">No data</div>
+            <div className="text-sm py-8 text-center" style={{ color: "var(--text-tertiary)" }}>No data</div>
           )}
         </div>
 
-        <div className="lg:col-span-2 bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-          <h3 className="font-bold text-gray-900 mb-1">Spend by category</h3>
-          <p className="text-xs text-gray-500 mb-4">All-time breakdown</p>
+        <div className="lg:col-span-2 rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Spend by category</h3>
+          <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>All-time breakdown</p>
           <div className="space-y-2.5">
             {(data?.summary ?? []).map((s, i) => {
               const pct = data && data.total_spent_paise > 0
@@ -153,14 +153,14 @@ export default function MoneyOutPage() {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: CAT_COLORS[s.category] || "#94a3b8" }} />
-                      <span className="font-medium text-gray-900 capitalize">{s.category}</span>
+                      <span className="font-medium capitalize" style={{ color: "var(--text)" }}>{s.category}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-gray-700">{formatMoneyCompact(s.total_paise, s.currency)}</span>
-                      <span className="text-gray-400 text-xs w-8 text-right">{pct.toFixed(0)}%</span>
+                      <span style={{ color: "var(--text)" }}>{formatMoneyCompact(s.total_paise, s.currency)}</span>
+                      <span className="text-xs w-8 text-right" style={{ color: "var(--text-tertiary)" }}>{pct.toFixed(0)}%</span>
                     </div>
                   </div>
-                  <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="mt-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--surface-hover)" }}>
                     <div
                       className="h-full rounded-full"
                       style={{ width: `${pct}%`, backgroundColor: CAT_COLORS[s.category] || "#94a3b8" }}
@@ -174,27 +174,30 @@ export default function MoneyOutPage() {
       </div>
 
       {/* Detail table */}
-      <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-        <h3 className="font-bold text-gray-900 mb-4">All outgoing payments</h3>
+      <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+        <h3 className="font-bold mb-4" style={{ color: "var(--text)" }}>All outgoing payments</h3>
 
         {!data || data.items.length === 0 ? (
-          <p className="text-gray-500 py-4 text-center">No outgoing payments.</p>
+          <p className="py-4 text-center" style={{ color: "var(--text-secondary)" }}>No outgoing payments.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-gray-500 border-b bg-gray-50">
+                <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)", backgroundColor: "var(--surface-hover)" }}>
                   <th className="px-4 py-3 font-medium">Date</th>
                   <th className="px-4 py-3 font-medium">Payee</th>
                   <th className="px-4 py-3 font-medium">Category</th>
                   <th className="px-4 py-3 font-medium text-right">Amount</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody>
                 {data.items.map((r) => (
-                  <tr key={r.id} className="hover:bg-gray-50">
+                  <tr key={r.id}
+                    style={{ borderBottom: "1px solid var(--border-subtle)" }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}>
                     <td className="px-4 py-2.5">{formatDate(r.date)}</td>
-                    <td className="px-4 py-2.5 font-medium text-gray-900">{r.payee}</td>
+                    <td className="px-4 py-2.5 font-medium" style={{ color: "var(--text)" }}>{r.payee}</td>
                     <td className="px-4 py-2.5 capitalize">{r.category}</td>
                     <td className="px-4 py-2.5 text-right font-medium">{formatMoney(r.amount_paise, r.currency)}</td>
                   </tr>

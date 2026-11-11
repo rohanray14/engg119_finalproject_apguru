@@ -42,10 +42,10 @@ const METHOD_LABELS: Record<string, string> = {
 
 function lakhs(paise: number): string {
   const amt = Math.abs(paise) / 100;
-  if (amt >= 10000000) return `₹${(amt / 10000000).toFixed(1)}Cr`;
-  if (amt >= 100000) return `₹${(amt / 100000).toFixed(1)}L`;
-  if (amt >= 1000) return `₹${(amt / 1000).toFixed(0)}K`;
-  return `₹${amt.toFixed(0)}`;
+  if (amt >= 10000000) return `\u20b9${(amt / 10000000).toFixed(1)}Cr`;
+  if (amt >= 100000) return `\u20b9${(amt / 100000).toFixed(1)}L`;
+  if (amt >= 1000) return `\u20b9${(amt / 1000).toFixed(0)}K`;
+  return `\u20b9${amt.toFixed(0)}`;
 }
 
 function monthLabel(iso: string): string {
@@ -62,15 +62,15 @@ function RingGauge({ rate, size = 120 }: { rate: number; size?: number }) {
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none"
-          stroke="#f0f0f0" strokeWidth={10} />
+          stroke="var(--border-subtle)" strokeWidth={10} />
         <circle cx={size / 2} cy={size / 2} r={r} fill="none"
           stroke="var(--accent)" strokeWidth={10}
           strokeDasharray={circ} strokeDashoffset={offset}
           strokeLinecap="round" className="transition-all duration-700" />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-bold text-gray-900">{pct}%</span>
-        <span className="text-[10px] text-gray-400 uppercase tracking-wider">collected</span>
+        <span className="text-2xl font-bold" style={{ color: "var(--text)" }}>{pct}%</span>
+        <span className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>collected</span>
       </div>
     </div>
   );
@@ -82,10 +82,10 @@ export default function InsightsPage() {
   if (isLoading || !data) {
     return (
       <div className="p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-1">Insights</h1>
-        <p className="text-sm text-gray-500 mb-6">Business overview across programs, geography, and collection health.</p>
+        <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Insights</h1>
+        <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Business overview across programs, geography, and collection health.</p>
         <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map((i) => <div key={i} className="h-48 bg-gray-200 rounded-lg" />)}
+          {[1, 2, 3].map((i) => <div key={i} className="h-48 rounded-lg" style={{ backgroundColor: "var(--surface)" }} />)}
         </div>
       </div>
     );
@@ -120,88 +120,88 @@ export default function InsightsPage() {
     <div className="p-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Insights</h1>
-        <p className="text-sm text-gray-500 mt-1">Business overview across programs, geography, and collection health.</p>
+        <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Insights</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Business overview across programs, geography, and collection health.</p>
       </div>
 
       {/* Hero metrics row */}
       <div className="grid grid-cols-5 gap-4 mb-8">
-        <div className="col-span-2 bg-white rounded-xl border p-6 flex items-center gap-6"
-          style={{ borderColor: "var(--card-border)" }}>
+        <div className="col-span-2 rounded-xl border p-6 flex items-center gap-6"
+          style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <RingGauge rate={collection.collection_rate} size={110} />
           <div>
-            <div className="text-sm text-gray-500 mb-1">Collection health</div>
-            <div className="text-xl font-bold text-gray-900">{formatMoneyCompact(collectedPaise, "INR")}</div>
-            <div className="text-xs text-gray-500 mt-0.5">of {formatMoneyCompact(duePaise, "INR")} billed</div>
+            <div className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>Collection health</div>
+            <div className="text-xl font-bold" style={{ color: "var(--text)" }}>{formatMoneyCompact(collectedPaise, "INR")}</div>
+            <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>of {formatMoneyCompact(duePaise, "INR")} billed</div>
             {outstandingPaise > 0 && (
-              <div className="text-xs text-red-600 mt-1 font-medium">
+              <div className="text-xs mt-1 font-medium" style={{ color: "var(--danger)" }}>
                 {formatMoneyCompact(outstandingPaise, "INR")} outstanding
               </div>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border p-5 flex flex-col justify-between" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-xs text-gray-400 uppercase tracking-wider font-medium">Students</div>
-          <div className="text-3xl font-bold text-gray-900">{totalStudents}</div>
-          <div className="text-xs text-gray-500">{totalPrograms} programs</div>
+        <div className="rounded-xl border p-5 flex flex-col justify-between" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-tertiary)" }}>Students</div>
+          <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>{totalStudents}</div>
+          <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{totalPrograms} programs</div>
         </div>
 
-        <div className="bg-white rounded-xl border p-5 flex flex-col justify-between" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-xs text-gray-400 uppercase tracking-wider font-medium">Installments</div>
-          <div className="text-3xl font-bold text-gray-900">{collection.total_installments}</div>
+        <div className="rounded-xl border p-5 flex flex-col justify-between" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-tertiary)" }}>Installments</div>
+          <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>{collection.total_installments}</div>
           {collection.overdue_installments > 0 ? (
-            <div className="text-xs text-red-600 font-medium">{collection.overdue_installments} overdue</div>
+            <div className="text-xs font-medium" style={{ color: "var(--danger)" }}>{collection.overdue_installments} overdue</div>
           ) : (
-            <div className="text-xs text-green-600 font-medium">All on track</div>
+            <div className="text-xs font-medium" style={{ color: "var(--accent)" }}>All on track</div>
           )}
         </div>
 
-        <div className="bg-white rounded-xl border p-5 flex flex-col justify-between" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-xs text-gray-400 uppercase tracking-wider font-medium">Avg per student</div>
-          <div className="text-3xl font-bold text-gray-900">
-            {totalStudents > 0 ? formatMoneyCompact(Math.round(duePaise / totalStudents), "INR") : "—"}
+        <div className="rounded-xl border p-5 flex flex-col justify-between" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-tertiary)" }}>Avg per student</div>
+          <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>
+            {totalStudents > 0 ? formatMoneyCompact(Math.round(duePaise / totalStudents), "INR") : "\u2014"}
           </div>
-          <div className="text-xs text-gray-500">total fee value</div>
+          <div className="text-xs" style={{ color: "var(--text-secondary)" }}>total fee value</div>
         </div>
       </div>
 
-      {/* Monthly trend — full width */}
-      <div className="bg-white rounded-xl border p-6 mb-8" style={{ borderColor: "var(--card-border)" }}>
+      {/* Monthly trend -- full width */}
+      <div className="rounded-xl border p-6 mb-8" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h3 className="font-bold text-gray-900">Monthly collections</h3>
-            <p className="text-xs text-gray-500 mt-0.5">Revenue received per month (matched payments only)</p>
+            <h3 className="font-bold" style={{ color: "var(--text)" }}>Monthly collections</h3>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Revenue received per month (matched payments only)</p>
           </div>
-          <div className="text-xs text-gray-400">
-            {by_month.length} months · {by_month.reduce((s, r) => s + r.payments, 0)} payments
+          <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+            {by_month.length} months \u00b7 {by_month.reduce((s, r) => s + r.payments, 0)} payments
           </div>
         </div>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={monthData} barSize={32}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-            <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} tickLine={false} axisLine={false} />
-            <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 11, fill: "#9ca3af" }} tickLine={false} axisLine={false} width={55} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} />
+            <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 11, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} width={55} />
             <Tooltip
               formatter={(value) => [lakhs(Number(value) * 100), "Collected"]}
-              labelStyle={{ fontWeight: 600 }}
-              contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13 }}
+              labelStyle={{ fontWeight: 600, color: "var(--text)" }}
+              contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", fontSize: 13, backgroundColor: "var(--surface)", color: "var(--text)" }}
             />
             <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
               {monthData.map((_, i) => (
-                <Cell key={i} fill={i === monthData.length - 1 ? "var(--accent)" : "#c7ddd8"} />
+                <Cell key={i} fill={i === monthData.length - 1 ? "var(--accent)" : "#3da391"} />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Programs + Geography — side by side */}
+      {/* Programs + Geography -- side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Revenue by program */}
-        <div className="bg-white rounded-xl border p-6" style={{ borderColor: "var(--card-border)" }}>
-          <h3 className="font-bold text-gray-900 mb-1">Revenue by program</h3>
-          <p className="text-xs text-gray-500 mb-5">Fee collection across all programs</p>
+        <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Revenue by program</h3>
+          <p className="text-xs mb-5" style={{ color: "var(--text-secondary)" }}>Fee collection across all programs</p>
           <div className="space-y-4">
             {by_program.map((r, i) => {
               const pctCollected = r.total_fee_paise > 0 ? Math.round((r.collected_paise / r.total_fee_paise) * 100) : 0;
@@ -209,18 +209,18 @@ export default function InsightsPage() {
               return (
                 <div key={r.program}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium text-gray-900">{r.program}</span>
+                    <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{r.program}</span>
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-gray-400">{r.students} students</span>
+                      <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{r.students} students</span>
                       <span className="text-sm font-semibold" style={{ color: "var(--accent)" }}>
                         {formatMoneyCompact(r.collected_paise, "INR")}
                       </span>
                     </div>
                   </div>
-                  <div className="relative h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="relative h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--surface-hover)" }}>
                     {/* Total billed (background) */}
-                    <div className="absolute inset-y-0 left-0 rounded-full bg-gray-200"
-                      style={{ width: `${(r.total_fee_paise / barMax) * 100}%` }} />
+                    <div className="absolute inset-y-0 left-0 rounded-full"
+                      style={{ width: `${(r.total_fee_paise / barMax) * 100}%`, backgroundColor: "var(--border)" }} />
                     {/* Collected (foreground) */}
                     <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
                       style={{
@@ -229,11 +229,11 @@ export default function InsightsPage() {
                       }} />
                   </div>
                   <div className="flex justify-between mt-1">
-                    <span className="text-[11px] text-gray-400">
+                    <span className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>
                       {formatMoneyCompact(r.collected_paise, "INR")} of {formatMoneyCompact(r.total_fee_paise, "INR")}
                     </span>
                     <span className="text-[11px] font-medium" style={{
-                      color: pctCollected >= 80 ? "#16a34a" : pctCollected >= 50 ? "#d97706" : "#dc2626",
+                      color: pctCollected >= 80 ? "var(--accent)" : pctCollected >= 50 ? "var(--warning)" : "var(--danger)",
                     }}>
                       {pctCollected}% collected
                     </span>
@@ -245,13 +245,13 @@ export default function InsightsPage() {
         </div>
 
         {/* Geography */}
-        <div className="bg-white rounded-xl border p-6" style={{ borderColor: "var(--card-border)" }}>
-          <h3 className="font-bold text-gray-900 mb-1">Revenue by geography</h3>
-          <p className="text-xs text-gray-500 mb-5">Where students and revenue come from</p>
+        <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Revenue by geography</h3>
+          <p className="text-xs mb-5" style={{ color: "var(--text-secondary)" }}>Where students and revenue come from</p>
 
           {/* Countries */}
           <div className="mb-6">
-            <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">By country</div>
+            <div className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-tertiary)" }}>By country</div>
             <div className="space-y-3">
               {by_country.map((r, i) => {
                 const maxCountry = Math.max(...by_country.map((c) => c.collected_paise), 1);
@@ -260,12 +260,12 @@ export default function InsightsPage() {
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: TEAL_PALETTE[i % TEAL_PALETTE.length] }} />
-                        <span className="text-sm font-medium text-gray-900">{r.country}</span>
-                        <span className="text-xs text-gray-400">{r.students}</span>
+                        <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{r.country}</span>
+                        <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{r.students}</span>
                       </div>
-                      <span className="text-sm font-semibold text-gray-700">{formatMoneyCompact(r.collected_paise, "INR")}</span>
+                      <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>{formatMoneyCompact(r.collected_paise, "INR")}</span>
                     </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--surface-hover)" }}>
                       <div className="h-full rounded-full transition-all duration-500"
                         style={{
                           width: `${(r.collected_paise / maxCountry) * 100}%`,
@@ -280,16 +280,16 @@ export default function InsightsPage() {
 
           {/* Cities */}
           <div>
-            <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">Top cities</div>
+            <div className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-tertiary)" }}>Top cities</div>
             <div className="flex flex-wrap gap-2">
               {by_city.map((r, i) => (
                 <div key={r.city}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs"
-                  style={{ borderColor: "var(--card-border)" }}>
+                  style={{ borderColor: "var(--border)" }}>
                   <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: TEAL_PALETTE[i % TEAL_PALETTE.length] }} />
-                  <span className="font-medium text-gray-800">{r.city}</span>
-                  <span className="text-gray-400">{r.students}</span>
-                  <span className="font-semibold text-gray-600">{formatMoneyCompact(r.collected_paise, "INR")}</span>
+                  <span className="font-medium" style={{ color: "var(--text)" }}>{r.city}</span>
+                  <span style={{ color: "var(--text-tertiary)" }}>{r.students}</span>
+                  <span className="font-semibold" style={{ color: "var(--text-secondary)" }}>{formatMoneyCompact(r.collected_paise, "INR")}</span>
                 </div>
               ))}
             </div>
@@ -299,10 +299,10 @@ export default function InsightsPage() {
 
       {/* Bottom row: Payment methods + Fee model */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* How families pay — donut */}
-        <div className="lg:col-span-3 bg-white rounded-xl border p-6" style={{ borderColor: "var(--card-border)" }}>
-          <h3 className="font-bold text-gray-900 mb-1">How families pay</h3>
-          <p className="text-xs text-gray-500 mb-4">Payment method breakdown</p>
+        {/* How families pay -- donut */}
+        <div className="lg:col-span-3 rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>How families pay</h3>
+          <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>Payment method breakdown</p>
           <div className="flex items-center gap-8">
             <div className="shrink-0">
               <PieChart width={180} height={180}>
@@ -320,7 +320,7 @@ export default function InsightsPage() {
                 </Pie>
                 <Tooltip
                   formatter={(value) => formatMoneyCompact(Number(value), "INR")}
-                  contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }}
+                  contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", fontSize: 12, backgroundColor: "var(--surface)", color: "var(--text)" }}
                 />
               </PieChart>
             </div>
@@ -329,12 +329,12 @@ export default function InsightsPage() {
                 <div key={r.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: r.color }} />
-                    <span className="text-sm text-gray-800">{r.name}</span>
+                    <span className="text-sm" style={{ color: "var(--text)" }}>{r.name}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400">{r.payments} txn</span>
-                    <span className="text-sm font-medium text-gray-900 w-16 text-right">
-                      {totalMethodPaise > 0 ? `${Math.round((r.value / totalMethodPaise) * 100)}%` : "—"}
+                    <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{r.payments} txn</span>
+                    <span className="text-sm font-medium w-16 text-right" style={{ color: "var(--text)" }}>
+                      {totalMethodPaise > 0 ? `${Math.round((r.value / totalMethodPaise) * 100)}%` : "\u2014"}
                     </span>
                   </div>
                 </div>
@@ -344,33 +344,33 @@ export default function InsightsPage() {
         </div>
 
         {/* Fee model comparison */}
-        <div className="lg:col-span-2 bg-white rounded-xl border p-6" style={{ borderColor: "var(--card-border)" }}>
-          <h3 className="font-bold text-gray-900 mb-1">Fee model</h3>
-          <p className="text-xs text-gray-500 mb-5">Package vs hourly comparison</p>
+        <div className="lg:col-span-2 rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Fee model</h3>
+          <p className="text-xs mb-5" style={{ color: "var(--text-secondary)" }}>Package vs hourly comparison</p>
           <div className="space-y-5">
             {by_fee_model.map((r, i) => {
               const label = r.fee_model === "package" ? "Package" : "Hourly";
               const pctCollected = r.total_fee_paise > 0
                 ? Math.round((r.collected_paise / r.total_fee_paise) * 100) : 0;
               return (
-                <div key={r.fee_model} className="p-4 rounded-lg bg-gray-50">
+                <div key={r.fee_model} className="p-4 rounded-lg" style={{ backgroundColor: "var(--surface-hover)" }}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold text-gray-900">{label}</span>
+                    <span className="font-semibold" style={{ color: "var(--text)" }}>{label}</span>
                     <span className="text-lg font-bold" style={{ color: TEAL_PALETTE[i] }}>
                       {formatMoneyCompact(r.collected_paise, "INR")}
                     </span>
                   </div>
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+                  <div className="h-2 rounded-full overflow-hidden mb-2" style={{ backgroundColor: "var(--border)" }}>
                     <div className="h-full rounded-full transition-all duration-500"
                       style={{
                         width: `${pctCollected}%`,
                         backgroundColor: TEAL_PALETTE[i],
                       }} />
                   </div>
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>{r.students} students · {r.enrollments} enrollments</span>
+                  <div className="flex justify-between text-xs" style={{ color: "var(--text-secondary)" }}>
+                    <span>{r.students} students \u00b7 {r.enrollments} enrollments</span>
                     <span className="font-medium" style={{
-                      color: pctCollected >= 80 ? "#16a34a" : pctCollected >= 50 ? "#d97706" : "#dc2626",
+                      color: pctCollected >= 80 ? "var(--accent)" : pctCollected >= 50 ? "var(--warning)" : "var(--danger)",
                     }}>{pctCollected}% collected</span>
                   </div>
                 </div>

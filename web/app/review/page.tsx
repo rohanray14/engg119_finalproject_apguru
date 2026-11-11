@@ -15,7 +15,7 @@ function fetcher<T>(path: string) {
 
 export default function ReviewPage() {
   return (
-    <Suspense fallback={<div className="p-8"><div className="animate-pulse h-64 bg-gray-200 rounded" /></div>}>
+    <Suspense fallback={<div className="p-8"><div className="animate-pulse h-64 rounded" style={{ backgroundColor: "var(--surface)" }} /></div>}>
       <ReviewContent />
     </Suspense>
   );
@@ -103,8 +103,8 @@ function ReviewContent() {
     return (
       <div className="p-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-64" />
-          <div className="h-64 bg-gray-200 rounded" />
+          <div className="h-8 rounded w-64" style={{ backgroundColor: "var(--surface)" }} />
+          <div className="h-64 rounded" style={{ backgroundColor: "var(--surface)" }} />
         </div>
       </div>
     );
@@ -114,25 +114,25 @@ function ReviewContent() {
     <div className="p-8">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Match review</h1>
+        <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Match review</h1>
         <div className="flex items-center gap-3 mt-1">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             Payments the matching agent wasn&apos;t sure about.
             {queue && ` ${queue.auto_matched_count} others were matched automatically.`}
           </p>
           {reviewedCount > 0 && (
-            <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: "#dcfce7", color: "#166534" }}>
+            <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: "rgba(0, 220, 130, 0.15)", color: "var(--accent)" }}>
               {reviewedCount} reviewed this session
             </span>
           )}
         </div>
         {queue && queue.auto_matched_count > 0 && items.length > 0 && (
           <div className="mt-3">
-            <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+            <div className="flex items-center justify-between text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
               <span>{queue.auto_matched_count} auto-matched</span>
               <span>{items.length} need review</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full rounded-full h-2" style={{ backgroundColor: "var(--surface)" }}>
               <div className="h-2 rounded-full" style={{
                 width: `${Math.round((queue.auto_matched_count / (queue.auto_matched_count + items.length)) * 100)}%`,
                 backgroundColor: "var(--accent)",
@@ -144,9 +144,9 @@ function ReviewContent() {
 
 
       {items.length === 0 ? (
-        <div className="bg-white rounded-lg border p-12 text-center" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-lg font-medium text-gray-900">All caught up</div>
-          <p className="text-sm text-gray-500 mt-1">No payments waiting for review.</p>
+        <div className="rounded-xl border p-12 text-center" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-lg font-medium" style={{ color: "var(--text)" }}>All caught up</div>
+          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>No payments waiting for review.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -158,13 +158,14 @@ function ReviewContent() {
                 <select
                   value={filter}
                   onChange={(e) => { setFilter(e.target.value as FilterKey); setSelectedId(null); }}
-                  className="text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="text-sm rounded-md px-2 py-1.5 focus:outline-none focus:ring-2"
+                  style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)", color: "var(--text)", border: "1px solid var(--border)" }}
                 >
                   {FILTER_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>
                   {filteredItems.length} of {items.length}
                 </span>
               </div>
@@ -173,7 +174,8 @@ function ReviewContent() {
                 value={listSearch}
                 onChange={(e) => { setListSearch(e.target.value); setSelectedId(null); }}
                 placeholder="Search by payer or student name..."
-                className="w-full text-sm border border-gray-300 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 placeholder:text-gray-400"
+                className="w-full text-sm rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-2"
+                style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)", color: "var(--text)", border: "1px solid var(--border)" }}
               />
             </div>
             <div className="max-h-[calc(100vh-260px)] overflow-y-auto">
@@ -192,7 +194,7 @@ function ReviewContent() {
                   );
                 })}
                 {filteredItems.length === 0 && (
-                  <div className="text-sm text-gray-500 text-center py-8">
+                  <div className="text-sm text-center py-8" style={{ color: "var(--text-secondary)" }}>
                     No items match this filter.
                   </div>
                 )}
@@ -212,8 +214,8 @@ function ReviewContent() {
                 queueTotal={filteredItems.length}
               />
             ) : (
-              <div className="bg-white rounded-lg border p-12 text-center" style={{ borderColor: "var(--card-border)" }}>
-                <p className="text-sm text-gray-500">Select a payment to see details</p>
+              <div className="rounded-xl border p-12 text-center" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Select a payment to see details</p>
               </div>
             )}
           </div>

@@ -20,7 +20,7 @@ function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
 export default function StudentsPage() {
   return (
-    <Suspense fallback={<div className="p-8"><div className="animate-pulse h-64 bg-gray-200 rounded" /></div>}>
+    <Suspense fallback={<div className="p-8"><div className="animate-pulse h-64 rounded" style={{ backgroundColor: "var(--surface)" }} /></div>}>
       <StudentsContent />
     </Suspense>
   );
@@ -83,12 +83,13 @@ function StudentsContent() {
   function SortHeader({ label, field, align }: { label: string; field: SortKey; align?: string }) {
     const active = sortKey === field;
     return (
-      <th className={`px-4 py-3 font-medium cursor-pointer hover:text-gray-700 select-none ${align === "right" ? "text-right" : ""}`}
+      <th className={`px-4 py-3 font-medium cursor-pointer select-none ${align === "right" ? "text-right" : ""}`}
+        style={{ color: "var(--text-secondary)" }}
         onClick={() => toggleSort(field)}>
         {label}
         {active
-          ? <span className="ml-1 text-gray-900">{sortDir === "asc" ? "↑" : "↓"}</span>
-          : <span className="ml-1 text-gray-300">↕</span>}
+          ? <span className="ml-1" style={{ color: "var(--text)" }}>{sortDir === "asc" ? "\u2191" : "\u2193"}</span>
+          : <span className="ml-1" style={{ color: "var(--text-tertiary)" }}>{"\u2195"}</span>}
       </th>
     );
   }
@@ -104,19 +105,20 @@ function StudentsContent() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-1">Students</h1>
-      <p className="text-sm text-gray-500 mb-6">{data?.total ?? "—"} students</p>
+      <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Students</h1>
+      <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>{data?.total ?? "\u2014"} students</p>
 
       <input
         type="text" placeholder="Search by name..." value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="mb-4 w-full max-w-md text-sm border border-gray-300 rounded-md px-3 py-2"
+        className="mb-4 w-full max-w-md text-sm rounded-md px-3 py-2"
+        style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
       />
 
-      <div className="bg-white rounded-lg border overflow-x-auto" style={{ borderColor: "var(--card-border)" }}>
+      <div className="rounded-xl border overflow-x-auto" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-gray-500 border-b bg-gray-50">
+            <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)", backgroundColor: "var(--surface-hover)" }}>
               <SortHeader label="Name" field="name" />
               <th className="px-4 py-3 font-medium">Location</th>
               <SortHeader label="Owed" field="owed" align="right" />
@@ -124,27 +126,29 @@ function StudentsContent() {
               <SortHeader label="Status" field="status" />
             </tr>
           </thead>
-          <tbody className="divide-y">
-            {students.map((s) => (
+          <tbody style={{ borderColor: "var(--border-subtle)" }}>
+            {students.map((s, idx) => (
               <tr key={s.id}
-                className="cursor-pointer hover:bg-gray-50 transition-colors"
+                className="cursor-pointer transition-colors"
+                style={{ borderBottom: "1px solid var(--border-subtle)" }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}
                 onClick={() => setSelectedId(s.id)}>
                 <td className="px-4 py-2.5 font-medium" style={{ color: "var(--accent)" }}>{s.name}</td>
-                <td className="px-4 py-2.5 text-gray-600">
+                <td className="px-4 py-2.5" style={{ color: "var(--text-secondary)" }}>
                   {displayLocation(s.city, s.country)}
                 </td>
                 <td className="px-4 py-2.5 text-right">
                   {s.owed.length > 0
                     ? s.owed.map((o) => formatMoney(o.amount_paise, o.currency)).join(", ")
-                    : "—"}
+                    : "\u2014"}
                 </td>
-                <td className="px-4 py-2.5">{s.next_due ? formatDate(s.next_due) : "—"}</td>
+                <td className="px-4 py-2.5">{s.next_due ? formatDate(s.next_due) : "\u2014"}</td>
                 <td className="px-4 py-2.5">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    s.status === "paid_up"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-amber-100 text-amber-800"
-                  }`}>
+                  <span className="px-2 py-0.5 rounded text-xs font-medium" style={{
+                    backgroundColor: s.status === "paid_up" ? "rgba(0, 220, 130, 0.15)" : "rgba(255, 176, 32, 0.15)",
+                    color: s.status === "paid_up" ? "var(--accent)" : "var(--warning)",
+                  }}>
                     {s.status === "paid_up" ? "Paid up" : "Outstanding"}
                   </span>
                 </td>

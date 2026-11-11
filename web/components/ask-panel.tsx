@@ -65,31 +65,33 @@ export default function AskPanel() {
   }
 
   return (
-    <div className="bg-white rounded-lg border" style={{ borderColor: "var(--card-border)" }}>
+    <div className="rounded-lg border" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
       {/* Input bar — always visible */}
       <div className="p-4 flex items-center gap-3">
-        <span className="text-sm font-medium text-gray-500">Ask</span>
+        <span className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>Ask</span>
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAsk(input)}
           placeholder="e.g. Which families still owe us for November?"
-          className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+          className="flex-1 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          style={{ backgroundColor: "var(--surface-hover)", borderColor: "var(--border)", color: "var(--text)", border: "1px solid var(--border)" }}
           disabled={loading}
         />
         <button
           onClick={() => handleAsk(input)}
           disabled={loading || !input.trim()}
-          className="px-4 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50"
-          style={{ backgroundColor: "var(--sidebar-bg)" }}
+          className="px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50"
+          style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
         >
           Ask
         </button>
         {messages.length > 0 && (
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="text-xs text-gray-400 hover:text-gray-600 shrink-0"
+            className="text-xs shrink-0"
+            style={{ color: "var(--text-tertiary)" }}
           >
             {expanded ? "Hide" : "Show"} chat
           </button>
@@ -104,7 +106,8 @@ export default function AskPanel() {
               <button
                 key={i}
                 onClick={() => handleAsk(s)}
-                className="text-xs px-2.5 py-1 border border-gray-200 rounded-full hover:bg-gray-50 text-gray-500"
+                className="text-xs px-2.5 py-1 border rounded-full"
+                style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
               >
                 {s}
               </button>
@@ -116,33 +119,33 @@ export default function AskPanel() {
       {/* Chat panel — collapsible */}
       {expanded && (
         <div className="border-t px-4 pb-4 pt-3 space-y-3 max-h-[400px] overflow-y-auto"
-          style={{ borderColor: "var(--card-border)" }}>
+          style={{ borderColor: "var(--border)" }}>
           {messages.map((msg, i) =>
             msg.role === "user" ? (
               <div key={i} className="flex justify-end">
-                <div className="px-4 py-2.5 rounded-xl text-white text-sm max-w-[70%]"
-                  style={{ backgroundColor: "var(--sidebar-bg)" }}>
+                <div className="px-4 py-2.5 rounded-xl text-sm max-w-[70%]"
+                  style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
                   {msg.content}
                 </div>
               </div>
             ) : (
-              <div key={i} className="bg-gray-50 rounded-lg p-4">
-                <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{msg.content}</div>
+              <div key={i} className="rounded-lg p-4" style={{ backgroundColor: "var(--surface-hover)" }}>
+                <div className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "var(--text)" }}>{msg.content}</div>
                 {msg.transactions && msg.transactions.length > 0 && (
                   <div className="mt-3 overflow-x-auto">
                     <table className="text-xs w-full">
                       <thead>
-                        <tr className="text-left text-gray-500 border-b">
+                        <tr className="text-left border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
                           {Object.keys(msg.transactions[0]).map((k) => (
                             <th key={k} className="px-2 py-1 font-medium">{k}</th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="divide-y">
+                      <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
                         {msg.transactions.map((row, j) => (
                           <tr key={j}>
                             {Object.values(row).map((v, k) => (
-                              <td key={k} className="px-2 py-1">{String(v ?? "\u2014")}</td>
+                              <td key={k} className="px-2 py-1" style={{ color: "var(--text)" }}>{String(v ?? "\u2014")}</td>
                             ))}
                           </tr>
                         ))}
@@ -154,13 +157,13 @@ export default function AskPanel() {
             )
           )}
           {loading && (
-            <div className="bg-gray-50 rounded-lg p-4 animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-3/4" />
-              <div className="h-4 bg-gray-200 rounded w-1/2 mt-2" />
+            <div className="rounded-lg p-4 animate-pulse" style={{ backgroundColor: "var(--surface-hover)" }}>
+              <div className="h-4 rounded w-3/4" style={{ backgroundColor: "var(--surface)" }} />
+              <div className="h-4 rounded w-1/2 mt-2" style={{ backgroundColor: "var(--surface)" }} />
             </div>
           )}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{error}</div>
+            <div className="border rounded-lg p-3 text-sm" style={{ backgroundColor: "rgba(255,77,77,0.1)", borderColor: "var(--danger)", color: "var(--danger)" }}>{error}</div>
           )}
         </div>
       )}

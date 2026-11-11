@@ -56,10 +56,10 @@ function buildDecisions(d: Dashboard): DecisionItem[] {
 }
 
 const badgeColors: Record<string, string> = {
-  risk: "#dc2626",
-  match: "#1a7a6d",
-  overdue: "#d97706",
-  commission: "#2563eb",
+  risk: "var(--danger)",
+  match: "var(--accent)",
+  overdue: "var(--warning)",
+  commission: "var(--info)",
 };
 
 export default function DecisionList({ dashboard }: { dashboard: Dashboard }) {
@@ -67,35 +67,35 @@ export default function DecisionList({ dashboard }: { dashboard: Dashboard }) {
 
   if (items.length === 0) {
     return (
-      <div className="bg-white rounded-lg border p-6" style={{ borderColor: "var(--card-border)" }}>
-        <h3 className="font-bold text-gray-900 mb-2">Needs your decision</h3>
-        <p className="text-sm text-gray-500">Nothing urgent right now.</p>
+      <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+        <h3 className="font-bold mb-2" style={{ color: "var(--text)" }}>Needs your decision</h3>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Nothing urgent right now.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border p-6" style={{ borderColor: "var(--card-border)" }}>
-      <h3 className="font-bold text-gray-900 mb-4">Needs your decision</h3>
-      <div className="divide-y" style={{ borderColor: "var(--card-border)" }}>
+    <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+      <h3 className="font-bold mb-4" style={{ color: "var(--text)" }}>Needs your decision</h3>
+      <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
         {items.map((item, i) => (
           <div key={i} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
             <div className="flex items-start gap-3">
               <span
-                className="mt-0.5 px-2 py-0.5 text-[10px] font-semibold uppercase text-white rounded"
-                style={{ backgroundColor: badgeColors[item.type] }}
+                className="mt-0.5 px-2.5 py-0.5 text-[10px] font-semibold uppercase rounded"
+                style={{ backgroundColor: badgeColors[item.type], color: "var(--bg)" }}
               >
                 {item.type}
               </span>
               <div>
-                <div className="text-sm font-medium text-gray-900">{item.title}</div>
-                <div className="text-xs text-gray-500">{item.description}</div>
+                <div className="text-sm font-medium" style={{ color: "var(--text)" }}>{item.title}</div>
+                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{item.description}</div>
               </div>
             </div>
             <Link
               href={item.action.href}
-              className="shrink-0 px-4 py-1.5 text-sm border rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-              style={{ borderColor: "var(--card-border)" }}
+              className="shrink-0 px-4 py-1.5 text-sm border rounded-lg transition-colors"
+              style={{ borderColor: "var(--border)", color: "var(--text-secondary)", backgroundColor: "var(--surface-hover)" }}
             >
               {item.action.label}
             </Link>

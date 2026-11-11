@@ -21,9 +21,9 @@ export default function ForecastChart({ data }: { data: ForecastWeek[] }) {
   }));
 
   return (
-    <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-      <h3 className="font-bold text-gray-900 mb-1">Expected cash, next 6 weeks</h3>
-      <p className="text-xs text-gray-500 mb-4">
+    <div className="rounded-lg border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+      <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Expected cash, next 6 weeks</h3>
+      <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>
         From installments already scheduled
       </p>
       <ResponsiveContainer width="100%" height={220}>
@@ -34,7 +34,7 @@ export default function ForecastChart({ data }: { data: ForecastWeek[] }) {
             formatter={(value) => lakhs(Number(value))}
             labelStyle={{ fontWeight: 600 }}
           />
-          <Bar dataKey="expected" name="Expected" fill="#2d6a5e" radius={[3, 3, 0, 0]} />
+          <Bar dataKey="expected" name="Expected" fill="var(--accent)" radius={[3, 3, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

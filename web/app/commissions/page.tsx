@@ -27,7 +27,7 @@ function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
 export default function CommissionsPage() {
   return (
-    <Suspense fallback={<div className="p-8"><div className="animate-pulse h-64 bg-gray-200 rounded" /></div>}>
+    <Suspense fallback={<div className="p-8"><div className="animate-pulse h-64 rounded" style={{ backgroundColor: "var(--surface)" }} /></div>}>
       <CommissionsContent />
     </Suspense>
   );
@@ -50,7 +50,7 @@ function CommissionsContent() {
   }, [searchParams]);
 
   if (isLoading || !data) {
-    return <div className="p-8"><div className="animate-pulse h-64 bg-gray-200 rounded" /></div>;
+    return <div className="p-8"><div className="animate-pulse h-64 rounded" style={{ backgroundColor: "var(--surface)" }} /></div>;
   }
 
   // Show counselor profile view
@@ -111,8 +111,8 @@ function CommissionsContent() {
     <div className="p-8">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Commissions</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Commissions</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
             Calculated only on fees that have reached the bank. Unmatched payments are held back.
           </p>
         </div>
@@ -123,20 +123,20 @@ function CommissionsContent() {
             className="px-5 py-2.5 text-sm font-medium text-white rounded-md disabled:opacity-50"
             style={{ backgroundColor: "var(--accent)" }}
           >
-            {acting ? "Approving..." : `Approve payout · ${formatMoney(inr.payable_paise, "INR")}`}
+            {acting ? "Approving..." : `Approve payout \u00b7 ${formatMoney(inr.payable_paise, "INR")}`}
           </button>
         )}
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg p-3 mb-4 text-sm" style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", border: "1px solid rgba(255, 77, 77, 0.3)", color: "var(--danger)" }}>{error}</div>
       )}
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Commission earned" value={inr ? formatMoney(inr.earned_paise, "INR") : "—"} />
-        <StatCard label="TDS withheld (2%)" value={inr ? formatMoney(inr.tds_paise, "INR") : "—"} />
-        <StatCard label="Net to pay" value={inr ? formatMoney(inr.net_paise, "INR") : "—"} />
+        <StatCard label="Commission earned" value={inr ? formatMoney(inr.earned_paise, "INR") : "\u2014"} />
+        <StatCard label="TDS withheld (2%)" value={inr ? formatMoney(inr.tds_paise, "INR") : "\u2014"} />
+        <StatCard label="Net to pay" value={inr ? formatMoney(inr.net_paise, "INR") : "\u2014"} />
         <StatCard
           label="Needs rate set"
           value={String(data.needs_rate)}
@@ -145,11 +145,11 @@ function CommissionsContent() {
       </div>
 
       {/* Counselors table */}
-      <div className="bg-white rounded-lg border p-6 mb-6" style={{ borderColor: "var(--card-border)" }}>
-        <h3 className="font-bold text-gray-900 mb-4">Counselors</h3>
+      <div className="rounded-xl border p-6 mb-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+        <h3 className="font-bold mb-4" style={{ color: "var(--text)" }}>Counselors</h3>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-gray-500 border-b">
+            <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)" }}>
               <th className="pb-2 font-medium">Counselor</th>
               <th className="pb-2 font-medium">Terms as written</th>
               <th className="pb-2 font-medium">Rule the agent read</th>
@@ -158,38 +158,39 @@ function CommissionsContent() {
               <th className="pb-2 font-medium">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody>
             {data.counselors.filter((c) => {
               const amt = c.amounts.find((a) => a.currency === "INR");
               return (amt && amt.earned_paise > 0) || c.status === "needs_rate";
             }).map((c) => {
               const amt = c.amounts.find((a) => a.currency === "INR");
               return (
-                <tr key={c.id}>
+                <tr key={c.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                   <td className="py-3 font-medium cursor-pointer hover:underline" style={{ color: "var(--accent)" }}
                     onClick={() => setSelectedId(c.id)}>{c.name}</td>
-                  <td className="py-3 text-gray-600 italic max-w-[300px]">
-                    {c.terms_text ? `"${c.terms_text}"` : "—"}
+                  <td className="py-3 italic max-w-[300px]" style={{ color: "var(--text-secondary)" }}>
+                    {c.terms_text ? `"${c.terms_text}"` : "\u2014"}
                   </td>
-                  <td className="py-3 text-gray-700 text-sm">{ruleText(c)}</td>
-                  <td className="py-3 text-right">{amt && amt.earned_paise > 0 ? formatMoney(amt.earned_paise, "INR") : "—"}</td>
-                  <td className="py-3 text-right font-medium">{amt && amt.net_paise > 0 ? formatMoney(amt.net_paise, "INR") : "—"}</td>
+                  <td className="py-3 text-sm" style={{ color: "var(--text)" }}>{ruleText(c)}</td>
+                  <td className="py-3 text-right">{amt && amt.earned_paise > 0 ? formatMoney(amt.earned_paise, "INR") : "\u2014"}</td>
+                  <td className="py-3 text-right font-medium">{amt && amt.net_paise > 0 ? formatMoney(amt.net_paise, "INR") : "\u2014"}</td>
                   <td className="py-3">
                     {c.status === "ready" && (
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Ready</span>
+                      <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ backgroundColor: "rgba(0, 220, 130, 0.15)", color: "var(--accent)" }}>Ready</span>
                     )}
                     {c.status === "needs_rate" && canApprove && (
                       <button
                         onClick={() => { setRateEdit(c.id); setRateValue(1000); }}
-                        className="text-xs px-2 py-1 rounded border border-orange-300 text-orange-700 hover:bg-orange-50"
+                        className="text-xs px-2 py-1 rounded"
+                        style={{ border: "1px solid rgba(255, 176, 32, 0.4)", color: "var(--warning)" }}
                       >
                         Set the rate
                       </button>
                     )}
                     {c.status === "needs_rate" && !canApprove && (
-                      <span className="text-xs text-orange-600">Needs rate</span>
+                      <span className="text-xs" style={{ color: "var(--warning)" }}>Needs rate</span>
                     )}
-                    {c.status === "no_fees" && <span className="text-xs text-gray-400">—</span>}
+                    {c.status === "no_fees" && <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>\u2014</span>}
                   </td>
                 </tr>
               );
@@ -199,17 +200,18 @@ function CommissionsContent() {
 
         {/* Rate edit panel */}
         {rateEdit && (
-          <div className="mt-4 border rounded-lg p-4 bg-gray-50" style={{ borderColor: "var(--card-border)" }}>
-            <div className="text-sm font-medium text-gray-900 mb-2">
+          <div className="mt-4 rounded-lg p-4" style={{ backgroundColor: "var(--surface-hover)", border: "1px solid var(--border)" }}>
+            <div className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
               Set commission rate for {data.counselors.find((c) => c.id === rateEdit)?.name}
             </div>
             <div className="flex items-center gap-3">
-              <label className="text-sm text-gray-600">Rate (%)</label>
+              <label className="text-sm" style={{ color: "var(--text-secondary)" }}>Rate (%)</label>
               <input
                 type="number" min={1} max={50} step={1}
                 value={rateValue / 100}
                 onChange={(e) => setRateValue(Math.round(Number(e.target.value) * 100))}
-                className="w-24 text-sm border border-gray-300 rounded-md px-2 py-1"
+                className="w-24 text-sm rounded-md px-2 py-1"
+                style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
               />
               <button onClick={() => handleSetRate(rateEdit)} disabled={acting}
                 className="px-3 py-1 text-sm font-medium text-white rounded-md disabled:opacity-50"
@@ -217,14 +219,15 @@ function CommissionsContent() {
                 Save
               </button>
               <button onClick={() => setRateEdit(null)}
-                className="px-3 py-1 text-sm text-gray-600 border border-gray-300 rounded-md">
+                className="px-3 py-1 text-sm rounded-md"
+                style={{ color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
                 Cancel
               </button>
             </div>
           </div>
         )}
 
-        <p className="mt-4 text-xs text-gray-400">
+        <p className="mt-4 text-xs" style={{ color: "var(--text-tertiary)" }}>
           The agent only turns written terms into a rule. The amounts, the 2% TDS and
           refund deductions are calculated by code, and each rule is saved once you confirm it.
         </p>

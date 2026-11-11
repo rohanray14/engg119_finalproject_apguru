@@ -7,13 +7,11 @@ interface StatCardProps {
 
 export default function StatCard({ label, value, sub, subColor = "default" }: StatCardProps) {
   return (
-    <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-      <div className="text-sm text-gray-500 mb-1">{label}</div>
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
+    <div className="rounded-lg border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+      <div className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>{label}</div>
+      <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{value}</div>
       {sub && (
-        <div className={`text-xs mt-1 ${
-          subColor === "danger" ? "text-red-600" : "text-gray-500"
-        }`}>
+        <div className="text-xs mt-1" style={{ color: subColor === "danger" ? "var(--danger)" : "var(--text-secondary)" }}>
           {sub}
         </div>
       )}

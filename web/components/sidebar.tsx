@@ -48,7 +48,7 @@ export default function Sidebar() {
       heading: "Money out",
       items: [
         { href: "/commissions", label: "Commissions" },
-        { href: "/money-out", label: "Expenses" },
+        { href: "/money-out", label: "Money Out" },
       ],
     },
     {
@@ -62,12 +62,9 @@ export default function Sidebar() {
     },
   ];
 
-  // Track which sections the user has manually toggled
   const [manualOverrides, setManualOverrides] = useState<Record<string, boolean>>({});
   const prevPathname = useRef(pathname);
 
-  // When the pathname changes (navigation), clear manual overrides so the
-  // correct section opens automatically for the new page.
   useEffect(() => {
     if (prevPathname.current !== pathname) {
       setManualOverrides({});
@@ -75,8 +72,6 @@ export default function Sidebar() {
     }
   }, [pathname]);
 
-  // Derive open state: a section is open if it contains the active page,
-  // has defaultOpen, or the user manually toggled it.
   const open: Record<string, boolean> = {};
   sections.forEach((s) => {
     if (!s.heading) return;
@@ -95,11 +90,11 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-52 min-h-screen flex flex-col py-6 px-4 shrink-0"
-      style={{ backgroundColor: "var(--sidebar-bg)" }}>
+    <aside className="w-56 min-h-screen flex flex-col py-6 px-4 shrink-0"
+      style={{ backgroundColor: "var(--sidebar-bg)", borderRight: "1px solid var(--border-subtle)" }}>
       <div className="mb-8">
-        <div className="text-white font-bold text-lg">Educore</div>
-        <div className="text-xs" style={{ color: "var(--sidebar-text)" }}>Finance Desk</div>
+        <div className="font-bold text-lg" style={{ color: "var(--text)" }}>Educore</div>
+        <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>Finance Desk</div>
       </div>
       <nav className="flex flex-col gap-0.5">
         {sections.map((section, si) => (
@@ -109,13 +104,13 @@ export default function Sidebar() {
                 onClick={() => toggle(section.heading!)}
                 className="w-full flex items-center justify-between px-3 mb-1 group"
               >
-                <span className="text-xs font-bold uppercase tracking-wider"
-                  style={{ color: "var(--sidebar-text)" }}>
+                <span className="text-[11px] font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--text-tertiary)" }}>
                   {section.heading}
                 </span>
                 <svg
                   className="w-3 h-3 transition-transform"
-                  style={{ color: "var(--sidebar-text)", opacity: 0.5, transform: open[section.heading] ? "rotate(180deg)" : "rotate(0deg)" }}
+                  style={{ color: "var(--text-tertiary)", opacity: 0.5, transform: open[section.heading] ? "rotate(180deg)" : "rotate(0deg)" }}
                   fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -130,20 +125,17 @@ export default function Sidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center justify-between py-2 rounded-md text-sm transition-colors ${section.heading ? "px-5" : "px-3"} ${
-                    active
-                      ? "text-white font-medium"
-                      : "hover:text-white"
-                  }`}
+                  className={`flex items-center justify-between py-2 rounded-md text-sm transition-colors ${section.heading ? "px-5" : "px-3"}`}
                   style={{
                     backgroundColor: active ? "var(--sidebar-active-bg)" : undefined,
-                    color: active ? "var(--sidebar-active)" : "var(--sidebar-text)",
+                    color: active ? "var(--accent)" : "var(--sidebar-text)",
+                    fontWeight: active ? 500 : 400,
                   }}
                 >
                   {item.label}
                   {item.badge != null && item.badge > 0 && (
-                    <span className="ml-2 px-2 py-0.5 text-xs font-medium text-white rounded-full"
-                      style={{ backgroundColor: "var(--badge-teal)" }}>
+                    <span className="ml-2 px-2 py-0.5 text-[11px] font-medium rounded-full"
+                      style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
                       {item.badge}
                     </span>
                   )}
@@ -154,10 +146,9 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Data sources footer */}
       <div className="mt-auto pt-8">
-        <div className="text-xs leading-relaxed" style={{ color: "var(--sidebar-text)" }}>
-          <div className="font-semibold mb-1.5 text-[11px] uppercase tracking-wider opacity-70">Data sources</div>
+        <div className="text-xs leading-relaxed" style={{ color: "var(--text-tertiary)" }}>
+          <div className="font-semibold mb-1.5 text-[10px] uppercase tracking-wider opacity-70">Data sources</div>
           <div>Bank statement</div>
           <div>PayGlocal, Stripe, Razorpay</div>
           <div>Fee tracker</div>

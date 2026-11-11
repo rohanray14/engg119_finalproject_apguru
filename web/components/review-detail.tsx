@@ -62,11 +62,11 @@ function parseReasonTags(reason: string | null): { label: string; color: TagColo
 }
 
 const TAG_STYLES: Record<TagColor, { bg: string; text: string }> = {
-  green: { bg: "#dcfce7", text: "#166534" },
-  amber: { bg: "#fef3c7", text: "#92400e" },
-  red: { bg: "#fee2e2", text: "#991b1b" },
-  gray: { bg: "#f3f4f6", text: "#374151" },
-  blue: { bg: "#dbeafe", text: "#1e40af" },
+  green: { bg: "rgba(0,220,130,0.15)", text: "var(--accent)" },
+  amber: { bg: "rgba(255,176,32,0.15)", text: "var(--warning)" },
+  red: { bg: "rgba(255,77,77,0.15)", text: "var(--danger)" },
+  gray: { bg: "var(--surface-hover)", text: "var(--text-secondary)" },
+  blue: { bg: "rgba(77,158,255,0.15)", text: "var(--info)" },
 };
 
 // ---------------------------------------------------------------------------
@@ -200,23 +200,23 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
     <div className="space-y-4 relative">
       {/* Success overlay */}
       {showSuccess && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/80 rounded-lg animate-fade-in">
+        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-lg animate-fade-in" style={{ backgroundColor: "rgba(10,10,15,0.85)" }}>
           <div className="flex flex-col items-center gap-2">
             <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{
-              backgroundColor: showSuccess === "rejected" ? "#fee2e2" : "#dcfce7",
+              backgroundColor: showSuccess === "rejected" ? "rgba(255,77,77,0.15)" : "rgba(0,220,130,0.15)",
             }}>
               {showSuccess === "rejected" ? (
-                <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-6 h-6" style={{ color: "var(--danger)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-6 h-6" style={{ color: "var(--accent)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}
             </div>
             <span className="text-sm font-medium capitalize" style={{
-              color: showSuccess === "rejected" ? "#991b1b" : "#166534",
+              color: showSuccess === "rejected" ? "var(--danger)" : "var(--accent)",
             }}>
               {showSuccess === "approved" ? "Approved" : showSuccess === "assigned" ? "Assigned" : "Rejected"}
             </span>
@@ -225,36 +225,36 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
       )}
 
       {/* Sticky payment header */}
-      <div className="bg-white rounded-lg border p-5 sticky top-0 z-10" style={{ borderColor: "var(--card-border)" }}>
+      <div className="rounded-lg border p-5 sticky top-0 z-10" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
         <div className="flex items-center justify-between mb-3">
-          <div className="text-xs font-bold uppercase tracking-wider text-gray-500">
+          <div className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>
             From the bank statement
           </div>
           {queuePosition != null && queueTotal != null && (
-            <span className="text-xs text-gray-400 font-medium">
+            <span className="text-xs font-medium" style={{ color: "var(--text-tertiary)" }}>
               {queuePosition} of {queueTotal}
             </span>
           )}
         </div>
         <div className="flex items-start justify-between">
-          <div className="text-3xl font-bold text-gray-900">
+          <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>
             {formatMoney(p.amount_paid_paise, p.currency)}
           </div>
-          <div className="text-right text-sm text-gray-500">
+          <div className="text-right text-sm" style={{ color: "var(--text-secondary)" }}>
             <div>{formatDate(p.date)} · {p.method || p.source}</div>
           </div>
         </div>
         {p.payer_name ? (
-          <div className="mt-3 px-3 py-2 bg-gray-100 rounded text-sm font-mono text-gray-700">
+          <div className="mt-3 px-3 py-2 rounded text-sm font-mono" style={{ backgroundColor: "var(--surface-hover)", color: "var(--text)" }}>
             {p.payer_name}
           </div>
         ) : (
-          <div className="mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded text-sm text-amber-700">
+          <div className="mt-3 px-3 py-2 border rounded text-sm" style={{ backgroundColor: "rgba(255,176,32,0.1)", borderColor: "rgba(255,176,32,0.3)", color: "var(--warning)" }}>
             No payer name on bank statement
           </div>
         )}
         {(p.gateway_fee_paise > 0 || p.tds_paise > 0) && (
-          <div className="mt-3 flex gap-4 text-xs text-gray-500">
+          <div className="mt-3 flex gap-4 text-xs" style={{ color: "var(--text-secondary)" }}>
             {p.gateway_fee_paise > 0 && (
               <span>Gateway fee: {formatMoney(p.gateway_fee_paise, p.currency)}</span>
             )}
@@ -270,38 +270,38 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
 
       {/* AI suggestion */}
       {detail.has_suggestion && suggested.length > 0 ? (
-        <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
+        <div className="rounded-lg border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--accent)" }}>
               Matching agent suggests
             </span>
             <span className="text-xs px-2 py-1 rounded font-medium"
               style={{
-                backgroundColor: detail.confidence >= 0.85 ? "#dcfce7" : "#fef3c7",
-                color: detail.confidence >= 0.85 ? "#166534" : "#92400e",
+                backgroundColor: detail.confidence >= 0.85 ? "rgba(0,220,130,0.15)" : "rgba(255,176,32,0.15)",
+                color: detail.confidence >= 0.85 ? "var(--accent)" : "var(--warning)",
               }}>
               {detail.confidence >= 0.85 ? "Strong match" : "Weak match"} · {formatConfidence(detail.confidence)}
             </span>
           </div>
           {suggested.map((inst) => (
             <div key={inst.installment_id}>
-              <div className="text-lg font-bold text-gray-900">
+              <div className="text-lg font-bold" style={{ color: "var(--text)" }}>
                 {inst.student_name} — {inst.program}, {inst.fee_model === "package"
                   ? `installment`
                   : "top-up"}
               </div>
               {/* Amount comparison */}
-              <div className="mt-2 text-sm text-gray-700">
+              <div className="mt-2 text-sm" style={{ color: "var(--text)" }}>
                 {Math.abs(suggestedDiff) < 100 ? (
-                  <span className="text-green-700 font-medium">
+                  <span className="font-medium" style={{ color: "var(--accent)" }}>
                     {formatMoney(p.amount_paid_paise, p.currency)} paid — exact match
                   </span>
                 ) : suggestedDiff > 0 ? (
-                  <span className="text-amber-700">
+                  <span style={{ color: "var(--warning)" }}>
                     {formatMoney(p.amount_paid_paise, p.currency)} paid → {formatMoney(inst.amount_due_paise, inst.currency)} due ({formatMoney(suggestedDiff, p.currency)} short)
                   </span>
                 ) : (
-                  <span className="text-amber-700">
+                  <span style={{ color: "var(--warning)" }}>
                     {formatMoney(p.amount_paid_paise, p.currency)} paid → {formatMoney(inst.amount_due_paise, inst.currency)} due ({formatMoney(Math.abs(suggestedDiff), p.currency)} over)
                   </span>
                 )}
@@ -317,13 +317,13 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
                   ))}
                 </div>
               )}
-              <div className="mt-3 text-xs text-gray-500">
+              <div className="mt-3 text-xs" style={{ color: "var(--text-secondary)" }}>
                 Remaining: {formatMoney(inst.remaining_paise, inst.currency)}
                 {inst.due_date && ` · Due ${formatDate(inst.due_date)}`}
               </div>
             </div>
           ))}
-          <div className="mt-3 text-xs text-gray-400">
+          <div className="mt-3 text-xs" style={{ color: "var(--text-tertiary)" }}>
             The amount check and the balance are calculated by the rules engine, not the AI.
           </div>
 
@@ -340,14 +340,16 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
               </button>
               <button
                 onClick={() => setRejectOpen(!rejectOpen)}
-                className="px-5 py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-5 py-2.5 text-sm font-medium border rounded-md"
+                style={{ color: "var(--text)", borderColor: "var(--border)" }}
               >
                 Not a fee payment
               </button>
               {onSkip && (
                 <button
                   onClick={onSkip}
-                  className="px-5 py-2.5 text-sm font-medium text-gray-500 border border-gray-200 rounded-md hover:bg-gray-50 ml-auto"
+                  className="px-5 py-2.5 text-sm font-medium border rounded-md ml-auto"
+                  style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)" }}
                 >
                   Skip for now
                 </button>
@@ -357,23 +359,25 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
         </div>
       ) : (
         /* No suggestion — prominent search */
-        <div className="bg-amber-50 rounded-lg border border-amber-200 p-5">
-          <div className="text-sm font-bold text-amber-800 mb-1">No AI suggestion for this payment</div>
-          <p className="text-sm text-amber-700 mb-3">
+        <div className="rounded-lg border p-5" style={{ backgroundColor: "rgba(255,176,32,0.08)", borderColor: "rgba(255,176,32,0.3)" }}>
+          <div className="text-sm font-bold mb-1" style={{ color: "var(--warning)" }}>No AI suggestion for this payment</div>
+          <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
             The matching agent couldn&apos;t find a likely student. Search below to assign it manually.
           </p>
           {canApprove && detail.status === "pending_review" && (
             <div className="flex gap-3">
               <button
                 onClick={() => setRejectOpen(!rejectOpen)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 bg-white"
+                className="px-4 py-2 text-sm font-medium border rounded-md"
+                style={{ color: "var(--text)", borderColor: "var(--border)", backgroundColor: "var(--surface)" }}
               >
                 Not a fee payment
               </button>
               {onSkip && (
                 <button
                   onClick={onSkip}
-                  className="px-4 py-2 text-sm font-medium text-gray-500 border border-gray-200 rounded-md hover:bg-gray-50 bg-white"
+                  className="px-4 py-2 text-sm font-medium border rounded-md"
+                  style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)", backgroundColor: "var(--surface)" }}
                 >
                   Skip for now
                 </button>
@@ -385,13 +389,14 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
 
       {/* Reject confirmation with note */}
       {rejectOpen && (
-        <div className="bg-red-50 rounded-lg border border-red-200 p-4">
-          <div className="text-sm font-medium text-red-800 mb-2">Mark as not a fee payment</div>
+        <div className="rounded-lg border p-4" style={{ backgroundColor: "rgba(255,77,77,0.08)", borderColor: "rgba(255,77,77,0.3)" }}>
+          <div className="text-sm font-medium mb-2" style={{ color: "var(--danger)" }}>Mark as not a fee payment</div>
           <textarea
             value={rejectNote}
             onChange={(e) => setRejectNote(e.target.value)}
             placeholder="Optional: why is this not a fee? (e.g. internal transfer, refund, duplicate...)"
-            className="w-full px-3 py-2 text-sm border border-red-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-red-200 resize-none"
+            className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 resize-none"
+            style={{ backgroundColor: "var(--surface)", borderColor: "rgba(255,77,77,0.3)", color: "var(--text)" }}
             rows={2}
             maxLength={500}
           />
@@ -399,13 +404,15 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
             <button
               onClick={handleReject}
               disabled={acting}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50"
+              style={{ backgroundColor: "var(--danger)", color: "var(--bg)" }}
             >
               {acting ? "Rejecting..." : "Confirm reject"}
             </button>
             <button
               onClick={() => { setRejectOpen(false); setRejectNote(""); }}
-              className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-md hover:bg-white"
+              className="px-4 py-2 text-sm font-medium border rounded-md"
+              style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}
             >
               Cancel
             </button>
@@ -415,11 +422,11 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
 
       {/* Assign confirmation */}
       {confirmAssign && (
-        <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
-          <div className="text-sm font-medium text-blue-800 mb-2">
+        <div className="rounded-lg border p-4" style={{ backgroundColor: "rgba(77,158,255,0.08)", borderColor: "rgba(77,158,255,0.3)" }}>
+          <div className="text-sm font-medium mb-2" style={{ color: "var(--info)" }}>
             Assign this payment to {confirmAssign.student_name}?
           </div>
-          <p className="text-xs text-blue-700 mb-3">
+          <p className="text-xs mb-3" style={{ color: "var(--text-secondary)" }}>
             {formatMoney(p.amount_paid_paise, p.currency)} will be applied to {confirmAssign.student_name}&apos;s
             {" "}{confirmAssign.program} installment ({formatMoney(confirmAssign.amount_due_paise, confirmAssign.currency)} due
             {confirmAssign.due_date ? ` on ${formatDate(confirmAssign.due_date)}` : ""}).
@@ -436,7 +443,8 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
             </button>
             <button
               onClick={() => setConfirmAssign(null)}
-              className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-md hover:bg-white"
+              className="px-4 py-2 text-sm font-medium border rounded-md"
+              style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}
             >
               Cancel
             </button>
@@ -445,11 +453,11 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
       )}
 
       {/* Assign to a different student */}
-      <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-        <h4 className="font-bold text-gray-900 mb-1">
+      <div className="rounded-lg border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+        <h4 className="font-bold mb-1" style={{ color: "var(--text)" }}>
           {detail.has_suggestion ? "Or assign to a different student" : "Search and assign"}
         </h4>
-        <p className="text-xs text-gray-400 mb-3">
+        <p className="text-xs mb-3" style={{ color: "var(--text-tertiary)" }}>
           Search by name or pick from the list below to link this payment to a student.
         </p>
 
@@ -460,15 +468,16 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Type a student name to search..."
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400"
+            className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2"
+            style={{ backgroundColor: "var(--surface-hover)", borderColor: "var(--border)", color: "var(--text)" }}
           />
           {searching && (
-            <div className="absolute right-3 top-2.5 text-xs text-gray-400">Searching...</div>
+            <div className="absolute right-3 top-2.5 text-xs" style={{ color: "var(--text-tertiary)" }}>Searching...</div>
           )}
         </div>
 
         {searchQuery.length >= 2 && assignCandidates.length === 0 && !searching && (
-          <div className="text-sm text-gray-500 py-4 text-center">
+          <div className="text-sm py-4 text-center" style={{ color: "var(--text-secondary)" }}>
             No students found matching &ldquo;{searchQuery}&rdquo;
           </div>
         )}
@@ -476,7 +485,7 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
         {assignCandidates.length > 0 && (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-500 border-b" style={{ borderColor: "var(--card-border)" }}>
+              <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
                 <th className="pb-2 font-medium">Student</th>
                 <th className="pb-2 font-medium">What&apos;s due</th>
                 <th className="pb-2 font-medium">Due date</th>
@@ -486,23 +495,23 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--card-border)" }}>
+            <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
               {assignCandidates.map((inst) => {
                 const diff = (inst.amount_difference_paise ?? (inst.amount_due_paise - p.amount_paid_paise));
                 return (
                   <tr key={inst.installment_id}>
-                    <td className="py-2 font-medium text-gray-900">{inst.student_name}</td>
-                    <td className="py-2 text-gray-600">
+                    <td className="py-2 font-medium" style={{ color: "var(--text)" }}>{inst.student_name}</td>
+                    <td className="py-2" style={{ color: "var(--text-secondary)" }}>
                       {inst.program} · {formatMoney(inst.amount_due_paise, inst.currency)}
                     </td>
-                    <td className="py-2 text-gray-500 text-xs">
+                    <td className="py-2 text-xs" style={{ color: "var(--text-secondary)" }}>
                       {inst.due_date ? formatDate(inst.due_date) : "—"}
                     </td>
                     <td className="py-2">
                       {Math.abs(diff) < 100 ? (
-                        <span className="text-green-700 text-xs font-medium">Exact</span>
+                        <span className="text-xs font-medium" style={{ color: "var(--accent)" }}>Exact</span>
                       ) : (
-                        <span className="text-red-600 text-xs">
+                        <span className="text-xs" style={{ color: "var(--danger)" }}>
                           {diff > 0 ? "Short by " : "Over by "}
                           {formatMoney(Math.abs(diff), inst.currency)}
                         </span>
@@ -529,7 +538,7 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
 
         {/* Show candidates list when not searching */}
         {searchQuery.length < 2 && dedupedOthers.length === 0 && (
-          <div className="text-sm text-gray-500 py-4 text-center">
+          <div className="text-sm py-4 text-center" style={{ color: "var(--text-secondary)" }}>
             No other candidates with matching amounts. Use the search box above to find any student.
           </div>
         )}
@@ -537,13 +546,13 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+        <div className="border rounded-lg p-3 text-sm" style={{ backgroundColor: "rgba(255,77,77,0.08)", borderColor: "rgba(255,77,77,0.3)", color: "var(--danger)" }}>
           {error}
         </div>
       )}
 
       {detail.status === "pending_review" && detail.has_suggestion && (
-        <p className="text-xs text-gray-400">
+        <p className="text-xs" style={{ color: "var(--text-tertiary)" }}>
           Approving records the payment, updates the student&apos;s balance, credits their counselor&apos;s
           commission, and logs who approved it and when.
         </p>

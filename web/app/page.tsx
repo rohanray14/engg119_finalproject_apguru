@@ -31,11 +31,11 @@ export default function TodayPage() {
     return (
       <div className="p-8">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-48" />
-          <div className="h-32 bg-gray-200 rounded" />
+          <div className="h-8 rounded w-48" style={{ backgroundColor: "var(--surface)" }} />
+          <div className="h-32 rounded" style={{ backgroundColor: "var(--surface)" }} />
           <div className="grid grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded" />
+              <div key={i} className="h-24 rounded" style={{ backgroundColor: "var(--surface)" }} />
             ))}
           </div>
         </div>
@@ -46,9 +46,9 @@ export default function TodayPage() {
   if (error) {
     return (
       <div className="p-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h2 className="font-bold text-red-800">Failed to load dashboard</h2>
-          <p className="text-sm text-red-600 mt-1">{error.message}</p>
+        <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--danger)" }}>
+          <h2 className="font-bold" style={{ color: "var(--danger)" }}>Failed to load dashboard</h2>
+          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>{error.message}</p>
         </div>
       </div>
     );
@@ -64,10 +64,11 @@ export default function TodayPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <div className="text-sm text-gray-500">{formatDateLong(dash.as_of)}</div>
-          <h1 className="text-3xl font-bold text-gray-900">Today</h1>
+          <div className="text-sm" style={{ color: "var(--text-tertiary)" }}>{formatDateLong(dash.as_of)}</div>
+          <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Today</h1>
         </div>
-        <span className="px-3 py-1 text-xs font-medium text-gray-500 border border-gray-300 rounded-md">
+        <span className="px-3 py-1 text-xs font-medium border rounded-md"
+          style={{ color: "var(--text-tertiary)", borderColor: "var(--border)" }}>
           Sample data
         </span>
       </div>
@@ -80,55 +81,53 @@ export default function TodayPage() {
       {/* Collection health row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* Received this month */}
-        <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-sm text-gray-500 mb-1">Received this month</div>
-          <div className="text-2xl font-bold text-gray-900">
+        <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>Received this month</div>
+          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>
             {formatMoneyCompact(dash.month.received_paise, "INR")}
           </div>
           <div className="flex items-center gap-2 mt-1">
             {momChange && (
-              <span className={`text-xs font-medium ${
-                momChange.startsWith("+") ? "text-green-600" : "text-red-600"
-              }`}>
+              <span className="text-xs font-medium" style={{ color: momChange.startsWith("+") ? "var(--accent)" : "var(--danger)" }}>
                 {momChange} vs last month
               </span>
             )}
             {!momChange && dash.month.received_last_month_paise > 0 && (
-              <span className="text-xs text-gray-400">same as last month</span>
+              <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>same as last month</span>
             )}
           </div>
         </div>
 
         {/* Collection rate */}
-        <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-sm text-gray-500 mb-1">Collection rate</div>
-          <div className="text-2xl font-bold text-gray-900">
+        <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>Collection rate</div>
+          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>
             {collectionRate != null ? `${Math.round(collectionRate)}%` : "—"}
           </div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
             of {formatMoneyCompact(dash.month.expected_paise, "INR")} expected
           </div>
         </div>
 
         {/* Overdue */}
-        <Link href="/reminders" className="bg-white rounded-lg border p-5 hover:border-red-300 transition-colors block"
-          style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-sm text-gray-500 mb-1">Overdue installments</div>
-          <div className="text-2xl font-bold text-gray-900">{dash.overdue.count}</div>
+        <Link href="/reminders" className="rounded-xl border p-5 transition-colors block"
+          style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>Overdue installments</div>
+          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{dash.overdue.count}</div>
           {overdueInr ? (
-            <div className="text-xs text-red-600 mt-1">
+            <div className="text-xs mt-1" style={{ color: "var(--danger)" }}>
               {formatMoneyCompact(overdueInr.amount_paise, "INR")} · oldest {dash.overdue.oldest_days}d
             </div>
           ) : (
-            <div className="text-xs text-green-600 mt-1">All caught up</div>
+            <div className="text-xs mt-1" style={{ color: "var(--accent)" }}>All caught up</div>
           )}
         </Link>
 
         {/* Expenses this month */}
-        <Link href="/money-out" className="bg-white rounded-lg border p-5 hover:border-gray-400 transition-colors block"
-          style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-sm text-gray-500 mb-1">Spent this month</div>
-          <div className="text-2xl font-bold text-gray-900">
+        <Link href="/money-out" className="rounded-xl border p-5 transition-colors block"
+          style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>Spent this month</div>
+          <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>
             {formatMoneyCompact(dash.month.spent_paise, "INR")}
           </div>
           {inrCommission && inrCommission.payable_paise && inrCommission.payable_paise > 0 ? (
@@ -136,7 +135,7 @@ export default function TodayPage() {
               {formatMoneyCompact(inrCommission.payable_paise, "INR")} commissions pending
             </div>
           ) : (
-            <div className="text-xs text-gray-400 mt-1">Commissions paid up</div>
+            <div className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>Commissions paid up</div>
           )}
         </Link>
       </div>
@@ -145,25 +144,26 @@ export default function TodayPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Top owing */}
         {dash.top_owing.length > 0 && (
-          <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
+          <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-gray-900">Largest outstanding</h3>
+              <h3 className="font-bold" style={{ color: "var(--text)" }}>Largest outstanding</h3>
               <Link href="/students" className="text-xs hover:underline" style={{ color: "var(--accent)" }}>
                 All students
               </Link>
             </div>
-            <div className="divide-y" style={{ borderColor: "var(--card-border)" }}>
+            <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
               {dash.top_owing.map((s) => (
                 <Link key={s.student_id} href={`/students?id=${s.student_id}`}
-                  className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 hover:bg-gray-50 -mx-2 px-2 rounded transition-colors block">
+                  className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 -mx-2 px-2 rounded transition-colors block"
+                  style={{ color: "var(--text)" }}>
                   <div>
-                    <div className="text-sm font-medium text-gray-900">{s.name}</div>
-                    <div className="text-xs text-gray-400">
+                    <div className="text-sm font-medium" style={{ color: "var(--text)" }}>{s.name}</div>
+                    <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
                       due {formatDate(s.earliest_due)}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-red-700">
+                    <span className="text-sm font-semibold" style={{ color: "var(--danger)" }}>
                       {formatMoney(s.owed_paise, s.currency)}
                     </span>
                     <span className="text-xs" style={{ color: "var(--accent)" }}>→</span>
@@ -176,21 +176,21 @@ export default function TodayPage() {
 
         {/* Largest unmatched payments */}
         {dash.largest_unmatched.length > 0 && (
-          <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
+          <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-gray-900">Unmatched payments</h3>
+              <h3 className="font-bold" style={{ color: "var(--text)" }}>Unmatched payments</h3>
               <Link href="/review" className="text-xs hover:underline" style={{ color: "var(--accent)" }}>
                 Review queue
               </Link>
             </div>
-            <div className="divide-y" style={{ borderColor: "var(--card-border)" }}>
+            <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
               {dash.largest_unmatched.map((p) => (
                 <div key={p.id} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
                   <div>
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium" style={{ color: "var(--text)" }}>
                       {p.payer_name || "Unknown payer"}
                     </div>
-                    <div className="text-xs text-gray-400">
+                    <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
                       {formatDate(p.date)}{p.method ? ` · ${p.method}` : ""}
                     </div>
                   </div>
