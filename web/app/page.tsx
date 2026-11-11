@@ -232,35 +232,24 @@ export default function TodayPage() {
 
       {/* -- 5. Charts -- */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Collections vs expected */}
+        {/* Collection rate % per month */}
         <div className="lg:col-span-3 rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="font-bold" style={{ color: "var(--text)" }}>Monthly collection rate</h3>
-            <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-tertiary)" }}>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "#4A4A5A" }} /> Expected
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--accent)" }} /> Collected
-              </span>
-            </div>
-          </div>
+          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Collection rate</h3>
           <p className="text-xs mb-4" style={{ color: "var(--text-tertiary)" }}>
-            How much we collected vs what was due, last 12 months
+            % of expected fees actually collected each month
           </p>
-          {monthsData.length > 0 ? (
+          {rateData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={monthsData} barGap={1} barCategoryGap="25%">
+              <BarChart data={rateData} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} interval={0} />
-                <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} width={45} tickCount={4} label={{ value: "\u20B9", position: "insideTopLeft", offset: -5, style: { fontSize: 10, fill: "var(--text-tertiary)" } }} />
+                <YAxis domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} width={40} />
                 <Tooltip
-                  formatter={(value) => [lakhs(Number(value) * 100)]}
+                  formatter={(value) => [`${value}%`, "Collected"]}
                   labelStyle={{ fontWeight: 600, color: "var(--text)" }}
                   contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
                 />
-                <Bar dataKey="expected" name="Expected" fill="#4A4A5A" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="collected" name="Collected" fill="var(--accent)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="rate" name="Collected" fill="var(--accent)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -268,30 +257,24 @@ export default function TodayPage() {
           )}
         </div>
 
-        {/* Cash due forecast — blue accent to differentiate */}
+        {/* Expected incoming */}
         <div className="lg:col-span-2 rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Cash due, next 5 weeks</h3>
-          <div className="flex items-center gap-3 text-xs mb-4" style={{ color: "var(--text-tertiary)" }}>
-            <span className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "#4A4A5A" }} /> Scheduled
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--info)" }} /> Likely
-            </span>
-          </div>
+          <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Expected incoming</h3>
+          <p className="text-xs mb-4" style={{ color: "var(--text-tertiary)" }}>
+            Fees due in the next 5 weeks
+          </p>
           {forecastData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={forecastData} barGap={2}>
+              <BarChart data={forecastData} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
                 <XAxis dataKey="week" tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} />
-                <YAxis tickFormatter={(v) => lakhs(v)} tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} width={45} tickCount={4} label={{ value: "\u20B9", position: "insideTopLeft", offset: -5, style: { fontSize: 10, fill: "var(--text-tertiary)" } }} />
+                <YAxis tickFormatter={(v) => lakhs(v)} tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} width={45} tickCount={4} />
                 <Tooltip
                   formatter={(value) => [lakhs(Number(value))]}
                   labelStyle={{ fontWeight: 600, color: "var(--text)" }}
                   contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
                 />
-                <Bar dataKey="scheduled" name="Scheduled" fill="#4A4A5A" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="likely" name="Likely" fill="var(--info)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="due" name="Due" fill="var(--info)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
