@@ -183,7 +183,23 @@ export default function StudentProfile({ studentId, onBack }: Props) {
               <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
                 {e.installments.map((i) => (
                   <tr key={i.id}>
-                    <td className="py-2.5 px-3" style={{ color: "var(--text)" }}>{i.due_date ? formatDate(i.due_date) : "—"}</td>
+                    <td className="py-2.5 px-3">
+                      {i.due_date ? (() => {
+                        const due = new Date(i.due_date + "T00:00:00");
+                        const now = new Date();
+                        now.setHours(0, 0, 0, 0);
+                        const daysOver = Math.floor((now.getTime() - due.getTime()) / 86400000);
+                        const isOverdue = daysOver > 0 && i.remaining_paise > 0;
+                        return (
+                          <span style={{ color: isOverdue ? "var(--danger)" : "var(--text)" }}>
+                            {formatDate(i.due_date)}
+                            {isOverdue && (
+                              <span className="text-xs ml-1.5 font-medium">({daysOver}d overdue)</span>
+                            )}
+                          </span>
+                        );
+                      })() : "—"}
+                    </td>
                     <td className="py-2.5 px-3 text-right font-medium" style={{ color: "var(--text)" }}>{formatMoney(i.amount_due_paise, i.currency)}</td>
                     <td className="py-2.5 px-3">
                       <span className="px-2 py-0.5 rounded text-xs font-medium" style={statusStyle(i.status)}>
