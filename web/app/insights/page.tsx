@@ -117,7 +117,7 @@ export default function InsightsPage() {
   const totalMethodPaise = by_method.reduce((s, r) => s + r.collected_paise, 0);
 
   return (
-    <div className="p-8 max-w-7xl">
+    <div className="p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Insights</h1>
