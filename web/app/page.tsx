@@ -37,8 +37,8 @@ function weekLabel(iso: string): string {
 }
 
 function monthLabel(iso: string): string {
-  const [y, m] = iso.split("-");
-  return `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][parseInt(m) - 1]}`;
+  const [, m] = iso.split("-");
+  return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][parseInt(m) - 1];
 }
 
 export default function TodayPage() {
@@ -53,13 +53,12 @@ export default function TodayPage() {
       <div className="p-8">
         <div className="animate-pulse space-y-6">
           <div className="h-8 rounded w-48" style={{ backgroundColor: "var(--surface)" }} />
+          <div className="h-32 rounded" style={{ backgroundColor: "var(--surface)" }} />
           <div className="grid grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-20 rounded" style={{ backgroundColor: "var(--surface)" }} />
             ))}
           </div>
-          <div className="h-12 rounded" style={{ backgroundColor: "var(--surface)" }} />
-          <div className="h-48 rounded" style={{ backgroundColor: "var(--surface)" }} />
         </div>
       </div>
     );
@@ -88,31 +87,11 @@ export default function TodayPage() {
   const screenshot = confirmCounts["screenshot_only"] ?? 0;
   const totalConfirm = inBank + gateway + screenshot;
 
-  // Status banner items
-  const bannerParts: string[] = [];
-  if (dash.matching.matched > 0) {
-    bannerParts.push(`${dash.matching.matched} payments matched`);
-  }
-  if (dash.matching.pending_total > 0) {
-    bannerParts.push(`${dash.matching.pending_total} need review`);
-  }
-  if (collectionRate != null) {
-    bannerParts.push(`Collected ${formatMoneyCompact(dash.month.received_paise, "INR")} of ${formatMoneyCompact(dash.month.expected_paise, "INR")} expected: ${Math.round(collectionRate)}%`);
-  }
-  if (dash.risk.high > 0) {
-    bannerParts.push(`${dash.risk.high} high-severity risk flags`);
-  }
-  if (inrCommission && inrCommission.payable_paise && inrCommission.payable_paise > 0) {
-    bannerParts.push(`Commission payout ${formatMoneyCompact(inrCommission.payable_paise, "INR")} ready`);
-  }
-
   // Collections vs expected chart
   const monthsData = (dash.months ?? []).map((m) => ({
     month: monthLabel(m.month),
     expected: m.expected_paise / 100,
     collected: m.collected_paise / 100,
-    rawExpected: m.expected_paise,
-    rawCollected: m.collected_paise,
   }));
 
   // Forecast chart
@@ -124,8 +103,8 @@ export default function TodayPage() {
 
   return (
     <div className="p-8">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between mb-8">
         <div>
           <div className="text-sm" style={{ color: "var(--text-secondary)" }}>{formatDateLong(dash.as_of)}</div>
           <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Today</h1>
@@ -136,8 +115,13 @@ export default function TodayPage() {
         </span>
       </div>
 
-      {/* Top KPI strip — big numbers, no card borders */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      {/* ── 1. Decisions — what needs action right now ── */}
+      <div className="mb-8">
+        <DecisionList dashboard={dash} />
+      </div>
+
+      {/* ── 2. KPI strip — the four numbers that matter ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div>
           <div className="text-xs uppercase tracking-wider font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
             Received this month
@@ -158,6 +142,11 @@ export default function TodayPage() {
           <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>
             {formatMoney(dash.month.expected_paise, "INR")}
           </div>
+          {collectionRate != null && (
+            <div className="text-xs mt-0.5" style={{ color: collectionRate >= 50 ? "var(--accent)" : "var(--danger)" }}>
+              {Math.round(collectionRate)}% collected
+            </div>
+          )}
         </div>
         <div>
           <div className="text-xs uppercase tracking-wider font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
@@ -166,15 +155,12 @@ export default function TodayPage() {
           <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>
             {formatMoney(dash.month.spent_paise, "INR")}
           </div>
-          <div className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
-            Net: {formatMoney(dash.month.received_paise - dash.month.spent_paise, "INR")}
-          </div>
         </div>
         <Link href="/reminders">
           <div className="text-xs uppercase tracking-wider font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
             Overdue
           </div>
-          <div className="text-3xl font-bold" style={{ color: "var(--danger)" }}>
+          <div className="text-3xl font-bold" style={{ color: overdueInr ? "var(--danger)" : "var(--accent)" }}>
             {overdueInr ? formatMoney(overdueInr.amount_paise, "INR") : "₹0"}
           </div>
           {overdueInr && overdueInr.count > 0 ? (
@@ -187,58 +173,18 @@ export default function TodayPage() {
         </Link>
       </div>
 
-      {/* Status banner */}
-      {bannerParts.length > 0 && (
-        <div className="rounded-xl p-4 mb-6 flex items-center justify-between gap-4 flex-wrap"
-          style={{ backgroundColor: "rgba(0, 220, 130, 0.08)", border: "1px solid rgba(0, 220, 130, 0.2)" }}>
-          <div className="flex items-center gap-2 flex-wrap text-sm" style={{ color: "var(--text-secondary)" }}>
-            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: "var(--accent)" }} />
-            {bannerParts.map((part, i) => (
-              <span key={i}>
-                {i > 0 && <span className="mx-1" style={{ color: "var(--text-tertiary)" }}>·</span>}
-                {part.includes("high-severity") ? (
-                  <span style={{ color: "var(--danger)" }}>{part}</span>
-                ) : part.includes("need review") ? (
-                  <span style={{ color: "var(--warning)" }}>{part}</span>
-                ) : (
-                  <span>{part}</span>
-                )}
-              </span>
-            ))}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {dash.matching.pending_total > 0 && (
-              <Link href="/review"
-                className="px-3 py-1.5 text-xs font-medium rounded-md"
-                style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
-                Review {dash.matching.pending_total} payments
-              </Link>
-            )}
-            <Link href="/"
-              className="px-3 py-1.5 text-xs font-medium rounded-md"
-              style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-              Ask a follow-up
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Needs your decision */}
-      <div className="mb-6">
-        <DecisionList dashboard={dash} />
-      </div>
-
-      {/* Confirmation status + Commissions — side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      {/* ── 3. Confirmation status + Commissions ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Confirmation status */}
         <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold" style={{ color: "var(--text)" }}>Confirmation status</h3>
-            <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{totalConfirm} payments total</span>
+            <Link href="/payments" className="text-xs hover:underline" style={{ color: "var(--accent)" }}>
+              All payments
+            </Link>
           </div>
-          {/* Stacked bar */}
-          {totalConfirm > 0 && (
-            <div className="mb-4">
+          {totalConfirm > 0 ? (
+            <>
               <div className="flex h-7 rounded-lg overflow-hidden">
                 {inBank > 0 && (
                   <div className="flex items-center justify-center text-[10px] font-semibold"
@@ -273,11 +219,13 @@ export default function TodayPage() {
                   <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Screenshot {screenshot}</span>
                 </div>
               </div>
-            </div>
+            </>
+          ) : (
+            <p className="text-sm" style={{ color: "var(--text-tertiary)" }}>No payment data</p>
           )}
         </div>
 
-        {/* Commissions summary */}
+        {/* Commissions */}
         <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold" style={{ color: "var(--text)" }}>Commissions</h3>
@@ -317,9 +265,8 @@ export default function TodayPage() {
         </div>
       </div>
 
-      {/* Top owing families + Largest unmatched — side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Top owing */}
+      {/* ── 4. Top owing + Unmatched ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {dash.top_owing.length > 0 && (
           <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between mb-3">
@@ -331,22 +278,17 @@ export default function TodayPage() {
             <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
               {dash.top_owing.map((s) => (
                 <Link key={s.student_id} href={`/students?id=${s.student_id}`}
-                  className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 -mx-2 px-2 rounded transition-colors block"
-                  style={{ color: "var(--text)" }}>
+                  className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 -mx-2 px-2 rounded transition-colors block">
                   <div>
                     <div className="text-sm font-medium" style={{ color: "var(--text)" }}>{s.name}</div>
-                    <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
-                      due {formatDate(s.earliest_due)}
-                    </div>
+                    <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>due {formatDate(s.earliest_due)}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold" style={{ color: "var(--danger)" }}>
                       {formatMoney(s.owed_paise, s.currency)}
                     </span>
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
-                      style={{ backgroundColor: "rgba(255, 77, 77, 0.15)", color: "var(--danger)" }}>
-                      Due
-                    </span>
+                      style={{ backgroundColor: "rgba(255, 77, 77, 0.15)", color: "var(--danger)" }}>Due</span>
                   </div>
                 </Link>
               ))}
@@ -354,7 +296,6 @@ export default function TodayPage() {
           </div>
         )}
 
-        {/* Largest unmatched payments */}
         {dash.largest_unmatched.length > 0 && (
           <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
             <div className="flex items-center justify-between mb-3">
@@ -374,17 +315,9 @@ export default function TodayPage() {
                       {formatDate(p.date)}{p.method ? ` · ${p.method}` : ""}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold" style={{ color: "var(--accent)" }}>
-                      {formatMoney(p.amount_paid_paise, p.currency)}
-                    </span>
-                    {!p.payer_name && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
-                        style={{ backgroundColor: "rgba(255, 176, 32, 0.15)", color: "var(--warning)" }}>
-                        New
-                      </span>
-                    )}
-                  </div>
+                  <span className="text-sm font-semibold" style={{ color: "var(--accent)" }}>
+                    {formatMoney(p.amount_paid_paise, p.currency)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -392,8 +325,8 @@ export default function TodayPage() {
         )}
       </div>
 
-      {/* Collections vs expected + Cash due next weeks — side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+      {/* ── 5. Charts — trend context ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
         {/* Collections vs expected */}
         <div className="lg:col-span-3 rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <div className="flex items-center justify-between mb-1">
@@ -434,12 +367,17 @@ export default function TodayPage() {
           )}
         </div>
 
-        {/* Cash due, next weeks */}
+        {/* Cash due forecast */}
         <div className="lg:col-span-2 rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Cash due, next 5 weeks</h3>
-          <p className="text-xs mb-4" style={{ color: "var(--text-tertiary)" }}>
-            Scheduled installments · Likely ({collectionRate != null ? `${Math.round(collectionRate)}%` : "est."})
-          </p>
+          <div className="flex items-center gap-3 text-xs mb-4" style={{ color: "var(--text-tertiary)" }}>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--border)" }} /> Scheduled
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--accent)" }} /> Likely
+            </span>
+          </div>
           {forecastData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={forecastData} barGap={2}>
@@ -461,7 +399,7 @@ export default function TodayPage() {
         </div>
       </div>
 
-      {/* Ask */}
+      {/* ── 6. Ask ── */}
       <AskPanel />
     </div>
   );

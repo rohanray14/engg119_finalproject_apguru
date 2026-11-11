@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
 
 interface AskResult {
@@ -25,15 +25,20 @@ const suggestions = [
 ];
 
 export default function AskPanel() {
-  const [expanded, setExpanded] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }
+  }, [messages, loading]);
 
   async function handleAsk(question: string) {
     if (!question.trim() || loading) return;
-    if (!expanded) setExpanded(true);
     setLoading(true);
     setError(null);
     setMessages((prev) => [...prev, { role: "user", content: question }]);
@@ -64,50 +69,56 @@ export default function AskPanel() {
     }
   }
 
+  const hasMessages = messages.length > 0;
+
   return (
-    <div className="rounded-lg border" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
-      {/* Input bar — always visible */}
-      <div className="p-4 flex items-center gap-3">
-        <span className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>Ask</span>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleAsk(input)}
-          placeholder="e.g. Which families still owe us for November?"
-          className="flex-1 px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          style={{ backgroundColor: "var(--surface-hover)", borderColor: "var(--border)", color: "var(--text)", border: "1px solid var(--border)" }}
-          disabled={loading}
-        />
-        <button
-          onClick={() => handleAsk(input)}
-          disabled={loading || !input.trim()}
-          className="px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50"
-          style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
-        >
-          Ask
-        </button>
-        {messages.length > 0 && (
+    <div className="rounded-xl border" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+      {/* Header + input */}
+      <div className="p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <svg className="w-4 h-4" style={{ color: "var(--accent)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          <h3 className="font-bold" style={{ color: "var(--text)" }}>Ask about your finances</h3>
+        </div>
+        <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>
+          Ask any question about payments, students, overdue amounts, or expenses. The AI will query your data and answer.
+        </p>
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAsk(input)}
+            placeholder="e.g. Which families still owe us for November?"
+            className="flex-1 px-3 py-2.5 text-sm rounded-lg focus:outline-none"
+            style={{ backgroundColor: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
+            disabled={loading}
+          />
           <button
-            onClick={() => setExpanded((v) => !v)}
-            className="text-xs shrink-0"
-            style={{ color: "var(--text-tertiary)" }}
+            onClick={() => handleAsk(input)}
+            disabled={loading || !input.trim()}
+            className="px-4 py-2.5 text-sm font-medium rounded-lg disabled:opacity-40"
+            style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
           >
-            {expanded ? "Hide" : "Show"} chat
+            Ask
           </button>
-        )}
+        </div>
       </div>
 
-      {/* Suggestions — only before first message and when not expanded */}
-      {messages.length === 0 && !expanded && (
-        <div className="px-4 pb-4">
+      {/* Suggestions — show when no messages yet */}
+      {!hasMessages && (
+        <div className="px-5 pb-5">
+          <div className="text-[10px] uppercase tracking-wider font-medium mb-2" style={{ color: "var(--text-tertiary)" }}>
+            Try asking
+          </div>
           <div className="flex flex-wrap gap-2">
             {suggestions.map((s, i) => (
               <button
                 key={i}
                 onClick={() => handleAsk(s)}
-                className="text-xs px-2.5 py-1 border rounded-full"
-                style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+                className="text-xs px-3 py-1.5 rounded-lg transition-colors"
+                style={{ backgroundColor: "var(--surface-hover)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
               >
                 {s}
               </button>
@@ -116,10 +127,10 @@ export default function AskPanel() {
         </div>
       )}
 
-      {/* Chat panel — collapsible */}
-      {expanded && (
-        <div className="border-t px-4 pb-4 pt-3 space-y-3 max-h-[400px] overflow-y-auto"
-          style={{ borderColor: "var(--border)" }}>
+      {/* Chat messages */}
+      {hasMessages && (
+        <div ref={chatRef} className="border-t px-5 pb-5 pt-4 space-y-3 max-h-[400px] overflow-y-auto"
+          style={{ borderColor: "var(--border-subtle)" }}>
           {messages.map((msg, i) =>
             msg.role === "user" ? (
               <div key={i} className="flex justify-end">
