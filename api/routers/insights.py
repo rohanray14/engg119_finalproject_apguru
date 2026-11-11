@@ -9,6 +9,36 @@ from api.database import get_conn
 
 router = APIRouter(tags=["insights"])
 
+# Normalise messy country / city strings coming from the fee tracker.
+_COUNTRY_MAP: dict[str, str] = {
+    "in": "India", "india": "India",
+    "us": "United States", "usa": "United States", "united states": "United States",
+    "uk": "United Kingdom", "united kingdom": "United Kingdom",
+    "uae": "UAE", "u.a.e": "UAE", "u.a.e.": "UAE",
+    "united arab emirates": "UAE", "dubai": "UAE",
+    "sg": "Singapore", "singapore": "Singapore",
+}
+
+def _norm_country(raw: str) -> str:
+    return _COUNTRY_MAP.get(raw.strip().lower(), raw.strip().title())
+
+def _norm_city(raw: str) -> str:
+    return raw.strip().title()
+
+def _merge_rows(rows: list[dict], key: str, norm_fn, sum_fields: list[str], count_fields: list[str]) -> list[dict]:
+    """Merge rows whose key normalises to the same value."""
+    merged: dict[str, dict] = {}
+    for r in rows:
+        k = norm_fn(r[key])
+        if k in merged:
+            for f in sum_fields:
+                merged[k][f] += r.get(f, 0) or 0
+            for f in count_fields:
+                merged[k][f] += r.get(f, 0) or 0
+        else:
+            merged[k] = {**r, key: k}
+    return sorted(merged.values(), key=lambda x: x.get(sum_fields[0], 0), reverse=True)
+
 
 @router.get("/insights")
 def insights(conn=Depends(get_conn), user: User = Depends(current_user)):
@@ -129,10 +159,19 @@ def insights(conn=Depends(get_conn), user: User = Depends(current_user)):
     ).fetchone()[0]
     total_installments = conn.execute("SELECT COUNT(*) FROM installment").fetchone()[0]
 
+    country_rows = _merge_rows(
+        [dict(r) for r in by_country], "country", _norm_country,
+        sum_fields=["collected_paise", "total_fee_paise"], count_fields=["students"],
+    )
+    city_rows = _merge_rows(
+        [dict(r) for r in by_city], "city", _norm_city,
+        sum_fields=["collected_paise"], count_fields=["students"],
+    )
+
     return {
         "by_program": [dict(r) for r in by_program],
-        "by_country": [dict(r) for r in by_country],
-        "by_city": [dict(r) for r in by_city],
+        "by_country": country_rows,
+        "by_city": city_rows,
         "by_fee_model": [dict(r) for r in by_fee_model],
         "by_method": [dict(r) for r in by_method],
         "by_month": [dict(r) for r in by_month],

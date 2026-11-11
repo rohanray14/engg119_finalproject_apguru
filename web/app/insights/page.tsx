@@ -29,8 +29,8 @@ interface InsightsData {
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
 const TEAL_PALETTE = [
-  "#3da391", "#5bb8a8", "#7ecdbf", "#a3e0d5",
-  "#00DC82", "#4D9EFF", "#FFB020", "#B0B0C0",
+  "#00DC82", "#3da391", "#5bb8a8", "#7ecdbf",
+  "#a3e0d5", "#c4ede4", "#2a8c7a", "#1a6b5c",
 ];
 
 const METHOD_LABELS: Record<string, string> = {
