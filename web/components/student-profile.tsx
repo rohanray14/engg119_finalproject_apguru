@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
@@ -25,20 +26,20 @@ interface StudentData {
 
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
-function statusColor(status: string) {
+function statusStyle(status: string): React.CSSProperties {
   switch (status) {
-    case "paid": return "bg-green-100 text-green-800";
-    case "partial": return "bg-blue-100 text-blue-800";
-    case "overdue": return "bg-red-100 text-red-800";
-    default: return "bg-gray-100 text-gray-700";
+    case "paid": return { backgroundColor: "rgba(0,220,130,0.15)", color: "var(--accent)" };
+    case "partial": return { backgroundColor: "rgba(77,158,255,0.15)", color: "var(--info)" };
+    case "overdue": return { backgroundColor: "rgba(255,77,77,0.15)", color: "var(--danger)" };
+    default: return { backgroundColor: "var(--surface-hover)", color: "var(--text-secondary)" };
   }
 }
 
-function matchStatusStyle(status: string) {
+function matchStatusCss(status: string): React.CSSProperties {
   switch (status) {
-    case "approved": case "auto": return "bg-green-100 text-green-800";
-    case "pending_review": return "bg-amber-100 text-amber-800";
-    default: return "bg-gray-100 text-gray-700";
+    case "approved": case "auto": return { backgroundColor: "rgba(0,220,130,0.15)", color: "var(--accent)" };
+    case "pending_review": return { backgroundColor: "rgba(255,176,32,0.15)", color: "var(--warning)" };
+    default: return { backgroundColor: "var(--surface-hover)", color: "var(--text-secondary)" };
   }
 }
 
@@ -53,8 +54,8 @@ export default function StudentProfile({ studentId, onBack }: Props) {
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-8 bg-gray-200 rounded w-48" />
-        <div className="h-64 bg-gray-200 rounded" />
+        <div className="h-8 rounded w-48" style={{ backgroundColor: "var(--surface)" }} />
+        <div className="h-64 rounded" style={{ backgroundColor: "var(--surface)" }} />
       </div>
     );
   }
@@ -65,7 +66,7 @@ export default function StudentProfile({ studentId, onBack }: Props) {
         <button onClick={onBack} className="text-sm hover:underline" style={{ color: "var(--accent)" }}>
           &larr; Back to students
         </button>
-        <div className="mt-8 text-center text-gray-500">Student not found.</div>
+        <div className="mt-8 text-center" style={{ color: "var(--text-secondary)" }}>Student not found.</div>
       </div>
     );
   }
@@ -74,8 +75,6 @@ export default function StudentProfile({ studentId, onBack }: Props) {
 
   const totalOwed = student.enrollments.reduce((sum, e) =>
     sum + e.installments.reduce((s, i) => s + i.remaining_paise, 0), 0);
-  const totalFee = student.enrollments.reduce((sum, e) =>
-    sum + e.installments.reduce((s, i) => s + i.amount_due_paise, 0), 0);
   const totalPaid = student.payments.reduce((sum, p) =>
     p.match_status === "approved" || p.match_status === "auto" ? sum + p.amount_paid_paise : sum, 0);
   const mainCurrency = student.enrollments[0]?.currency ?? "INR";
@@ -94,14 +93,14 @@ export default function StudentProfile({ studentId, onBack }: Props) {
 
       {/* Header */}
       <div className="mt-4 mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">{student.name}</h1>
-        <p className="text-sm text-gray-500 mt-1">{location}</p>
+        <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>{student.name}</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>{location}</p>
         {/* Contact info */}
         {(student.parent_name || student.parent_phone || student.parent_email) && (
           <div className="mt-3 flex items-center gap-4 text-sm">
             {student.parent_name && (
-              <span className="text-gray-600">
-                <span className="text-gray-400 text-xs uppercase tracking-wider mr-1">Parent:</span>
+              <span style={{ color: "var(--text-secondary)" }}>
+                <span className="text-xs uppercase tracking-wider mr-1" style={{ color: "var(--text-tertiary)" }}>Parent:</span>
                 {student.parent_name}
               </span>
             )}
@@ -120,36 +119,32 @@ export default function StudentProfile({ studentId, onBack }: Props) {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Total fees</div>
-          <div className="text-xl font-bold text-gray-900 mt-1">{formatMoney(totalFee, mainCurrency)}</div>
-        </div>
-        <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Paid</div>
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="rounded-lg border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+          <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-secondary)" }}>Paid</div>
           <div className="text-xl font-bold mt-1" style={{ color: "var(--accent)" }}>{formatMoney(totalPaid, mainCurrency)}</div>
         </div>
         {totalOwed > 0 ? (
           <Link href={`/reminders?student=${encodeURIComponent(student.name)}`}
-            className="bg-white rounded-lg border p-4 hover:border-red-300 transition-colors block"
-            style={{ borderColor: "var(--card-border)" }}>
-            <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Outstanding</div>
-            <div className="text-xl font-bold mt-1 text-red-600">{formatMoney(totalOwed, mainCurrency)}</div>
+            className="rounded-lg border p-4 transition-colors block"
+            style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+            <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-secondary)" }}>Outstanding</div>
+            <div className="text-xl font-bold mt-1" style={{ color: "var(--danger)" }}>{formatMoney(totalOwed, mainCurrency)}</div>
             <div className="text-xs mt-1" style={{ color: "var(--accent)" }}>Send reminder →</div>
           </Link>
         ) : (
-          <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-            <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Outstanding</div>
-            <div className="text-xl font-bold mt-1 text-green-600">Paid up</div>
+          <div className="rounded-lg border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+            <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-secondary)" }}>Outstanding</div>
+            <div className="text-xl font-bold mt-1" style={{ color: "var(--accent)" }}>Paid up</div>
           </div>
         )}
-        <div className="bg-white rounded-lg border p-4" style={{ borderColor: "var(--card-border)" }}>
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-medium">Next due</div>
-          <div className="text-xl font-bold text-gray-900 mt-1">
+        <div className="rounded-lg border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+          <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-secondary)" }}>Next due</div>
+          <div className="text-xl font-bold mt-1" style={{ color: "var(--text)" }}>
             {nextDue ? formatDate(nextDue.due_date!) : "—"}
           </div>
           {nextDue && (
-            <div className="text-xs text-gray-500 mt-1">{formatMoney(nextDue.remaining_paise, nextDue.currency)}</div>
+            <div className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>{formatMoney(nextDue.remaining_paise, nextDue.currency)}</div>
           )}
         </div>
       </div>
@@ -160,44 +155,38 @@ export default function StudentProfile({ studentId, onBack }: Props) {
         const enrollPaid = e.installments.reduce((s, i) => s + (i.amount_due_paise - i.remaining_paise), 0);
         const pct = enrollTotal > 0 ? Math.round((enrollPaid / enrollTotal) * 100) : 0;
         return (
-          <div key={e.id} className="bg-white rounded-lg border p-5 mb-4" style={{ borderColor: "var(--card-border)" }}>
+          <div key={e.id} className="rounded-lg border p-5 mb-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
             <div className="flex items-center justify-between mb-3">
               <div>
-                <div className="font-bold text-gray-900">{e.program}</div>
-                <div className="text-xs text-gray-500">
+                <div className="font-bold" style={{ color: "var(--text)" }}>{e.program}</div>
+                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
                   Total: {formatMoney(enrollTotal, e.currency)}
                   {e.gst_applicable && " + GST"}
                 </div>
               </div>
               <div className="text-sm font-medium" style={{ color: "var(--accent)" }}>{pct}% paid</div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+            <div className="w-full rounded-full h-2 mb-4" style={{ backgroundColor: "var(--surface-hover)" }}>
               <div className="h-2 rounded-full" style={{
                 width: `${pct}%`,
-                backgroundColor: pct === 100 ? "#16a34a" : "var(--accent)",
+                backgroundColor: "var(--accent)",
               }} />
             </div>
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-gray-500 border-b" style={{ borderColor: "var(--card-border)" }}>
-                  <th className="pb-2 font-medium">Due date</th>
-                  <th className="pb-2 font-medium text-right">Amount</th>
-                  <th className="pb-2 font-medium text-right">Remaining</th>
-                  <th className="pb-2 font-medium">Status</th>
+                <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
+                  <th className="pb-2 px-3 font-medium">Due date</th>
+                  <th className="pb-2 px-3 font-medium text-right">Amount</th>
+                  <th className="pb-2 px-3 font-medium">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y" style={{ borderColor: "var(--card-border)" }}>
+              <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
                 {e.installments.map((i) => (
                   <tr key={i.id}>
-                    <td className="py-2.5">{i.due_date ? formatDate(i.due_date) : "—"}</td>
-                    <td className="py-2.5 text-right font-medium">{formatMoney(i.amount_due_paise, i.currency)}</td>
-                    <td className="py-2.5 text-right">
-                      {i.remaining_paise > 0
-                        ? formatMoney(i.remaining_paise, i.currency)
-                        : <span className="text-green-600">—</span>}
-                    </td>
-                    <td className="py-2.5">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColor(i.status)}`}>
+                    <td className="py-2.5 px-3" style={{ color: "var(--text)" }}>{i.due_date ? formatDate(i.due_date) : "—"}</td>
+                    <td className="py-2.5 px-3 text-right font-medium" style={{ color: "var(--text)" }}>{formatMoney(i.amount_due_paise, i.currency)}</td>
+                    <td className="py-2.5 px-3">
+                      <span className="px-2 py-0.5 rounded text-xs font-medium" style={statusStyle(i.status)}>
                         {i.status}
                       </span>
                     </td>
@@ -210,30 +199,38 @@ export default function StudentProfile({ studentId, onBack }: Props) {
       })}
 
       {/* Payments */}
-      <div className="bg-white rounded-lg border p-5" style={{ borderColor: "var(--card-border)" }}>
-        <h3 className="font-bold text-gray-900 mb-3">Payment history</h3>
+      <div className="rounded-lg border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+        <h3 className="font-bold mb-3" style={{ color: "var(--text)" }}>Payment history</h3>
         {student.payments.length === 0 ? (
-          <p className="text-sm text-gray-500">No payments linked to this student yet.</p>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>No payments linked to this student yet.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-500 border-b" style={{ borderColor: "var(--card-border)" }}>
-                <th className="pb-2 font-medium">Date</th>
-                <th className="pb-2 font-medium">Payer</th>
-                <th className="pb-2 font-medium text-right">Amount</th>
-                <th className="pb-2 font-medium">Status</th>
+              <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
+                <th className="pb-2 px-3 font-medium">Date</th>
+                <th className="pb-2 px-3 font-medium">Payer</th>
+                <th className="pb-2 px-3 font-medium text-right">Amount</th>
+                <th className="pb-2 px-3 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--card-border)" }}>
+            <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
               {student.payments.map((p) => (
                 <tr key={p.match_id}>
-                  <td className="py-2.5">{formatDate(p.date)}</td>
-                  <td className="py-2.5 text-gray-700">{p.payer_name || "(blank)"}</td>
-                  <td className="py-2.5 text-right font-medium">{formatMoney(p.amount_paid_paise, p.currency)}</td>
-                  <td className="py-2.5">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${matchStatusStyle(p.match_status)}`}>
-                      {p.match_status === "auto" ? "auto-matched" : p.match_status === "approved" ? "approved" : p.match_status === "pending_review" ? "pending" : p.match_status}
-                    </span>
+                  <td className="py-2.5 px-3" style={{ color: "var(--text)" }}>{formatDate(p.date)}</td>
+                  <td className="py-2.5 px-3" style={{ color: "var(--text-secondary)" }}>{p.payer_name || "(blank)"}</td>
+                  <td className="py-2.5 px-3 text-right font-medium" style={{ color: "var(--text)" }}>{formatMoney(p.amount_paid_paise, p.currency)}</td>
+                  <td className="py-2.5 px-3">
+                    {p.match_status === "pending_review" ? (
+                      <Link href={`/review?id=${p.match_id}`}
+                        className="px-2 py-0.5 rounded text-xs font-medium hover:underline"
+                        style={matchStatusCss(p.match_status)}>
+                        pending →
+                      </Link>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium" style={matchStatusCss(p.match_status)}>
+                        {p.match_status === "auto" ? "auto-matched" : p.match_status === "approved" ? "approved" : p.match_status}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
