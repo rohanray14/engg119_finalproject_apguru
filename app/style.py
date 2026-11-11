@@ -74,8 +74,8 @@ section[data-testid="stSidebar"] [data-baseweb="select"] {
     color: #F0F0F5;
 }
 .main .block-container {
-    max-width: 1200px;
-    padding-top: 2rem;
+    max-width: 1400px;
+    padding: 2rem 3rem 4rem 3rem;
 }
 
 /* ── All text defaults to light ── */
@@ -288,16 +288,29 @@ h2, h3 {
 /* ── Hide default Streamlit branding ── */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
-header {visibility: hidden;}
+
+/* Keep header functional (sidebar toggle) but style it dark */
 header[data-testid="stHeader"] {
     background: #0A0A0F !important;
+    border-bottom: none !important;
 }
+/* Hide the colored decoration bar */
 div[data-testid="stDecoration"] {
     display: none !important;
 }
+/* Dark status widget */
 div[data-testid="stStatusWidget"] {
     background: #141419 !important;
     color: #F0F0F5 !important;
+}
+
+/* ── Sidebar always expanded on desktop ── */
+section[data-testid="stSidebar"] {
+    min-width: 260px !important;
+    width: 260px !important;
+}
+section[data-testid="stSidebar"] > div {
+    width: 260px !important;
 }
 </style>
 """

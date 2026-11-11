@@ -285,6 +285,7 @@ def main():
         page_title="Educore Finance Desk",
         page_icon="💰",
         layout="wide",
+        initial_sidebar_state="expanded",
     )
 
     from app.auth import check_auth
@@ -304,9 +305,9 @@ def main():
     default_as_of = min_date + (max_date - min_date) // 2
 
     with st.sidebar:
-        st.markdown("## Educore")
+        st.markdown("**Educore**")
         st.caption("Finance Desk")
-        st.markdown("---")
+        st.markdown("")
         as_of = st.date_input(
             "As-of date",
             value=st.session_state.get("global_as_of", default_as_of),
