@@ -102,7 +102,33 @@ def list_payments(
                     d["matched_student_name"] = inst_to_student[iid][1]
                     break
         items.append(d)
-    return {"total": total, "limit": limit, "offset": offset, "items": items}
+
+    # Global summary stats (unfiltered) for the summary cards
+    summary = conn.execute(
+        "SELECT "
+        "COUNT(*) AS total_payments, "
+        "COALESCE(SUM(p.amount_in_bank_paise), 0) AS total_received, "
+        "SUM(CASE WHEN p.confirmation = 'screenshot_only' THEN 1 ELSE 0 END) AS screenshot_count, "
+        "SUM(CASE WHEN mr.id IS NULL THEN 1 ELSE 0 END) AS unmatched_count, "
+        "SUM(CASE WHEN mr.status = 'pending_review' THEN 1 ELSE 0 END) AS review_count, "
+        "SUM(CASE WHEN p.payer_name IS NULL OR p.payer_name = '' THEN 1 ELSE 0 END) AS blank_count "
+        "FROM payment_in p LEFT JOIN match_result mr ON mr.payment_id = p.id"
+    ).fetchone()
+
+    return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "items": items,
+        "summary": {
+            "total_received": summary["total_received"],
+            "total_payments": summary["total_payments"],
+            "screenshot_count": summary["screenshot_count"],
+            "unmatched_count": summary["unmatched_count"],
+            "review_count": summary["review_count"],
+            "blank_count": summary["blank_count"],
+        },
+    }
 
 
 @router.get("/students")
