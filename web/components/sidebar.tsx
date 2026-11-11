@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import useSWR from "swr";
@@ -61,20 +61,36 @@ export default function Sidebar() {
     },
   ];
 
-  // Auto-open sections that contain the active page
-  const initialOpen: Record<string, boolean> = {};
+  // Track which sections the user has manually toggled
+  const [manualOverrides, setManualOverrides] = useState<Record<string, boolean>>({});
+  const prevPathname = useRef(pathname);
+
+  // When the pathname changes (navigation), clear manual overrides so the
+  // correct section opens automatically for the new page.
+  useEffect(() => {
+    if (prevPathname.current !== pathname) {
+      setManualOverrides({});
+      prevPathname.current = pathname;
+    }
+  }, [pathname]);
+
+  // Derive open state: a section is open if it contains the active page,
+  // has defaultOpen, or the user manually toggled it.
+  const open: Record<string, boolean> = {};
   sections.forEach((s) => {
     if (!s.heading) return;
+    if (s.heading in manualOverrides) {
+      open[s.heading] = manualOverrides[s.heading];
+      return;
+    }
     const hasActive = s.items.some((item) =>
       item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
     );
-    initialOpen[s.heading] = hasActive || (s.defaultOpen ?? false);
+    open[s.heading] = hasActive || (s.defaultOpen ?? false);
   });
 
-  const [open, setOpen] = useState<Record<string, boolean>>(initialOpen);
-
   function toggle(heading: string) {
-    setOpen((prev) => ({ ...prev, [heading]: !prev[heading] }));
+    setManualOverrides((prev) => ({ ...prev, [heading]: !open[heading] }));
   }
 
   return (
