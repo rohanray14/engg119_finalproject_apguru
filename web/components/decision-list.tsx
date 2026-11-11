@@ -7,7 +7,6 @@ import { formatMoney } from "@/lib/format";
 interface DecisionItem {
   type: "risk" | "match" | "overdue" | "commission";
   title: string;
-  description: string;
   action: { label: string; href: string };
 }
 
@@ -18,7 +17,6 @@ function buildDecisions(d: Dashboard): DecisionItem[] {
     items.push({
       type: "risk",
       title: `${d.risk.high} high-severity risk flag${d.risk.high > 1 ? "s" : ""}`,
-      description: "Review flagged items before proceeding",
       action: { label: "Review", href: "/risk" },
     });
   }
@@ -27,7 +25,6 @@ function buildDecisions(d: Dashboard): DecisionItem[] {
     items.push({
       type: "match",
       title: `${d.matching.pending_total} payment${d.matching.pending_total > 1 ? "s" : ""} waiting for review`,
-      description: `${d.matching.suggested} with AI suggestions, ${d.matching.needs_review} need manual matching`,
       action: { label: "Review", href: "/review" },
     });
   }
@@ -36,7 +33,6 @@ function buildDecisions(d: Dashboard): DecisionItem[] {
     items.push({
       type: "overdue",
       title: `${d.reminders.needs_approval} reminder${d.reminders.needs_approval > 1 ? "s" : ""} need approval`,
-      description: `${d.reminders.overdue} overdue reminders drafted`,
       action: { label: "Review", href: "/reminders" },
     });
   }
@@ -47,7 +43,6 @@ function buildDecisions(d: Dashboard): DecisionItem[] {
     items.push({
       type: "commission",
       title: `Commissions ready: ${formatMoney(totalNet, "INR")} to ${counselorCount} counselor${counselorCount > 1 ? "s" : ""}`,
-      description: "Review and approve the payout",
       action: { label: "Review", href: "/commissions" },
     });
   }
@@ -81,14 +76,13 @@ export default function DecisionList({ dashboard }: { dashboard: Dashboard }) {
         {items.map((item, i) => (
           <div key={i} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
             <span
-              className="shrink-0 w-[82px] text-center px-2.5 py-0.5 text-[10px] font-semibold uppercase rounded"
+              className="shrink-0 w-[100px] text-center px-3 py-1 text-[10px] font-semibold uppercase rounded"
               style={{ backgroundColor: badgeColors[item.type], color: "var(--bg)" }}
             >
               {item.type}
             </span>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium" style={{ color: "var(--text)" }}>{item.title}</div>
-              <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{item.description}</div>
             </div>
             <Link
               href={item.action.href}

@@ -25,10 +25,11 @@ function pctChange(current: number, previous: number): string | null {
 
 function lakhs(paise: number): string {
   const amt = paise / 100;
-  if (amt >= 1_00_00_000) return `\u20B9${(amt / 1_00_00_000).toFixed(1)} Cr`;
-  if (amt >= 1_00_000) return `\u20B9${(amt / 1_00_000).toFixed(1)} L`;
-  if (amt >= 1000) return `\u20B9${(amt / 1000).toFixed(0)}K`;
-  return `\u20B9${amt.toFixed(0)}`;
+  if (amt >= 1_00_00_000) return `${(amt / 1_00_00_000).toFixed(1)} Cr`;
+  if (amt >= 1_00_000) return `${(amt / 1_00_000).toFixed(0)} L`;
+  if (amt >= 1000) return `${(amt / 1000).toFixed(0)}K`;
+  if (amt === 0) return "0";
+  return `${amt.toFixed(0)}`;
 }
 
 function weekLabel(iso: string): string {
@@ -177,7 +178,7 @@ export default function TodayPage() {
             <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold" style={{ color: "var(--text)" }}>Top families owing</h3>
-                <Link href="/students" className="text-xs hover:underline" style={{ color: "var(--accent)" }}>
+                <Link href="/students" className="text-xs hover:underline" style={{ color: "var(--text)" }}>
                   All students
                 </Link>
               </div>
@@ -206,7 +207,7 @@ export default function TodayPage() {
             <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold" style={{ color: "var(--text)" }}>Largest unmatched payments</h3>
-                <Link href="/review" className="text-xs hover:underline" style={{ color: "var(--accent)" }}>
+                <Link href="/review" className="text-xs hover:underline" style={{ color: "var(--text)" }}>
                   Review queue
                 </Link>
               </div>
@@ -237,10 +238,10 @@ export default function TodayPage() {
         {/* Collections vs expected */}
         <div className="lg:col-span-3 rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <div className="flex items-center justify-between mb-1">
-            <h3 className="font-bold" style={{ color: "var(--text)" }}>Collections vs expected</h3>
+            <h3 className="font-bold" style={{ color: "var(--text)" }}>Monthly collection rate</h3>
             <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-tertiary)" }}>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--border)" }} /> Expected
+                <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "#4A4A5A" }} /> Expected
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--accent)" }} /> Collected
@@ -248,20 +249,20 @@ export default function TodayPage() {
             </div>
           </div>
           <p className="text-xs mb-4" style={{ color: "var(--text-tertiary)" }}>
-            Last 12 months
+            How much we collected vs what was due, last 12 months
           </p>
           {monthsData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={monthsData} barGap={1} barCategoryGap="25%">
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
                 <XAxis dataKey="month" tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} interval={0} />
-                <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} width={55} tickCount={5} />
+                <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} width={45} tickCount={4} label={{ value: "\u20B9", position: "insideTopLeft", offset: -5, style: { fontSize: 10, fill: "var(--text-tertiary)" } }} />
                 <Tooltip
                   formatter={(value) => [lakhs(Number(value) * 100)]}
                   labelStyle={{ fontWeight: 600, color: "var(--text)" }}
                   contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
                 />
-                <Bar dataKey="expected" name="Expected" fill="var(--border)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="expected" name="Expected" fill="#4A4A5A" radius={[3, 3, 0, 0]} />
                 <Bar dataKey="collected" name="Collected" fill="var(--accent)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -275,7 +276,7 @@ export default function TodayPage() {
           <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Cash due, next 5 weeks</h3>
           <div className="flex items-center gap-3 text-xs mb-4" style={{ color: "var(--text-tertiary)" }}>
             <span className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--border)" }} /> Scheduled
+              <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "#4A4A5A" }} /> Scheduled
             </span>
             <span className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "var(--info)" }} /> Likely
@@ -286,13 +287,13 @@ export default function TodayPage() {
               <BarChart data={forecastData} barGap={2}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
                 <XAxis dataKey="week" tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} />
-                <YAxis tickFormatter={(v) => lakhs(v)} tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} width={55} tickCount={5} />
+                <YAxis tickFormatter={(v) => lakhs(v)} tick={{ fontSize: 10, fill: "var(--text-tertiary)" }} tickLine={false} axisLine={false} width={45} tickCount={4} label={{ value: "\u20B9", position: "insideTopLeft", offset: -5, style: { fontSize: 10, fill: "var(--text-tertiary)" } }} />
                 <Tooltip
                   formatter={(value) => [lakhs(Number(value))]}
                   labelStyle={{ fontWeight: 600, color: "var(--text)" }}
                   contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
                 />
-                <Bar dataKey="scheduled" name="Scheduled" fill="var(--border)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="scheduled" name="Scheduled" fill="#4A4A5A" radius={[3, 3, 0, 0]} />
                 <Bar dataKey="likely" name="Likely" fill="var(--info)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
