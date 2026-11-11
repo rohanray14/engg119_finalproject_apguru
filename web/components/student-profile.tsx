@@ -125,13 +125,25 @@ export default function StudentProfile({ studentId, onBack }: Props) {
           <div className="text-xl font-bold mt-1" style={{ color: "var(--accent)" }}>{formatMoney(totalPaid, mainCurrency)}</div>
         </div>
         {totalOwed > 0 ? (
-          <Link href={`/reminders?student=${encodeURIComponent(student.name)}`}
-            className="rounded-lg border p-4 transition-colors block"
-            style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+          <div className="rounded-lg border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
             <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-secondary)" }}>Outstanding</div>
             <div className="text-xl font-bold mt-1" style={{ color: "var(--danger)" }}>{formatMoney(totalOwed, mainCurrency)}</div>
-            <div className="text-xs mt-1" style={{ color: "var(--accent)" }}>Send reminder →</div>
-          </Link>
+            {nextDue && (() => {
+              const dueDate = new Date(nextDue.due_date + "T00:00:00");
+              const today = new Date(); today.setHours(0,0,0,0);
+              const daysUntilDue = Math.round((dueDate.getTime() - today.getTime()) / 86400000);
+              return daysUntilDue <= 3 ? (
+                <Link href={`/reminders?student=${encodeURIComponent(student.name)}`}
+                  className="text-xs mt-1 inline-block hover:underline" style={{ color: "var(--accent)" }}>
+                  Send reminder →
+                </Link>
+              ) : (
+                <div className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>
+                  Next due in {daysUntilDue} days
+                </div>
+              );
+            })()}
+          </div>
         ) : (
           <div className="rounded-lg border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
             <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-secondary)" }}>Outstanding</div>

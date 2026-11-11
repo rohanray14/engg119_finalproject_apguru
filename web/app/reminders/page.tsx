@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate } from "@/lib/format";
-import { useAppUser } from "@/app/providers";
 
 interface Reminder {
   installment_id: number; student_id: number; student_name: string; enrollment_program: string;
@@ -38,8 +37,6 @@ export default function RemindersPageWrapper() {
 }
 
 function RemindersPage() {
-  const { user } = useAppUser();
-  const canApprove = user?.can_approve ?? false;
   const urlParams = useSearchParams();
   const [typeFilter, setTypeFilter] = useState("");
   const [approvalFilter, setApprovalFilter] = useState("");
@@ -50,14 +47,12 @@ function RemindersPage() {
     if (q) setSearch(q);
   }, [urlParams]);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [sentMessages, setSentMessages] = useState<Set<string>>(new Set());
 
   const params = new URLSearchParams();
   if (typeFilter) params.set("type", typeFilter);
   if (approvalFilter) params.set("approval", approvalFilter);
 
-  const { data, mutate, isLoading } = useSWR<RemindersData>(`/reminders?${params}`, fetcher);
-  const [acting, setActing] = useState<string | null>(null);
+  const { data, isLoading } = useSWR<RemindersData>(`/reminders?${params}`, fetcher);
 
   const items = (data?.items ?? []).filter((r) => {
     if (!search) return true;
@@ -65,32 +60,12 @@ function RemindersPage() {
     return r.student_name.toLowerCase().includes(q) || r.parent_name.toLowerCase().includes(q);
   });
 
-  async function handleApprove(installmentId: number, reminderType: string) {
-    const key = `${installmentId}_${reminderType}`;
-    setActing(key);
-    try {
-      await apiFetch("/reminders/approve", {
-        method: "POST",
-        body: { installment_id: installmentId, reminder_type: reminderType },
-      });
-      mutate();
-    } catch {
-      // ignore
-    } finally {
-      setActing(null);
-    }
-  }
-
   function toggleExpand(key: string) {
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
-  }
-
-  function simulateSend(key: string) {
-    setSentMessages((prev) => new Set(prev).add(key));
   }
 
   // Group by student for overdue summary
@@ -197,6 +172,11 @@ function RemindersPage() {
       ) : items.length === 0 ? (
         <div className="rounded-xl border p-8 text-center" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <p style={{ color: "var(--text-secondary)" }}>No reminders to show.</p>
+          {search && (data?.items ?? []).length > 0 && (
+            <p className="text-xs mt-2" style={{ color: "var(--text-tertiary)" }}>
+              No scheduled reminders match &ldquo;{search}&rdquo;. Reminders are auto-generated 3 days before due, on the due date, and 7+ days after due.
+            </p>
+          )}
         </div>
       ) : (
         <div className="rounded-xl border overflow-x-auto" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
@@ -209,7 +189,6 @@ function RemindersPage() {
                 <th className="px-4 py-3 font-medium text-right">Amount</th>
                 <th className="px-4 py-3 font-medium">Due</th>
                 <th className="px-4 py-3 font-medium">Contact</th>
-                <th className="px-4 py-3 font-medium">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -217,7 +196,6 @@ function RemindersPage() {
                 const badge = typeBadge[r.reminder_type] ?? { bg: "var(--surface-hover)", text: "var(--text-secondary)", label: r.reminder_type };
                 const key = `${r.installment_id}_${r.reminder_type}`;
                 const isExpanded = expanded.has(key);
-                const isSent = sentMessages.has(key);
                 return (
                   <React.Fragment key={key}>
                     <tr style={{ borderBottom: "1px solid var(--border-subtle)" }}
@@ -245,7 +223,6 @@ function RemindersPage() {
                           {r.parent_phone && (
                             <a href={`https://wa.me/${r.parent_phone.replace(/[^+\d]/g, "")}?text=${encodeURIComponent(r.message)}`}
                               target="_blank" rel="noopener noreferrer"
-                              onClick={() => simulateSend(key)}
                               className="text-xs px-2 py-0.5 rounded transition-colors whitespace-nowrap"
                               style={{ border: "1px solid rgba(0, 220, 130, 0.4)", color: "var(--accent)" }}>
                               WhatsApp
@@ -253,32 +230,13 @@ function RemindersPage() {
                           )}
                           {r.parent_email && (
                             <a href={`mailto:${r.parent_email}?subject=Payment reminder \u2014 ${r.enrollment_program}&body=${encodeURIComponent(r.message)}`}
-                              onClick={() => simulateSend(key)}
                               className="text-xs px-2 py-0.5 rounded transition-colors whitespace-nowrap"
                               style={{ border: "1px solid rgba(77, 158, 255, 0.4)", color: "var(--info)" }}>
                               Email
                             </a>
                           )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <div className="flex items-center gap-2">
-                          {r.needs_approval && !r.approved && canApprove ? (
-                            <button
-                              onClick={() => handleApprove(r.installment_id, r.reminder_type)}
-                              disabled={acting === key}
-                              className="px-2.5 py-1 text-xs font-medium text-white rounded-md disabled:opacity-50 whitespace-nowrap"
-                              style={{ backgroundColor: "var(--accent)" }}
-                            >
-                              {acting === key ? "..." : "Approve"}
-                            </button>
-                          ) : r.approved || isSent ? (
-                            <span className="text-xs font-medium" style={{ color: "var(--accent)" }}>Sent &gt;</span>
-                          ) : (
-                            <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>Contact first</span>
-                          )}
                           <button onClick={() => toggleExpand(key)}
-                            className="text-xs"
+                            className="text-xs ml-1"
                             style={{ color: "var(--text-tertiary)" }}
                             title="Preview message">
                             <svg className={`w-3.5 h-3.5 transition-transform ${isExpanded ? "rotate-90" : ""}`}
@@ -291,7 +249,7 @@ function RemindersPage() {
                     </tr>
                     {isExpanded && (
                       <tr>
-                        <td colSpan={7} className="px-4 py-3" style={{ backgroundColor: "var(--surface-hover)" }}>
+                        <td colSpan={6} className="px-4 py-3" style={{ backgroundColor: "var(--surface-hover)" }}>
                           <pre className="text-sm whitespace-pre-wrap p-3 rounded" style={{ color: "var(--text-secondary)", backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>{r.message}</pre>
                         </td>
                       </tr>
