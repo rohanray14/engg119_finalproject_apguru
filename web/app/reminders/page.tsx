@@ -36,11 +36,16 @@ export default function RemindersPageWrapper() {
   );
 }
 
+type SortKey = "student_name" | "amount_due_paise" | "due_date" | null;
+type SortDir = "asc" | "desc";
+
 function RemindersPage() {
   const urlParams = useSearchParams();
   const [typeFilters, setTypeFilters] = useState<Set<string>>(new Set());
   const [approvalFilter, setApprovalFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("due_date");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   useEffect(() => {
     const q = urlParams.get("student");
@@ -53,12 +58,37 @@ function RemindersPage() {
 
   const { data, mutate, isLoading } = useSWR<RemindersData>(`/reminders?${params}`, fetcher);
 
-  const items = (data?.items ?? []).filter((r) => {
+  const filtered = (data?.items ?? []).filter((r) => {
     if (typeFilters.size > 0 && !typeFilters.has(r.reminder_type)) return false;
     if (!search) return true;
     const q = search.toLowerCase();
     return r.student_name.toLowerCase().includes(q) || r.parent_name.toLowerCase().includes(q);
   });
+
+  const items = React.useMemo(() => {
+    if (!sortKey) return filtered;
+    const sorted = [...filtered];
+    sorted.sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case "student_name": cmp = a.student_name.localeCompare(b.student_name); break;
+        case "amount_due_paise": cmp = a.amount_due_paise - b.amount_due_paise; break;
+        case "due_date": cmp = (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999"); break;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return sorted;
+  }, [filtered, sortKey, sortDir]);
+
+  function toggleSort(key: SortKey) {
+    if (sortKey === key) {
+      if (sortDir === "asc") setSortDir("desc");
+      else { setSortKey(null); }
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
 
   function toggleExpand(key: string) {
     setExpanded((prev) => {
@@ -187,9 +217,23 @@ function RemindersPage() {
             </colgroup>
             <thead>
               <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)", backgroundColor: "var(--surface-hover)" }}>
-                <th className="px-4 py-3 font-medium">Student</th>
-                <th className="px-4 py-3 font-medium text-right">Amount</th>
-                <th className="px-4 py-3 font-medium">Due</th>
+                {([
+                  { label: "Student", field: "student_name" as SortKey },
+                  { label: "Amount", field: "amount_due_paise" as SortKey, align: "right" },
+                  { label: "Due", field: "due_date" as SortKey },
+                ] as const).map((col) => {
+                  const active = sortKey === col.field;
+                  return (
+                    <th key={col.label}
+                      className={`px-4 py-3 font-medium cursor-pointer select-none ${"align" in col && col.align === "right" ? "text-right" : ""}`}
+                      onClick={() => toggleSort(col.field)}>
+                      {col.label}
+                      {active
+                        ? <span className="ml-1" style={{ color: "var(--text)" }}>{sortDir === "asc" ? "\u2191" : "\u2193"}</span>
+                        : <span className="ml-1" style={{ color: "var(--text-tertiary)" }}>{"\u2195"}</span>}
+                    </th>
+                  );
+                })}
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">Action</th>
                 <th className="px-4 py-3 font-medium text-center">Status</th>
@@ -213,6 +257,16 @@ function RemindersPage() {
                     });
                     mutate();
                   } catch { /* ignore duplicate approvals */ }
+                }
+
+                async function unmarkSent() {
+                  try {
+                    await apiFetch("/reminders/unapprove", {
+                      method: "POST",
+                      body: { installment_id: r.installment_id, reminder_type: r.reminder_type },
+                    });
+                    mutate();
+                  } catch { /* ignore */ }
                 }
 
                 return (
@@ -264,24 +318,23 @@ function RemindersPage() {
                             </a>
                           )}
                           <button onClick={() => toggleExpand(key)}
-                            className="text-xs ml-auto"
-                            style={{ color: "var(--text-tertiary)" }}
-                            title="Preview message">
-                            <svg className={`w-3.5 h-3.5 transition-transform ${isExpanded ? "rotate-90" : ""}`}
-                              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                            </svg>
+                            className="text-xs px-2 py-1 rounded ml-auto whitespace-nowrap"
+                            style={{ border: "1px solid var(--border)", color: isExpanded ? "var(--text)" : "var(--text-tertiary)" }}>
+                            {isExpanded ? "Hide" : "Preview"}
                           </button>
                         </div>
                       </td>
                       <td className="px-4 py-2.5 text-center">
                         {r.approved ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium" style={{ color: "var(--accent)" }}>
+                          <button onClick={unmarkSent}
+                            className="inline-flex items-center gap-1 text-xs font-medium cursor-pointer hover:opacity-70"
+                            style={{ color: "var(--accent)" }}
+                            title="Click to undo">
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                             Sent
-                          </span>
+                          </button>
                         ) : r.needs_approval ? (
                           <button onClick={markSent}
                             className="text-xs px-2.5 py-1 rounded font-medium whitespace-nowrap"

@@ -466,6 +466,22 @@ def approve_reminder(body: ReminderApproval, conn=Depends(get_conn),
     return {"approved": True, "sent": False}
 
 
+@router.post("/reminders/unapprove")
+def unapprove_reminder(body: ReminderApproval, conn=Depends(get_conn),
+                       user: User = Depends(require_finance_lead)):
+    decision_lock(conn)
+    entity = f"installment:{body.installment_id}"
+    row = conn.execute(
+        "SELECT id FROM audit_log WHERE action='approve_reminder' AND entity=? AND new_value=?",
+        (entity, body.reminder_type)).fetchone()
+    if not row:
+        raise not_found("No approved reminder to undo")
+    conn.execute("DELETE FROM audit_log WHERE id = ?", (row["id"],))
+    log_audit(conn, user.audit_actor, "unapprove_reminder", entity, body.reminder_type, None, commit=False)
+    conn.commit()
+    return {"approved": False}
+
+
 # ---------------------------------------------------------------------------
 # Ask
 # ---------------------------------------------------------------------------
