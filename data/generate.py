@@ -190,7 +190,7 @@ DEBIT_NARRATIONS = {
 
 # Date range for generated data
 DATE_START = date(2025, 4, 1)
-DATE_END = date(2026, 9, 30)
+DATE_END = date(2027, 3, 31)
 
 # ---------------------------------------------------------------------------
 # Case types for eval tagging
