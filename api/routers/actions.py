@@ -314,6 +314,13 @@ def get_counselor(counselor_id: int, conn=Depends(get_conn), user: User = Depend
     for p in payouts:
         total_paid_out[p["currency"]] = total_paid_out.get(p["currency"], 0) + p["net_paise"]
 
+    # Per-counselor payable: what's owed minus what's been paid out
+    payable_by_currency: dict[str, int] = {}
+    for cur in set(totals) | set(total_paid_out):
+        payable = _payable_for_counselor(conn, counselor_id, cur)
+        if payable != 0:
+            payable_by_currency[cur] = payable
+
     return {
         "id": c["id"], "name": c["name"], "terms_text": c["terms_text"] or "",
         "rule": rule,
@@ -322,7 +329,87 @@ def get_counselor(counselor_id: int, conn=Depends(get_conn), user: User = Depend
         "totals": [{"currency": k, **v} for k, v in sorted(totals.items())],
         "payouts": payouts,
         "total_paid_out": [{"currency": k, "net_paise": v} for k, v in sorted(total_paid_out.items())],
+        "payable": [{"currency": k, "net_paise": v} for k, v in sorted(payable_by_currency.items())],
     }
+
+
+def _payable_for_counselor(conn, counselor_id: int, currency: str) -> int:
+    """What is still owed to one counselor in one currency."""
+    current = 0
+    for r in conn.execute(
+        "SELECT SUM(net_paise) AS net FROM commission_line "
+        "WHERE counselor_id = ? AND currency = ?", (counselor_id, currency)).fetchall():
+        current = r["net"] or 0
+    approved = 0
+    for r in conn.execute(
+        "SELECT SUM(net_paise) AS net FROM payout_approval_line "
+        "WHERE counselor_id = ? AND currency = ?", (counselor_id, currency)).fetchall():
+        approved = r["net"] or 0
+    return current - approved
+
+
+def _payable_lines_for_counselor(conn, counselor_id: int, currency: str) -> tuple[list[dict], int]:
+    """Detailed per-payment deltas for one counselor in one currency."""
+    current = {}
+    for r in conn.execute(
+        "SELECT payment_id, SUM(net_paise) AS net FROM commission_line "
+        "WHERE counselor_id = ? AND currency = ? GROUP BY payment_id",
+        (counselor_id, currency)).fetchall():
+        current[r["payment_id"]] = r["net"]
+    approved = {}
+    for r in conn.execute(
+        "SELECT payment_id, SUM(net_paise) AS net FROM payout_approval_line "
+        "WHERE counselor_id = ? AND currency = ? GROUP BY payment_id",
+        (counselor_id, currency)).fetchall():
+        approved[r["payment_id"]] = r["net"]
+    deltas = []
+    for pid in sorted(set(current) | set(approved)):
+        d = current.get(pid, 0) - approved.get(pid, 0)
+        if d:
+            deltas.append({"counselor_id": counselor_id, "payment_id": pid, "net_paise": d})
+    return deltas, sum(d["net_paise"] for d in deltas)
+
+
+class CounselorPayoutBody(BaseModel):
+    currency: str = Field(..., min_length=3, max_length=3)
+    expected_payable_paise: int = Field(..., description="The payable total the finance lead saw on screen")
+
+
+@router.post("/commissions/counselors/{counselor_id}/payout/approve")
+def approve_counselor_payout(counselor_id: int, body: CounselorPayoutBody, conn=Depends(get_conn),
+                              user: User = Depends(require_finance_lead)):
+    """Approve payout for a single counselor."""
+    decision_lock(conn)
+    c = conn.execute("SELECT id, name FROM counselor WHERE id = ?", (counselor_id,)).fetchone()
+    if c is None:
+        raise not_found("Counselor")
+    currency = body.currency.upper()
+    deltas, payable = _payable_lines_for_counselor(conn, counselor_id, currency)
+    if not deltas:
+        raise conflict(f"No {currency} commission waiting for approval for {c['name']}.")
+    if body.expected_payable_paise != payable:
+        raise conflict("The payout total changed since you loaded the page. Refresh and review it again.")
+    if payable < 0:
+        raise conflict("Commissions went down since the last payout (net claw-back). Settle this outside the app.")
+    fingerprint = hashlib.sha256(json.dumps(deltas, sort_keys=True).encode()).hexdigest()
+    conn.execute(
+        "INSERT INTO payout_approval (approved_at, actor, currency, total_net_paise, lines_fingerprint) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (datetime.now(timezone.utc).isoformat(), user.audit_actor, currency, payable, fingerprint))
+    payout_id = conn.execute(
+        "SELECT MAX(id) FROM payout_approval WHERE currency = ? AND lines_fingerprint = ?",
+        (currency, fingerprint)).fetchone()[0]
+    for d in deltas:
+        conn.execute(
+            "INSERT INTO payout_approval_line (payout_id, counselor_id, payment_id, currency, net_paise) "
+            "VALUES (?, ?, ?, ?, ?)", (payout_id, d["counselor_id"], d["payment_id"], currency, d["net_paise"]))
+    log_audit(conn, user.audit_actor, "approve_counselor_payout", f"counselor:{counselor_id}",
+              None, json.dumps({"currency": currency, "total_net_paise": payable,
+                                "counselor_name": c["name"], "lines": len(deltas)}),
+              commit=False)
+    conn.commit()
+    return {"payout_id": payout_id, "currency": currency, "approved_net_paise": payable,
+            "counselor_name": c["name"]}
 
 
 class RuleBody(BaseModel):

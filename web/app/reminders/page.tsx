@@ -23,7 +23,7 @@ interface RemindersData {
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
 const typeBadge: Record<string, { bg: string; text: string; label: string }> = {
-  pre_due: { bg: "rgba(77, 158, 255, 0.15)", text: "var(--info)", label: "Pre-due" },
+  pre_due: { bg: "rgba(77, 158, 255, 0.15)", text: "var(--info)", label: "Upcoming" },
   on_due: { bg: "rgba(0, 220, 130, 0.15)", text: "var(--accent)", label: "Due today" },
   overdue: { bg: "rgba(255, 77, 77, 0.15)", text: "var(--danger)", label: "Overdue" },
 };
@@ -43,6 +43,7 @@ function RemindersPage() {
   const urlParams = useSearchParams();
   const [typeFilters, setTypeFilters] = useState<Set<string>>(new Set());
   const [approvalFilter, setApprovalFilter] = useState("");
+  const [sentFilter, setSentFilter] = useState<"" | "sent" | "unsent">("");
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("due_date");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -60,6 +61,8 @@ function RemindersPage() {
 
   const filtered = (data?.items ?? []).filter((r) => {
     if (typeFilters.size > 0 && !typeFilters.has(r.reminder_type)) return false;
+    if (sentFilter === "sent" && !r.approved) return false;
+    if (sentFilter === "unsent" && r.approved) return false;
     if (!search) return true;
     const q = search.toLowerCase();
     return r.student_name.toLowerCase().includes(q) || r.parent_name.toLowerCase().includes(q);
@@ -113,21 +116,24 @@ function RemindersPage() {
     }
   }
 
+  const hasActiveFilters = typeFilters.size > 0 || approvalFilter || sentFilter || search;
+
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Reminders</h1>
       <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
         Auto-drafted messages for upcoming and overdue installments.
-        {data && ` Showing data as of ${formatDate(data.as_of)}.`}
+        {data && ` As of ${formatDate(data.as_of)}.`}
       </p>
 
+      {/* Stat cards */}
       {data && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {([
-            { key: "pre_due", label: "Pre-due", count: data.counts.pre_due, sub: "3 days before due", color: "var(--info)" },
-            { key: "on_due", label: "Due today", count: data.counts.on_due, sub: "Payment due now", color: "var(--accent)" },
-            { key: "overdue", label: "Overdue", count: data.counts.overdue, sub: "7+ days past due", color: "var(--danger)" },
-            { key: "approval", label: "Needs approval", count: data.counts.needs_approval, sub: "3rd+ reminder, review first", color: "var(--warning)" },
+            { key: "pre_due", label: "Upcoming", count: data.counts.pre_due, sub: "Due within 3 days", color: "var(--info)" },
+            { key: "on_due", label: "Due today", count: data.counts.on_due, sub: "Payment expected today", color: "var(--accent)" },
+            { key: "overdue", label: "Overdue", count: data.counts.overdue, sub: "Past the due date", color: "var(--danger)" },
+            { key: "approval", label: "Needs review", count: data.counts.needs_approval, sub: "3rd+ reminder, you decide", color: "var(--warning)" },
           ] as const).map((card) => {
             const active = card.key === "approval" ? approvalFilter === "needs_approval" : typeFilters.has(card.key);
             return (
@@ -143,12 +149,17 @@ function RemindersPage() {
                     });
                   }
                 }}
-                className="rounded-xl border p-4 text-left transition-colors"
+                className="rounded-xl border p-4 text-left transition-all"
                 style={{
                   backgroundColor: active ? "var(--surface-hover)" : "var(--surface)",
                   borderColor: active ? "var(--text-secondary)" : "var(--border)",
                 }}>
-                <div className="text-sm" style={{ color: active ? "var(--text)" : "var(--text-secondary)" }}>{card.label}</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm" style={{ color: active ? "var(--text)" : "var(--text-secondary)" }}>{card.label}</span>
+                  {active && (
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: card.color }} />
+                  )}
+                </div>
                 <div className="text-2xl font-bold" style={{ color: card.color }}>{card.count}</div>
                 <div className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>{card.sub}</div>
               </button>
@@ -179,16 +190,29 @@ function RemindersPage() {
         </div>
       )}
 
-      <div className="flex gap-3 mb-6 items-center">
+      {/* Filter bar */}
+      <div className="flex flex-wrap gap-3 mb-6 items-center">
         <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by student or parent name..."
-          className="text-sm rounded-md px-3 py-2 w-64"
+          placeholder="Search student or parent..."
+          className="text-sm rounded-md px-3 py-2 w-56"
           style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }} />
-        {(typeFilters.size > 0 || approvalFilter || search) && (
-          <button onClick={() => { setTypeFilters(new Set()); setApprovalFilter(""); setSearch(""); }}
-            className="text-xs" style={{ color: "var(--text-secondary)" }}>Clear filters</button>
+        <select value={sentFilter} onChange={(e) => setSentFilter(e.target.value as typeof sentFilter)}
+          className="text-sm rounded-md px-3 py-2"
+          style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}>
+          <option value="">All statuses</option>
+          <option value="unsent">Not sent</option>
+          <option value="sent">Sent</option>
+        </select>
+        {hasActiveFilters && (
+          <button onClick={() => { setTypeFilters(new Set()); setApprovalFilter(""); setSentFilter(""); setSearch(""); }}
+            className="text-xs px-2 py-1 rounded"
+            style={{ color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+            Clear all
+          </button>
         )}
-        <span className="text-xs ml-auto" style={{ color: "var(--text-tertiary)" }}>{items.length} reminders</span>
+        <span className="text-xs ml-auto" style={{ color: "var(--text-tertiary)" }}>
+          {items.length} of {data?.items.length ?? 0} reminders
+        </span>
       </div>
 
       {isLoading ? (
@@ -208,12 +232,12 @@ function RemindersPage() {
         <div className="rounded-xl border overflow-x-auto" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
             <colgroup>
-              <col style={{ width: "22%" }} />
-              <col style={{ width: "14%" }} />
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "12%" }} />
               <col style={{ width: "14%" }} />
               <col style={{ width: "10%" }} />
-              <col style={{ width: "26%" }} />
-              <col style={{ width: "14%" }} />
+              <col style={{ width: "28%" }} />
+              <col style={{ width: "16%" }} />
             </colgroup>
             <thead>
               <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)", backgroundColor: "var(--surface-hover)" }}>
@@ -235,7 +259,7 @@ function RemindersPage() {
                   );
                 })}
                 <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Action</th>
+                <th className="px-4 py-3 font-medium">Send via</th>
                 <th className="px-4 py-3 font-medium text-center">Status</th>
               </tr>
             </thead>
@@ -274,17 +298,17 @@ function RemindersPage() {
                     <tr style={{ borderBottom: "1px solid var(--border-subtle)" }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}>
-                      <td className="px-4 py-2.5">
+                      <td className="px-4 py-3">
                         <Link href={`/students?id=${r.student_id}`}
                           className="font-medium hover:underline truncate block" style={{ color: "var(--accent)" }}>
                           {r.student_name}
                         </Link>
                         <div className="text-xs truncate" style={{ color: "var(--text-tertiary)" }}>{r.enrollment_program}</div>
                       </td>
-                      <td className="px-4 py-2.5 text-right font-medium whitespace-nowrap">
+                      <td className="px-4 py-3 text-right font-medium whitespace-nowrap">
                         {formatMoney(r.amount_due_paise, r.currency)}
                       </td>
-                      <td className="px-4 py-2.5 whitespace-nowrap" style={{ color: isOverdue ? "var(--danger)" : "var(--text)" }}>
+                      <td className="px-4 py-3 whitespace-nowrap" style={{ color: isOverdue ? "var(--danger)" : "var(--text)" }}>
                         {formatDate(r.due_date)}
                         {isOverdue && (
                           <div className="text-[10px] font-medium" style={{ color: "var(--danger)" }}>
@@ -292,43 +316,46 @@ function RemindersPage() {
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-2.5">
+                      <td className="px-4 py-3">
                         <span className="px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap"
                           style={{ backgroundColor: badge.bg, color: badge.text }}>
                           {badge.label}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5">
-                        <div className="flex items-center gap-2">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5">
                           {r.parent_phone && (
                             <a href={`https://wa.me/${r.parent_phone.replace(/[^+\d]/g, "")}?text=${encodeURIComponent(r.message)}`}
                               target="_blank" rel="noopener noreferrer"
                               onClick={() => { if (!r.approved) markSent(); }}
-                              className="text-xs px-2 py-1 rounded transition-colors whitespace-nowrap"
-                              style={{ border: "1px solid rgba(0, 220, 130, 0.4)", color: "var(--accent)" }}>
+                              className="text-xs px-2.5 py-1 rounded-md transition-colors whitespace-nowrap font-medium"
+                              style={{ backgroundColor: "rgba(0, 220, 130, 0.12)", color: "var(--accent)" }}>
                               WhatsApp
                             </a>
                           )}
                           {r.parent_email && (
                             <a href={`mailto:${r.parent_email}?subject=Payment reminder — ${r.enrollment_program}&body=${encodeURIComponent(r.message)}`}
                               onClick={() => { if (!r.approved) markSent(); }}
-                              className="text-xs px-2 py-1 rounded transition-colors whitespace-nowrap"
-                              style={{ border: "1px solid rgba(77, 158, 255, 0.4)", color: "var(--info)" }}>
+                              className="text-xs px-2.5 py-1 rounded-md transition-colors whitespace-nowrap font-medium"
+                              style={{ backgroundColor: "rgba(77, 158, 255, 0.12)", color: "var(--info)" }}>
                               Email
                             </a>
                           )}
                           <button onClick={() => toggleExpand(key)}
-                            className="text-xs px-2 py-1 rounded ml-auto whitespace-nowrap"
-                            style={{ border: "1px solid var(--border)", color: isExpanded ? "var(--text)" : "var(--text-tertiary)" }}>
-                            {isExpanded ? "Hide" : "Preview"}
+                            className="text-[11px] px-2 py-1 rounded-md ml-auto whitespace-nowrap transition-colors"
+                            style={{
+                              backgroundColor: isExpanded ? "var(--surface-hover)" : "transparent",
+                              color: isExpanded ? "var(--text)" : "var(--text-tertiary)",
+                            }}>
+                            {isExpanded ? "Hide msg" : "View msg"}
                           </button>
                         </div>
                       </td>
-                      <td className="px-4 py-2.5 text-center">
+                      <td className="px-4 py-3 text-center">
                         {r.approved ? (
                           <button onClick={unmarkSent}
-                            className="inline-flex items-center gap-1 text-xs font-medium cursor-pointer hover:opacity-70"
-                            style={{ color: "var(--accent)" }}
+                            className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-md transition-all"
+                            style={{ backgroundColor: "rgba(0, 220, 130, 0.15)", color: "var(--accent)" }}
                             title="Click to undo">
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -337,14 +364,14 @@ function RemindersPage() {
                           </button>
                         ) : r.needs_approval ? (
                           <button onClick={markSent}
-                            className="text-xs px-2.5 py-1 rounded font-medium whitespace-nowrap"
-                            style={{ border: "1px solid rgba(255, 176, 32, 0.4)", color: "var(--warning)" }}>
+                            className="text-xs px-3 py-1.5 rounded-md font-semibold whitespace-nowrap transition-all"
+                            style={{ backgroundColor: "rgba(255, 176, 32, 0.2)", color: "var(--warning)", border: "1px solid rgba(255, 176, 32, 0.4)" }}>
                             Approve
                           </button>
                         ) : (
                           <button onClick={markSent}
-                            className="text-xs px-2.5 py-1 rounded font-medium whitespace-nowrap"
-                            style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+                            className="text-xs px-3 py-1.5 rounded-md font-semibold whitespace-nowrap transition-all"
+                            style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
                             Mark sent
                           </button>
                         )}
@@ -353,7 +380,7 @@ function RemindersPage() {
                     {isExpanded && (
                       <tr>
                         <td colSpan={6} className="px-4 py-3" style={{ backgroundColor: "var(--surface-hover)" }}>
-                          <pre className="text-sm whitespace-pre-wrap p-3 rounded" style={{ color: "var(--text-secondary)", backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>{r.message}</pre>
+                          <pre className="text-sm whitespace-pre-wrap p-4 rounded-lg leading-relaxed" style={{ color: "var(--text-secondary)", backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>{r.message}</pre>
                         </td>
                       </tr>
                     )}
