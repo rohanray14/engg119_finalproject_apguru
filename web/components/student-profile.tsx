@@ -134,7 +134,7 @@ export default function StudentProfile({ studentId, onBack }: Props) {
               const daysUntilDue = Math.round((dueDate.getTime() - today.getTime()) / 86400000);
               return daysUntilDue <= 3 ? (
                 <Link href={`/reminders?student=${encodeURIComponent(student.name)}`}
-                  className="text-xs mt-1 inline-block hover:underline" style={{ color: "var(--accent)" }}>
+                  className="text-xs mt-1 inline-block hover:underline" style={{ color: "var(--warning)" }}>
                   Send reminder →
                 </Link>
               ) : (
@@ -176,12 +176,12 @@ export default function StudentProfile({ studentId, onBack }: Props) {
                   {e.gst_applicable && " + GST"}
                 </div>
               </div>
-              <div className="text-sm font-medium" style={{ color: "var(--accent)" }}>{pct}% paid</div>
+              <div className="text-sm font-medium" style={{ color: pct >= 75 ? "var(--accent)" : pct >= 40 ? "var(--warning)" : "var(--danger)" }}>{pct}% paid</div>
             </div>
             <div className="w-full rounded-full h-2 mb-4" style={{ backgroundColor: "var(--surface-hover)" }}>
               <div className="h-2 rounded-full" style={{
                 width: `${pct}%`,
-                backgroundColor: "var(--accent)",
+                backgroundColor: pct >= 75 ? "var(--accent)" : pct >= 40 ? "var(--warning)" : "var(--danger)",
               }} />
             </div>
             <table className="w-full text-sm">
@@ -206,7 +206,7 @@ export default function StudentProfile({ studentId, onBack }: Props) {
                           <span style={{ color: isOverdue ? "var(--danger)" : "var(--text)" }}>
                             {formatDate(i.due_date)}
                             {isOverdue && (
-                              <span className="text-xs ml-1.5 font-medium">({daysOver}d overdue)</span>
+                              <span className="text-xs ml-1.5 font-medium">{daysOver < 30 ? `${daysOver}d overdue` : `${Math.floor(daysOver / 30)}mo overdue`}</span>
                             )}
                           </span>
                         );
