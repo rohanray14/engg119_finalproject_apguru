@@ -133,7 +133,7 @@ function RemindersPage() {
             { key: "pre_due", label: "Upcoming", count: data.counts.pre_due, color: "var(--info)" },
             { key: "on_due", label: "Due today", count: data.counts.on_due, color: "var(--accent)" },
             { key: "overdue", label: "Overdue", count: data.counts.overdue, color: "var(--danger)" },
-            { key: "approval", label: "Needs review", count: data.counts.needs_approval, color: "var(--warning)" },
+            { key: "approval", label: "Approval required", count: data.counts.needs_approval, color: "var(--warning)" },
           ] as const).map((card) => {
             const active = card.key === "approval" ? approvalFilter === "needs_approval" : typeFilters.has(card.key);
             return (

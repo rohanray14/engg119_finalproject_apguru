@@ -338,7 +338,7 @@ export default function PaymentsPage() {
             <button onClick={() => { setConfirmation(confirmation === "screenshot_only" ? "" : "screenshot_only"); setPage(0); }}
               className={`text-left rounded-xl border px-4 py-3 transition-colors ${confirmation === "screenshot_only" ? "ring-2 ring-red-400/40" : ""}`}
               style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", borderColor: "rgba(255, 77, 77, 0.3)" }}>
-              <div className="text-xs" style={{ color: "var(--danger)" }}>Unverified</div>
+              <div className="text-xs" style={{ color: "var(--danger)" }}>Screenshot only</div>
               <div className="text-lg font-bold" style={{ color: "var(--danger)" }}>{summary.screenshot_count}</div>
             </button>
           )}
