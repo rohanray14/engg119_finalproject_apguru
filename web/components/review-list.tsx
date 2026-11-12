@@ -20,13 +20,17 @@ export default function ReviewList({ items, selectedId, onSelect, skippedIds }: 
   const activeRef = useRef<HTMLButtonElement>(null);
   const prevSelectedRef = useRef<number | null>(null);
 
-  // Only scroll when selection changes, not on every render
+  // Scroll to selected item when selection changes or items update
   useEffect(() => {
     if (selectedId !== prevSelectedRef.current) {
       prevSelectedRef.current = selectedId;
-      activeRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
-  }, [selectedId]);
+    // Small delay to ensure ref is attached after render
+    const t = setTimeout(() => {
+      activeRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }, 50);
+    return () => clearTimeout(t);
+  }, [selectedId, items]);
 
   return (
     <div className="rounded-lg border overflow-hidden" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>

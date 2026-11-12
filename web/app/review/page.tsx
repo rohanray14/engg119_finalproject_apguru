@@ -49,8 +49,13 @@ function ReviewContent() {
   // Read ?id= from URL (e.g. linked from Payments page)
   useEffect(() => {
     const idParam = searchParams.get("id");
-    if (idParam && selectedId === null) {
-      setSelectedId(Number(idParam));
+    if (idParam) {
+      const id = Number(idParam);
+      setSelectedId(id);
+      setFilter("all");
+      setListSearch("");
+      // Re-fetch queue so newly created items appear in the list
+      mutateQueue();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
