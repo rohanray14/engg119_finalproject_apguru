@@ -1,10 +1,10 @@
 /**
- * Format paise as currency with Indian grouping.
- * e.g. 14200000 INR -> "₹1,42,000"  or  40000 USD -> "$400"
+ * Format paise as currency with Western comma grouping.
+ * e.g. 14200000 INR -> "₹142,000"  or  40000 USD -> "$400"
  */
 export function formatMoney(paise: number, currency: string): string {
   const amount = paise / 100;
-  return new Intl.NumberFormat("en-IN", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
     minimumFractionDigits: 0,
@@ -13,17 +13,16 @@ export function formatMoney(paise: number, currency: string): string {
 }
 
 /**
- * Compact money: ₹1.42 Cr, ₹6.8 L, ₹41,300
+ * Compact money: ₹14.2M, ₹598K, ₹41.3K
  */
 export function formatMoneyCompact(paise: number, currency: string): string {
   const amount = paise / 100;
-  if (currency === "INR") {
-    if (amount >= 1_00_00_000) {
-      return `₹${(amount / 1_00_00_000).toFixed(2)} Cr`;
-    }
-    if (amount >= 1_00_000) {
-      return `₹${(amount / 1_00_000).toFixed(1)} L`;
-    }
+  const sym = currency === "INR" ? "₹" : currency === "USD" ? "$" : "";
+  if (amount >= 1_000_000) {
+    return `${sym}${(amount / 1_000_000).toFixed(1)}M`;
+  }
+  if (amount >= 1_000) {
+    return `${sym}${(amount / 1_000).toFixed(1)}K`;
   }
   return formatMoney(paise, currency);
 }

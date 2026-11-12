@@ -523,10 +523,20 @@ def reminders(
     items = generate_reminders(conn, as_of=as_of)
     approved = {(r["entity"], r["new_value"]) for r in conn.execute(
         "SELECT entity, new_value FROM audit_log WHERE action = 'approve_reminder'").fetchall()}
+    # Installment-based overdue count (same logic as dashboard) for consistency
+    from api.allocation import remaining_by_installment
+    remaining = remaining_by_installment(conn)
+    iso = as_of.isoformat()
+    overdue_insts = conn.execute(
+        "SELECT i.id, i.due_date FROM installment i "
+        "WHERE i.status IN ('open','partial','overdue') AND i.due_date IS NOT NULL"
+    ).fetchall()
+    overdue_inst_count = sum(1 for r in overdue_insts if r["due_date"] < iso and remaining.get(r["id"], 0) > 0)
+
     counts = {
         "pre_due": sum(r.reminder_type == "pre_due" for r in items),
         "on_due": sum(r.reminder_type == "on_due" for r in items),
-        "overdue": sum(r.reminder_type == "overdue" for r in items),
+        "overdue": overdue_inst_count,
         "needs_approval": sum(r.needs_approval for r in items),
     }
     if type:
