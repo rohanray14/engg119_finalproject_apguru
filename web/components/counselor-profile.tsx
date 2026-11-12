@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
@@ -26,6 +26,9 @@ interface CurrencyTotal {
 interface Payout {
   id: number; approved_at: string; actor: string; currency: string; net_paise: number;
 }
+interface PayableEntry {
+  currency: string; net_paise: number;
+}
 interface CounselorData {
   id: number; name: string; terms_text: string;
   rule: { rate: number; scope: string; city: string | null; split: number | null; source: string };
@@ -34,6 +37,7 @@ interface CounselorData {
   totals: CurrencyTotal[];
   payouts: Payout[];
   total_paid_out: { currency: string; net_paise: number }[];
+  payable: PayableEntry[];
 }
 
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
@@ -67,7 +71,13 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [acting, setActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [payConfirm, setPayConfirm] = useState(false);
+  const [paySuccess, setPaySuccess] = useState<string | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  // Filter state for students tab
+  const [locationFilter, setLocationFilter] = useState<string | null>(null);
+  const [programFilter, setProgramFilter] = useState<string | null>(null);
 
   // Debounced student search
   useEffect(() => {
@@ -87,6 +97,36 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
   useEffect(() => {
     if (showSearch) searchRef.current?.focus();
   }, [showSearch]);
+
+  // Derive unique locations and programs from students
+  const { locations, programs } = useMemo(() => {
+    if (!counselor) return { locations: [] as string[], programs: [] as string[] };
+    const locs = new Set<string>();
+    const progs = new Set<string>();
+    for (const s of counselor.students) {
+      const loc = displayLocation(s.city, s.country);
+      if (loc) locs.add(loc);
+      for (const e of s.enrollments) {
+        if (e.program) progs.add(e.program);
+      }
+    }
+    return { locations: Array.from(locs).sort(), programs: Array.from(progs).sort() };
+  }, [counselor]);
+
+  // Filter students
+  const filteredStudents = useMemo(() => {
+    if (!counselor) return [];
+    return counselor.students.filter((s) => {
+      if (locationFilter) {
+        const loc = displayLocation(s.city, s.country);
+        if (loc !== locationFilter) return false;
+      }
+      if (programFilter) {
+        if (!s.enrollments.some((e) => e.program === programFilter)) return false;
+      }
+      return true;
+    });
+  }, [counselor, locationFilter, programFilter]);
 
   async function linkStudent(studentId: number) {
     setActing(true);
@@ -120,6 +160,26 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
     }
   }
 
+  async function approvePayout(currency: string, amount: number) {
+    setActing(true);
+    setError(null);
+    try {
+      await apiFetch(`/commissions/counselors/${counselorId}/payout/approve`, {
+        method: "POST",
+        body: { currency, expected_payable_paise: amount },
+      });
+      setPayConfirm(false);
+      setPaySuccess(`Payout of ${formatMoney(amount, currency)} approved.`);
+      mutate();
+      setTimeout(() => setPaySuccess(null), 5000);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Payout failed");
+      setPayConfirm(false);
+    } finally {
+      setActing(false);
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-4">
@@ -143,14 +203,14 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
   const inr = counselor.totals.find((t) => t.currency === "INR");
   const paidOut = counselor.total_paid_out.find((t) => t.currency === "INR")?.net_paise ?? 0;
   const netOwed = (inr?.net_paise ?? 0) - paidOut;
+  const payableINR = counselor.payable.find((p) => p.currency === "INR");
 
   // Compute action items
   const now = new Date();
   const actionItems: { severity: "high" | "medium" | "low"; text: string }[] = [];
 
-  // Check for overdue unpaid commissions
   if (netOwed > 0 && counselor.commission_lines.length > 0) {
-    const oldest = counselor.commission_lines[counselor.commission_lines.length - 1]; // sorted desc
+    const oldest = counselor.commission_lines[counselor.commission_lines.length - 1];
     if (oldest.date) {
       const oldestDate = new Date(oldest.date);
       const monthsAgo = Math.floor((now.getTime() - oldestDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
@@ -168,13 +228,7 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
     }
   }
 
-  // Check for referred students with no commission lines (per-student check)
-  const studentIdsWithCommission = new Set(
-    counselor.commission_lines.map((l) => l.payment_id)
-  );
   const studentsWithEnrollments = counselor.students.filter((s) => s.enrollments.length > 0);
-  // A student has "generated commission" if any commission line exists for this counselor
-  // We can't map payment→student directly, so use count-based heuristic
   if (studentsWithEnrollments.length > 0 && counselor.commission_lines.length < studentsWithEnrollments.length) {
     const gap = studentsWithEnrollments.length - counselor.commission_lines.length;
     if (gap > 0) {
@@ -185,7 +239,6 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
     }
   }
 
-  // Check if rate needs setting
   if (counselor.rule.rate <= 0) {
     actionItems.push({
       severity: "high",
@@ -203,6 +256,12 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
     }),
     { base_paise: 0, commission_paise: 0, tds_paise: 0, net_paise: 0 }
   );
+
+  const tabDescriptions = {
+    students: "Students this counselor referred. Commission is earned when their fee payments are matched.",
+    commissions: "Commission earned from matched fee payments, after 2% TDS. Approve payout when ready to pay.",
+    payouts: "Record of money already paid to this counselor.",
+  };
 
   return (
     <div>
@@ -252,6 +311,14 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
         </div>
       )}
 
+      {/* Payout success banner */}
+      {paySuccess && (
+        <div className="mb-4 rounded-lg p-3 text-sm font-medium flex items-center gap-2"
+          style={{ backgroundColor: "rgba(0,220,130,0.1)", border: "1px solid rgba(0,220,130,0.3)", color: "var(--accent)" }}>
+          <span>&#10003;</span> {paySuccess}
+        </div>
+      )}
+
       {/* Summary cards — responsive */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="rounded-lg border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
@@ -270,20 +337,52 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
             {inr ? formatMoney(inr.tds_paise, "INR") : "—"}
           </div>
         </div>
-        <div className="rounded-lg border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+
+        {/* Still owed card — with pay button */}
+        <div className="rounded-lg border p-4" style={{
+          backgroundColor: payableINR && payableINR.net_paise > 0 ? "rgba(255,77,77,0.04)" : "var(--surface)",
+          borderColor: payableINR && payableINR.net_paise > 0 ? "rgba(255,77,77,0.3)" : "var(--card-border)",
+        }}>
           <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-secondary)" }}>Still owed</div>
           <div className="text-xl font-bold mt-1" style={{ color: netOwed > 0 ? "var(--danger)" : "var(--accent)" }}>
             {netOwed > 0 ? formatMoney(netOwed, "INR") : "Settled"}
           </div>
+          {canApprove && payableINR && payableINR.net_paise > 0 && !payConfirm && (
+            <button
+              onClick={() => setPayConfirm(true)}
+              className="mt-2 text-xs px-3 py-1.5 rounded-md font-medium w-full"
+              style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+              Approve payout
+            </button>
+          )}
+          {payConfirm && payableINR && (
+            <div className="mt-2 space-y-1.5">
+              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                Pay <strong style={{ color: "var(--text)" }}>{formatMoney(payableINR.net_paise, "INR")}</strong> to {counselor.name}?
+              </p>
+              <div className="flex gap-2">
+                <button onClick={() => approvePayout("INR", payableINR.net_paise)} disabled={acting}
+                  className="flex-1 text-xs px-2 py-1.5 rounded-md font-medium disabled:opacity-50"
+                  style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+                  {acting ? "..." : "Confirm"}
+                </button>
+                <button onClick={() => setPayConfirm(false)}
+                  className="flex-1 text-xs px-2 py-1.5 rounded-md"
+                  style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b mb-4" style={{ borderColor: "var(--card-border)" }}>
+      <div className="flex border-b mb-1" style={{ borderColor: "var(--card-border)" }}>
         {([
-          ["students", `Students (${counselor.students.length})`],
-          ["commissions", `Commissions (${counselor.commission_lines.length})`],
-          ["payouts", `Payouts (${counselor.payouts.length})`],
+          ["students", `Referred (${counselor.students.length})`],
+          ["commissions", `Earnings (${counselor.commission_lines.length})`],
+          ["payouts", `Paid out (${counselor.payouts.length})`],
         ] as const).map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px"
@@ -295,6 +394,11 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
           </button>
         ))}
       </div>
+
+      {/* Tab description */}
+      <p className="text-xs mb-4 mt-2" style={{ color: "var(--text-tertiary)" }}>
+        {tabDescriptions[tab]}
+      </p>
 
       {error && (
         <div className="rounded-lg p-3 mb-4 text-sm" style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", border: "1px solid rgba(255, 77, 77, 0.3)", color: "var(--danger)" }}>{error}</div>
@@ -366,9 +470,81 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
           </div>
         )}
 
-        {counselor.students.length === 0 && !showSearch ? (
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>No students linked to this counselor.</p>
-        ) : counselor.students.length > 0 ? (
+        {/* Filter chips */}
+        {counselor.students.length > 0 && (locations.length > 1 || programs.length > 1) && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {locations.length > 1 && (
+              <>
+                <span className="text-[10px] uppercase tracking-wider font-medium self-center mr-1" style={{ color: "var(--text-tertiary)" }}>
+                  Location:
+                </span>
+                <button
+                  onClick={() => setLocationFilter(null)}
+                  className="text-xs px-2.5 py-1 rounded-full font-medium transition-colors"
+                  style={!locationFilter
+                    ? { backgroundColor: "var(--text)", color: "var(--bg)" }
+                    : { backgroundColor: "var(--bg)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                  All
+                </button>
+                {locations.map((loc) => (
+                  <button key={loc}
+                    onClick={() => setLocationFilter(locationFilter === loc ? null : loc)}
+                    className="text-xs px-2.5 py-1 rounded-full font-medium transition-colors"
+                    style={locationFilter === loc
+                      ? { backgroundColor: "var(--text)", color: "var(--bg)" }
+                      : { backgroundColor: "var(--bg)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                    {loc}
+                  </button>
+                ))}
+              </>
+            )}
+            {programs.length > 1 && (
+              <>
+                {locations.length > 1 && <span className="w-px h-4 self-center mx-1" style={{ backgroundColor: "var(--border)" }} />}
+                <span className="text-[10px] uppercase tracking-wider font-medium self-center mr-1" style={{ color: "var(--text-tertiary)" }}>
+                  Program:
+                </span>
+                <button
+                  onClick={() => setProgramFilter(null)}
+                  className="text-xs px-2.5 py-1 rounded-full font-medium transition-colors"
+                  style={!programFilter
+                    ? { backgroundColor: "var(--text)", color: "var(--bg)" }
+                    : { backgroundColor: "var(--bg)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                  All
+                </button>
+                {programs.map((prog) => (
+                  <button key={prog}
+                    onClick={() => setProgramFilter(programFilter === prog ? null : prog)}
+                    className="text-xs px-2.5 py-1 rounded-full font-medium transition-colors"
+                    style={programFilter === prog
+                      ? { backgroundColor: "var(--text)", color: "var(--bg)" }
+                      : { backgroundColor: "var(--bg)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                    {prog}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Active filter summary */}
+        {(locationFilter || programFilter) && (
+          <div className="flex items-center gap-2 mb-3 text-xs" style={{ color: "var(--text-secondary)" }}>
+            <span>Showing {filteredStudents.length} of {counselor.students.length} students</span>
+            <button onClick={() => { setLocationFilter(null); setProgramFilter(null); }}
+              className="underline hover:no-underline" style={{ color: "var(--accent)" }}>
+              Clear filters
+            </button>
+          </div>
+        )}
+
+        {filteredStudents.length === 0 && !showSearch ? (
+          <p className="text-sm py-4 text-center" style={{ color: "var(--text-secondary)" }}>
+            {counselor.students.length === 0
+              ? "No students linked to this counselor."
+              : "No students match the selected filters."}
+          </p>
+        ) : filteredStudents.length > 0 ? (
           <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[600px]">
             <thead>
@@ -383,7 +559,7 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
-              {counselor.students.map((s) => {
+              {filteredStudents.map((s) => {
                 const location = displayLocation(s.city, s.country);
                 if (s.enrollments.length === 0) {
                   return (
@@ -451,50 +627,114 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
 
       {/* Commission lines */}
       {tab === "commissions" && (
-      <div className="rounded-lg border p-5 mb-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
-        {counselor.commission_lines.length === 0 ? (
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>No commissions calculated yet.</p>
-        ) : (
-          <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[600px]">
-            <thead>
-              <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
-                <th className="pb-2 font-medium">Date</th>
-                <th className="pb-2 font-medium">Payer</th>
-                <th className="pb-2 font-medium text-right">Fee collected</th>
-                <th className="pb-2 font-medium text-right">Rate</th>
-                <th className="pb-2 font-medium text-right">Commission</th>
-                <th className="pb-2 font-medium text-right">TDS</th>
-                <th className="pb-2 font-medium text-right">Net</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
-              {counselor.commission_lines.map((line) => (
-                <tr key={line.id}>
-                  <td className="py-2.5" style={{ color: "var(--text)" }}>{line.date ? formatDate(line.date) : "—"}</td>
-                  <td className="py-2.5" style={{ color: "var(--text-secondary)" }}>{line.payer_name || "(blank)"}</td>
-                  <td className="py-2.5 text-right" style={{ color: "var(--text)" }}>{formatMoney(line.base_paise, line.currency)}</td>
-                  <td className="py-2.5 text-right" style={{ color: "var(--text)" }}>{(line.rate * 100).toFixed(0)}%</td>
-                  <td className="py-2.5 text-right" style={{ color: "var(--text)" }}>{formatMoney(line.commission_paise, line.currency)}</td>
-                  <td className="py-2.5 text-right" style={{ color: "var(--text-secondary)" }}>{formatMoney(line.tds_paise, line.currency)}</td>
-                  <td className="py-2.5 text-right font-medium" style={{ color: "var(--text)" }}>{formatMoney(line.net_paise, line.currency)}</td>
-                </tr>
-              ))}
-            </tbody>
-            {/* Totals row */}
-            <tfoot>
-              <tr className="border-t-2" style={{ borderColor: "var(--border)" }}>
-                <td className="py-2.5 font-bold" style={{ color: "var(--text)" }} colSpan={2}>Total</td>
-                <td className="py-2.5 text-right font-bold" style={{ color: "var(--text)" }}>{formatMoney(lineTotals.base_paise, "INR")}</td>
-                <td className="py-2.5" />
-                <td className="py-2.5 text-right font-bold" style={{ color: "var(--text)" }}>{formatMoney(lineTotals.commission_paise, "INR")}</td>
-                <td className="py-2.5 text-right font-bold" style={{ color: "var(--text-secondary)" }}>{formatMoney(lineTotals.tds_paise, "INR")}</td>
-                <td className="py-2.5 text-right font-bold" style={{ color: "var(--accent)" }}>{formatMoney(lineTotals.net_paise, "INR")}</td>
-              </tr>
-            </tfoot>
-          </table>
+      <div className="space-y-4 mb-4">
+        {/* Payout CTA banner — always visible when money is owed */}
+        {payableINR && payableINR.net_paise > 0 && counselor.commission_lines.length > 0 && (
+          <div className="rounded-lg border p-4" style={{
+            backgroundColor: "rgba(255, 77, 77, 0.06)",
+            borderColor: "rgba(255, 77, 77, 0.3)",
+          }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium" style={{ color: "var(--text)" }}>
+                  {formatMoney(payableINR.net_paise, "INR")} unpaid
+                </div>
+                <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                  Total earned: {formatMoney(lineTotals.net_paise, "INR")} · Paid out: {formatMoney(paidOut, "INR")} · Remaining: {formatMoney(payableINR.net_paise, "INR")}
+                </div>
+              </div>
+              {canApprove && (
+                !payConfirm ? (
+                  <button onClick={() => setPayConfirm(true)}
+                    className="text-sm px-5 py-2 rounded-md font-semibold"
+                    style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+                    Approve payout
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                      Pay {formatMoney(payableINR.net_paise, "INR")} to {counselor.name}?
+                    </span>
+                    <button onClick={() => approvePayout("INR", payableINR.net_paise)} disabled={acting}
+                      className="text-xs px-3 py-1.5 rounded-md font-medium disabled:opacity-50"
+                      style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+                      {acting ? "..." : "Confirm"}
+                    </button>
+                    <button onClick={() => setPayConfirm(false)}
+                      className="text-xs px-3 py-1.5 rounded-md"
+                      style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+                      Cancel
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
           </div>
         )}
+
+        {/* All settled banner */}
+        {counselor.commission_lines.length > 0 && (!payableINR || payableINR.net_paise <= 0) && (
+          <div className="rounded-lg border p-4" style={{
+            backgroundColor: "rgba(0, 220, 130, 0.06)",
+            borderColor: "rgba(0, 220, 130, 0.3)",
+          }}>
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4" style={{ color: "var(--accent)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-sm font-medium" style={{ color: "var(--accent)" }}>All paid up</span>
+              <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                — Total {formatMoney(lineTotals.net_paise, "INR")} earned and paid out
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Commission table */}
+        <div className="rounded-lg border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+          {counselor.commission_lines.length === 0 ? (
+            <p className="text-sm py-4 text-center" style={{ color: "var(--text-secondary)" }}>No commissions calculated yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[600px]">
+              <thead>
+                <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
+                  <th className="pb-2 font-medium">Date</th>
+                  <th className="pb-2 font-medium">Payer</th>
+                  <th className="pb-2 font-medium text-right">Fee collected</th>
+                  <th className="pb-2 font-medium text-right">Rate</th>
+                  <th className="pb-2 font-medium text-right">Commission</th>
+                  <th className="pb-2 font-medium text-right">TDS</th>
+                  <th className="pb-2 font-medium text-right">Net</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+                {counselor.commission_lines.map((line) => (
+                  <tr key={line.id}>
+                    <td className="py-2.5" style={{ color: "var(--text)" }}>{line.date ? formatDate(line.date) : "—"}</td>
+                    <td className="py-2.5" style={{ color: "var(--text-secondary)" }}>{line.payer_name || "(blank)"}</td>
+                    <td className="py-2.5 text-right" style={{ color: "var(--text)" }}>{formatMoney(line.base_paise, line.currency)}</td>
+                    <td className="py-2.5 text-right" style={{ color: "var(--text)" }}>{(line.rate * 100).toFixed(0)}%</td>
+                    <td className="py-2.5 text-right" style={{ color: "var(--text)" }}>{formatMoney(line.commission_paise, line.currency)}</td>
+                    <td className="py-2.5 text-right" style={{ color: "var(--text-secondary)" }}>{formatMoney(line.tds_paise, line.currency)}</td>
+                    <td className="py-2.5 text-right font-medium" style={{ color: "var(--text)" }}>{formatMoney(line.net_paise, line.currency)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2" style={{ borderColor: "var(--border)" }}>
+                  <td className="py-2.5 font-bold" style={{ color: "var(--text)" }} colSpan={2}>Total</td>
+                  <td className="py-2.5 text-right font-bold" style={{ color: "var(--text)" }}>{formatMoney(lineTotals.base_paise, "INR")}</td>
+                  <td className="py-2.5" />
+                  <td className="py-2.5 text-right font-bold" style={{ color: "var(--text)" }}>{formatMoney(lineTotals.commission_paise, "INR")}</td>
+                  <td className="py-2.5 text-right font-bold" style={{ color: "var(--text-secondary)" }}>{formatMoney(lineTotals.tds_paise, "INR")}</td>
+                  <td className="py-2.5 text-right font-bold" style={{ color: "var(--accent)" }}>{formatMoney(lineTotals.net_paise, "INR")}</td>
+                </tr>
+              </tfoot>
+            </table>
+            </div>
+          )}
+        </div>
       </div>
 
       )}
@@ -504,6 +744,13 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
         counselor.payouts.length === 0 ? (
           <div className="rounded-lg border p-8 text-center" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
             <p style={{ color: "var(--text-secondary)" }}>No payouts approved yet.</p>
+            {canApprove && payableINR && payableINR.net_paise > 0 && (
+              <button onClick={() => { setTab("commissions"); setPayConfirm(true); }}
+                className="mt-3 text-xs px-4 py-2 rounded-md font-medium"
+                style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+                Approve first payout ({formatMoney(payableINR.net_paise, "INR")})
+              </button>
+            )}
           </div>
         ) : (
           <div className="rounded-lg border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
@@ -525,6 +772,39 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                 ))}
               </tbody>
             </table>
+
+            {/* Pay more if there's still money owed */}
+            {canApprove && payableINR && payableINR.net_paise > 0 && (
+              <div className="mt-4 pt-4 flex items-center justify-between" style={{ borderTop: "1px solid var(--border)" }}>
+                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  <span className="font-medium" style={{ color: "var(--danger)" }}>{formatMoney(payableINR.net_paise, "INR")}</span>{" "}
+                  still owed
+                </div>
+                {!payConfirm ? (
+                  <button onClick={() => setPayConfirm(true)}
+                    className="text-xs px-4 py-2 rounded-md font-medium"
+                    style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+                    Approve payout
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                      Pay {formatMoney(payableINR.net_paise, "INR")}?
+                    </span>
+                    <button onClick={() => approvePayout("INR", payableINR.net_paise)} disabled={acting}
+                      className="text-xs px-3 py-1.5 rounded-md font-medium disabled:opacity-50"
+                      style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+                      {acting ? "..." : "Confirm"}
+                    </button>
+                    <button onClick={() => setPayConfirm(false)}
+                      className="text-xs px-3 py-1.5 rounded-md"
+                      style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )
       )}

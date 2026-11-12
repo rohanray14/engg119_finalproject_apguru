@@ -130,10 +130,10 @@ function RemindersPage() {
       {data && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {([
-            { key: "pre_due", label: "Upcoming", count: data.counts.pre_due, sub: "Due within 3 days", color: "var(--info)" },
-            { key: "on_due", label: "Due today", count: data.counts.on_due, sub: "Payment expected today", color: "var(--accent)" },
-            { key: "overdue", label: "Overdue", count: data.counts.overdue, sub: "Past the due date", color: "var(--danger)" },
-            { key: "approval", label: "Needs review", count: data.counts.needs_approval, sub: "3rd+ reminder, you decide", color: "var(--warning)" },
+            { key: "pre_due", label: "Upcoming", count: data.counts.pre_due, color: "var(--info)" },
+            { key: "on_due", label: "Due today", count: data.counts.on_due, color: "var(--accent)" },
+            { key: "overdue", label: "Overdue", count: data.counts.overdue, color: "var(--danger)" },
+            { key: "approval", label: "Needs review", count: data.counts.needs_approval, color: "var(--warning)" },
           ] as const).map((card) => {
             const active = card.key === "approval" ? approvalFilter === "needs_approval" : typeFilters.has(card.key);
             return (
@@ -161,7 +161,6 @@ function RemindersPage() {
                   )}
                 </div>
                 <div className="text-2xl font-bold" style={{ color: card.color }}>{card.count}</div>
-                <div className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>{card.sub}</div>
               </button>
             );
           })}
