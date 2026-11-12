@@ -89,21 +89,17 @@ const categoryLabels: Record<string, string> = {
   oversized_payment: "Unusually large payments",
 };
 
-// Strip leading student name from overdue explanation for grouped display
-function stripName(explanation: string): string {
-  return explanation.replace(/^.+?'s installment of /, "").replace(/^(\S+)\s/, "$1 · ");
-}
-
 type SortMode = "amount" | "age" | "default";
+type OverdueRange = "" | "30" | "60" | "90" | "90+";
 const COLLAPSED_LIMIT = 8;
 
 export default function RiskPage() {
-  // Fetch all flags (no server-side severity filter)
   const { data, isLoading } = useSWR<RiskData>("/risk", fetcher);
 
   const [severity, setSeverity] = useState("");
   const [category, setCategory] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("default");
+  const [overdueRange, setOverdueRange] = useState<OverdueRange>("");
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
@@ -153,13 +149,27 @@ export default function RiskPage() {
     return flags;
   }
 
-  // Compute groups
+  // Compute overdue groups with range filter
   const overdueGroups = useMemo(() => {
     const overdue = visibleItems.filter((f) => f.category === "overdue_installment");
-    const groups = groupOverdue(overdue);
+    let groups = groupOverdue(overdue);
+
+    // Filter by overdue range
+    if (overdueRange) {
+      groups = groups.filter((g) => {
+        switch (overdueRange) {
+          case "30": return g.maxDays <= 30;
+          case "60": return g.maxDays > 30 && g.maxDays <= 60;
+          case "90": return g.maxDays > 60 && g.maxDays <= 90;
+          case "90+": return g.maxDays > 90;
+          default: return true;
+        }
+      });
+    }
+
     if (sortMode === "age") return [...groups].sort((a, b) => b.maxDays - a.maxDays);
-    return groups; // default: by amount (already sorted)
-  }, [visibleItems, sortMode]);
+    return groups;
+  }, [visibleItems, sortMode, overdueRange]);
 
   const nonOverdueFlags = useMemo(() => {
     return sortFlags(visibleItems.filter((f) => f.category !== "overdue_installment"));
@@ -181,6 +191,23 @@ export default function RiskPage() {
   const activeFilters = [severity, category].filter(Boolean).length;
   const dismissedCount = dismissed.size;
 
+  // Overdue range counts for chips
+  const overdueRangeCounts = useMemo(() => {
+    if (!data) return { "30": 0, "60": 0, "90": 0, "90+": 0 };
+    const allOverdue = groupOverdue(visibleItems.filter((f) => f.category === "overdue_installment"));
+    return {
+      "30": allOverdue.filter((g) => g.maxDays <= 30).length,
+      "60": allOverdue.filter((g) => g.maxDays > 30 && g.maxDays <= 60).length,
+      "90": allOverdue.filter((g) => g.maxDays > 60 && g.maxDays <= 90).length,
+      "90+": allOverdue.filter((g) => g.maxDays > 90).length,
+    };
+  }, [data, visibleItems]);
+
+  function daysLabel(days: number): string {
+    if (days >= 365) return `${Math.floor(days / 30)}mo`;
+    return `${days}d`;
+  }
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-1">
@@ -193,7 +220,7 @@ export default function RiskPage() {
         )}
       </div>
       <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
-        Issues detected automatically — each with a next step.
+        Issues detected automatically, each with a next step.
         {data && <span className="ml-1" style={{ color: "var(--text-tertiary)" }}>As of {formatDate(data.as_of)}</span>}
       </p>
 
@@ -251,15 +278,15 @@ export default function RiskPage() {
       {/* Filters + sort */}
       <div className="rounded-xl border p-4 mb-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Filter &amp; sort</span>
-          {(activeFilters > 0 || sortMode !== "default") && (
-            <button onClick={() => { setSeverity(""); setCategory(""); setSortMode("default"); }}
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Filter & sort</span>
+          {(activeFilters > 0 || sortMode !== "default" || overdueRange) && (
+            <button onClick={() => { setSeverity(""); setCategory(""); setSortMode("default"); setOverdueRange(""); }}
               className="text-xs underline" style={{ color: "var(--text-secondary)" }}>
               Reset
             </button>
           )}
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div>
             <label className="block text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Severity</label>
             <select value={severity} onChange={(e) => setSeverity(e.target.value)}
@@ -283,6 +310,18 @@ export default function RiskPage() {
             </select>
           </div>
           <div>
+            <label className="block text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Overdue range</label>
+            <select value={overdueRange} onChange={(e) => setOverdueRange(e.target.value as OverdueRange)}
+              className="w-full text-sm rounded-md px-3 py-2"
+              style={{ backgroundColor: "var(--surface-hover)", border: "1px solid var(--border)", color: "var(--text)" }}>
+              <option value="">All ranges</option>
+              <option value="30">0 to 30 days ({overdueRangeCounts["30"]})</option>
+              <option value="60">31 to 60 days ({overdueRangeCounts["60"]})</option>
+              <option value="90">61 to 90 days ({overdueRangeCounts["90"]})</option>
+              <option value="90+">90+ days ({overdueRangeCounts["90+"]})</option>
+            </select>
+          </div>
+          <div>
             <label className="block text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Sort by</label>
             <select value={sortMode} onChange={(e) => setSortMode(e.target.value as SortMode)}
               className="w-full text-sm rounded-md px-3 py-2"
@@ -292,6 +331,9 @@ export default function RiskPage() {
               <option value="age">Oldest first</option>
             </select>
           </div>
+        </div>
+        <div className="mt-3 text-xs" style={{ color: "var(--text-tertiary)" }}>
+          Severity is based on age and type: overdue &gt;90 days, duplicates, unverified large payments, and suspicious payers are <span style={{ color: "var(--danger)" }}>high</span>. Overdue 30{"\u2013"}90 days, old unmatched payments, and unusually large payments are <span style={{ color: "var(--warning)" }}>medium</span>.
         </div>
       </div>
 
@@ -320,7 +362,7 @@ export default function RiskPage() {
           {overdueGroups.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-secondary)" }}>
-                Overdue installments — {overdueGroups.length} student{overdueGroups.length !== 1 ? "s" : ""}
+                Overdue installments · {overdueGroups.length} student{overdueGroups.length !== 1 ? "s" : ""}
               </h3>
               <div className="space-y-2">
                 {(expandedSections.has("overdue") ? overdueGroups : overdueGroups.slice(0, COLLAPSED_LIMIT)).map((g) => {
@@ -328,48 +370,49 @@ export default function RiskPage() {
                   return (
                     <div key={g.student} className="rounded-xl border p-4"
                       style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dot }} />
-                          <div className="min-w-0">
-                            <Link href={`/students?search=${encodeURIComponent(g.student)}`}
-                              className="font-medium hover:underline" style={{ color: "var(--accent)" }}>
-                              {g.student}
-                            </Link>
-                            <span className="ml-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-                              {g.flags.length} installment{g.flags.length > 1 ? "s" : ""} · {formatMoney(g.totalPaise, g.currency)}
-                            </span>
-                          </div>
+                          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: dot }} />
+                          <Link href={`/students?search=${encodeURIComponent(g.student)}`}
+                            className="font-semibold text-sm hover:underline truncate" style={{ color: "var(--accent)" }}>
+                            {g.student}
+                          </Link>
+                          <span className="text-sm font-semibold shrink-0" style={{ color: "var(--text)" }}>
+                            {formatMoney(g.totalPaise, g.currency)}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0 ml-3">
-                          <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{g.maxDays}d overdue</span>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="text-center px-3 py-1.5 rounded-lg" style={{ backgroundColor: "var(--surface-hover)" }}>
+                            <div className="text-lg font-bold leading-tight" style={{ color: g.maxDays > 90 ? "var(--danger)" : "var(--warning)" }}>
+                              {daysLabel(g.maxDays)}
+                            </div>
+                            <div className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>overdue</div>
+                          </div>
                           <Link href={`/reminders?student=${encodeURIComponent(g.student)}`}
-                            className="px-4 py-1.5 text-xs font-medium rounded-md transition-colors"
-                            style={{ border: "1px solid var(--border)", color: "var(--text)" }}>
+                            className="px-5 py-2.5 text-sm font-semibold rounded-lg transition-colors"
+                            style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
                             Send reminder
                           </Link>
                         </div>
                       </div>
                       {/* Expandable detail lines */}
-                      {g.flags.length > 0 && (
-                        <details className="mt-2">
+                      {g.flags.length > 1 && (
+                        <details className="mt-3">
                           <summary className="text-xs cursor-pointer pl-5" style={{ color: "var(--text-tertiary)" }}>
-                            {g.flags.length} installment{g.flags.length > 1 ? "s" : ""} — click to expand
+                            {g.flags.length} installments
                           </summary>
                           <div className="mt-1.5 space-y-1 pl-5">
                             {g.flags.map((f, i) => {
                               const daysMatch = f.explanation.match(/is (\d+) days overdue/);
                               const dueDateMatch = f.explanation.match(/\(due (.+?)\)/);
                               return (
-                                <div key={i} className="text-sm flex items-center justify-between" style={{ color: "var(--text-secondary)" }}>
-                                  <span>
-                                    {formatMoney(f.amount_paise ?? 0, f.currency)}
-                                    <span className="mx-1.5" style={{ color: "var(--text-tertiary)" }}>·</span>
-                                    {daysMatch ? `${daysMatch[1]} days overdue` : "overdue"}
-                                    {dueDateMatch && (
-                                      <span style={{ color: "var(--text-tertiary)" }}> (due {dueDateMatch[1]})</span>
-                                    )}
-                                  </span>
+                                <div key={i} className="text-sm flex items-center gap-2" style={{ color: "var(--text-secondary)" }}>
+                                  <span>{formatMoney(f.amount_paise ?? 0, f.currency)}</span>
+                                  <span style={{ color: "var(--text-tertiary)" }}>·</span>
+                                  <span>{daysMatch ? `${daysMatch[1]} days overdue` : "overdue"}</span>
+                                  {dueDateMatch && (
+                                    <span style={{ color: "var(--text-tertiary)" }}>(due {dueDateMatch[1]})</span>
+                                  )}
                                 </div>
                               );
                             })}
@@ -398,7 +441,6 @@ export default function RiskPage() {
             for (let i = 0; i < nonOverdueFlags.length; i++) {
               const f = nonOverdueFlags[i];
               const list = byCategory.get(f.category) ?? [];
-              // Find original index in activeItems for dismiss key
               const origIdx = activeItems.indexOf(f);
               list.push({ flag: f, idx: origIdx });
               byCategory.set(f.category, list);
@@ -409,7 +451,7 @@ export default function RiskPage() {
               return (
                 <div key={cat}>
                   <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-secondary)" }}>
-                    {categoryLabels[cat] ?? cat.replace(/_/g, " ")} — {entries.length} flag{entries.length !== 1 ? "s" : ""}
+                    {categoryLabels[cat] ?? cat.replace(/_/g, " ")} · {entries.length} flag{entries.length !== 1 ? "s" : ""}
                   </h3>
                   <div className="space-y-2">
                     {visible.map(({ flag: f, idx }) => {
@@ -420,7 +462,7 @@ export default function RiskPage() {
                         <div key={key} className="rounded-xl border p-4 flex items-center justify-between"
                           style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
                           <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dot }} />
+                            <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: dot }} />
                             <div className="min-w-0">
                               <div className="text-sm" style={{ color: "var(--text)" }}>{f.explanation}</div>
                               {f.amount_paise != null && (
