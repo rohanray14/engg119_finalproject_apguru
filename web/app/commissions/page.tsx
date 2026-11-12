@@ -46,6 +46,12 @@ function CommissionsContent() {
   const [rateValue, setRateValue] = useState(1000);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [payoutConfirm, setPayoutConfirm] = useState<{ currency: string; payable: number } | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newTerms, setNewTerms] = useState("");
+  const [newRate, setNewRate] = useState<number | "">("");
+  const [newScope, setNewScope] = useState<"own_referrals" | "city">("own_referrals");
+  const [newCity, setNewCity] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("earned");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -132,6 +138,35 @@ function CommissionsContent() {
         body: { rate_bps: rateValue },
       });
       setRateEdit(null);
+      mutate();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setActing(false);
+    }
+  }
+
+  async function handleAddCounselor() {
+    if (!newName.trim()) return;
+    setActing(true);
+    setError(null);
+    try {
+      const body: Record<string, unknown> = {
+        name: newName.trim(),
+        terms_text: newTerms.trim(),
+      };
+      if (newRate && Number(newRate) > 0) {
+        body.rate_bps = Math.round(Number(newRate) * 100);
+        body.scope = newScope;
+        if (newScope === "city" && newCity.trim()) body.city = newCity.trim();
+      }
+      await apiFetch("/commissions/counselors", { method: "POST", body });
+      setShowAddForm(false);
+      setNewName("");
+      setNewTerms("");
+      setNewRate("");
+      setNewScope("own_referrals");
+      setNewCity("");
       mutate();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed");
@@ -247,8 +282,85 @@ function CommissionsContent() {
       <div className="rounded-xl border p-6 mb-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold" style={{ color: "var(--text)" }}>Counselors</h3>
-          <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{data.counselors.length} total</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{data.counselors.length} total</span>
+            {canApprove && (
+              <button onClick={() => setShowAddForm(!showAddForm)}
+                className="text-xs px-3 py-1.5 rounded-md font-medium"
+                style={{ backgroundColor: showAddForm ? "var(--surface-hover)" : "var(--accent)", color: showAddForm ? "var(--text-secondary)" : "var(--bg)" }}>
+                {showAddForm ? "Cancel" : "+ Add counselor"}
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Add counselor form */}
+        {showAddForm && (
+          <div className="rounded-lg p-4 mb-4" style={{ backgroundColor: "var(--surface-hover)", border: "1px solid var(--border)" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--text-secondary)" }}>Name *</label>
+                <input
+                  type="text" value={newName} onChange={(e) => setNewName(e.target.value)}
+                  placeholder="e.g. Priya Sharma"
+                  className="w-full text-sm rounded-md px-2.5 py-1.5"
+                  style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--text-secondary)" }}>Terms (free text)</label>
+                <input
+                  type="text" value={newTerms} onChange={(e) => setNewTerms(e.target.value)}
+                  placeholder="e.g. 10% commission on own referrals"
+                  className="w-full text-sm rounded-md px-2.5 py-1.5"
+                  style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--text-secondary)" }}>Rate (%)</label>
+                <input
+                  type="number" min={1} max={50} step={1}
+                  value={newRate} onChange={(e) => setNewRate(e.target.value === "" ? "" : Number(e.target.value))}
+                  placeholder="10"
+                  className="w-full text-sm rounded-md px-2.5 py-1.5"
+                  style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1 block" style={{ color: "var(--text-secondary)" }}>Applies to</label>
+                <select value={newScope} onChange={(e) => setNewScope(e.target.value as "own_referrals" | "city")}
+                  className="w-full text-sm rounded-md px-2.5 py-1.5"
+                  style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}>
+                  <option value="own_referrals">Own referrals</option>
+                  <option value="city">All students in a city</option>
+                </select>
+              </div>
+              {newScope === "city" && (
+                <div>
+                  <label className="text-xs font-medium mb-1 block" style={{ color: "var(--text-secondary)" }}>City</label>
+                  <input
+                    type="text" value={newCity} onChange={(e) => setNewCity(e.target.value)}
+                    placeholder="e.g. Mumbai"
+                    className="w-full text-sm rounded-md px-2.5 py-1.5"
+                    style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={handleAddCounselor} disabled={acting || !newName.trim()}
+                className="px-4 py-1.5 text-sm font-medium text-white rounded-md disabled:opacity-50"
+                style={{ backgroundColor: "var(--accent)" }}>
+                {acting ? "Adding..." : "Add counselor"}
+              </button>
+              <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+                {!newRate ? "Rate can be set later" : ""}
+              </span>
+            </div>
+          </div>
+        )}
         {sortedCounselors.length === 0 ? (
           <div className="py-8 text-center text-sm" style={{ color: "var(--text-secondary)" }}>No counselors found.</div>
         ) : (

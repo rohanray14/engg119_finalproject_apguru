@@ -123,6 +123,46 @@ def commissions(conn=Depends(get_conn), user: User = Depends(current_user)):
     return out
 
 
+class AddCounselorBody(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    terms_text: str = Field("", max_length=500)
+    rate_bps: Optional[int] = Field(None, gt=0, le=5000, description="Commission rate in basis points (1000 = 10%)")
+    scope: Literal["own_referrals", "city"] = "own_referrals"
+    city: Optional[str] = Field(None, max_length=100)
+    split_bps: Optional[int] = Field(None, gt=0, le=10000)
+
+
+@router.post("/commissions/counselors")
+def add_counselor(body: AddCounselorBody, conn=Depends(get_conn),
+                  user: User = Depends(require_finance_lead)):
+    """Create a new counselor. Optionally set the rate at the same time."""
+    decision_lock(conn)
+    # Check for duplicate name
+    existing = conn.execute("SELECT id FROM counselor WHERE name = ?", (body.name.strip(),)).fetchone()
+    if existing:
+        raise conflict(f"A counselor named '{body.name.strip()}' already exists (id {existing['id']}).")
+    parsed_rule = None
+    if body.rate_bps:
+        parsed_rule = json.dumps({
+            "rate": body.rate_bps / 10_000, "rate_bps": body.rate_bps,
+            "scope": body.scope, "city": body.city if body.scope == "city" else None,
+            "split": body.split_bps / 10_000 if body.split_bps else None,
+            "split_bps": body.split_bps,
+            "set_by": "human",
+        })
+    cur = conn.execute(
+        "INSERT INTO counselor (name, terms_text, parsed_rule) VALUES (?, ?, ?)",
+        (body.name.strip(), body.terms_text.strip(), parsed_rule),
+    )
+    counselor_id = cur.lastrowid
+    log_audit(conn, user.audit_actor, "add_counselor", f"counselor:{counselor_id}",
+              None, json.dumps({"name": body.name.strip(), "terms_text": body.terms_text.strip(),
+                                "rate_bps": body.rate_bps, "scope": body.scope, "city": body.city}))
+    n = recompute_commissions(conn, actor=user.audit_actor) if parsed_rule else 0
+    conn.commit()
+    return {"counselor_id": counselor_id, "name": body.name.strip(), "commission_lines": n}
+
+
 @router.get("/commissions/counselors/{counselor_id}/statement")
 def statement(counselor_id: int, conn=Depends(get_conn), user: User = Depends(current_user)):
     c = conn.execute("SELECT id, name FROM counselor WHERE id = ?", (counselor_id,)).fetchone()
