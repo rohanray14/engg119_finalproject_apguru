@@ -188,9 +188,9 @@ DEBIT_NARRATIONS = {
     "other": "NEFT/{ref}/{payee}/MISC",
 }
 
-# Date range for generated data
-DATE_START = date(2025, 4, 1)
-DATE_END = date(2027, 3, 31)
+# Date range for generated data — ends today so the dashboard feels current
+DATE_START = date.today() - timedelta(days=540)  # ~18 months of history
+DATE_END = date.today()
 
 # ---------------------------------------------------------------------------
 # Case types for eval tagging

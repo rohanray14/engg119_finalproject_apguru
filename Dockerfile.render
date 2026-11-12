@@ -26,6 +26,7 @@ COPY ledger/ ledger/
 COPY agents/ agents/
 COPY api/ api/
 COPY evals/__init__.py evals/scoring.py evals/
+COPY data/generate.py data/
 COPY data/*.csv data/
 
 # Copy the built Next.js static export
