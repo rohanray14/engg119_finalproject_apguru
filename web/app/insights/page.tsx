@@ -6,7 +6,7 @@ import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatMoneyCompact } from "@/lib/format";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, Cell, PieChart, Pie,
 } from "recharts";
 
@@ -34,9 +34,16 @@ interface InsightsData {
 
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
-const TEAL_PALETTE = [
-  "#00DC82", "#3da391", "#5bb8a8", "#7ecdbf",
-  "#a3e0d5", "#c4ede4", "#2a8c7a", "#1a6b5c",
+// Distinct professional palette for charts
+const CHART_PALETTE = [
+  "#6366F1", // indigo
+  "#3B82F6", // blue
+  "#06B6D4", // cyan
+  "#8B5CF6", // violet
+  "#EC4899", // pink
+  "#F59E0B", // amber
+  "#10B981", // emerald
+  "#EF4444", // red
 ];
 
 const METHOD_LABELS: Record<string, string> = {
@@ -130,7 +137,7 @@ export default function InsightsPage() {
     ? by_country.filter((r) => r.country === countryFilter)
     : by_country;
   const filteredCities = countryFilter
-    ? by_city // API doesn't link city to country, so show all cities when filtering
+    ? by_city
     : by_city;
 
   // Chart data
@@ -145,7 +152,7 @@ export default function InsightsPage() {
     name: METHOD_LABELS[r.pay_method] ?? r.pay_method,
     value: r.collected_paise,
     payments: r.payments,
-    color: TEAL_PALETTE[i % TEAL_PALETTE.length],
+    color: CHART_PALETTE[i % CHART_PALETTE.length],
   }));
   const totalMethodPaise = by_method.reduce((s, r) => s + r.collected_paise, 0);
 
@@ -267,14 +274,13 @@ export default function InsightsPage() {
           <div>
             <div className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>Collection health</div>
             <div className="text-xl font-bold" style={{ color: "var(--text)" }}>{formatMoneyCompact(collectedPaise, "INR")}</div>
-            <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>of {formatMoneyCompact(duePaise, "INR")} billed</div>
             {outstandingPaise > 0 && (
-              <div className="text-xs mt-1 font-medium" style={{ color: "var(--danger)" }}>
+              <div className="text-xs mt-1 font-medium" style={{ color: "var(--text-secondary)" }}>
                 {formatMoneyCompact(outstandingPaise, "INR")} outstanding
               </div>
             )}
             {collection.mom_change !== null && (
-              <div className="text-xs mt-1 font-medium" style={{ color: collection.mom_change >= 0 ? "var(--accent)" : "var(--danger)" }}>
+              <div className="text-xs mt-1 font-medium" style={{ color: "var(--text-secondary)" }}>
                 {collection.mom_change >= 0 ? "+" : ""}{Math.round(collection.mom_change * 100)}% vs last month
               </div>
             )}
@@ -299,25 +305,21 @@ export default function InsightsPage() {
         </div>
 
         <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="text-xs uppercase tracking-wider font-medium mb-3" style={{ color: "var(--text-tertiary)" }}>Avg per student</div>
+          <div className="text-xs uppercase tracking-wider font-medium mb-3" style={{ color: "var(--text-tertiary)" }}>Avg fee per student</div>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold" style={{ color: "var(--text)" }}>
               {totalStudents > 0 ? formatMoneyCompact(Math.round(duePaise / totalStudents), "INR") : "—"}
             </span>
-            <span className="text-sm" style={{ color: "var(--text-secondary)" }}>total fee</span>
-          </div>
-          <div className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>
-            {totalStudents > 0 ? formatMoneyCompact(Math.round(collectedPaise / totalStudents), "INR") : "—"} collected per student
           </div>
         </div>
       </div>
 
-      {/* Monthly trend -- full width */}
+      {/* Monthly trend -- line chart, full width */}
       <div className="rounded-xl border p-6 mb-8" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
         <div className="flex items-center justify-between mb-5">
           <div>
             <h3 className="font-bold" style={{ color: "var(--text)" }}>Monthly collections</h3>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Revenue received per month (matched payments only)</p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Revenue received per month</p>
           </div>
           <div className="flex items-center gap-2">
             {(["all", "6m", "3m"] as const).map((range) => (
@@ -333,7 +335,7 @@ export default function InsightsPage() {
           </div>
         </div>
         <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={monthData} barSize={32}>
+          <LineChart data={monthData}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-subtle)" />
             <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} />
             <YAxis tickFormatter={(v) => lakhs(v * 100)} tick={{ fontSize: 11, fill: "var(--text-secondary)" }} tickLine={false} axisLine={false} width={55} />
@@ -342,12 +344,15 @@ export default function InsightsPage() {
               labelStyle={{ fontWeight: 600, color: "var(--text)" }}
               contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", fontSize: 13, backgroundColor: "var(--surface)", color: "var(--text)" }}
             />
-            <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
-              {monthData.map((_, i) => (
-                <Cell key={i} fill={i === monthData.length - 1 ? "var(--accent)" : "#3da391"} />
-              ))}
-            </Bar>
-          </BarChart>
+            <Line
+              type="monotone"
+              dataKey="amount"
+              stroke="var(--accent)"
+              strokeWidth={2}
+              dot={{ fill: "var(--accent)", r: 3, strokeWidth: 0 }}
+              activeDot={{ fill: "var(--accent)", r: 5, strokeWidth: 2, stroke: "var(--surface)" }}
+            />
+          </LineChart>
         </ResponsiveContainer>
       </div>
 
@@ -370,7 +375,7 @@ export default function InsightsPage() {
                     }}>{r.program}</span>
                     <div className="flex items-center gap-3">
                       <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{r.students} students</span>
-                      <span className="text-sm font-semibold" style={{ color: "var(--accent)" }}>
+                      <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
                         {formatMoneyCompact(r.collected_paise, "INR")}
                       </span>
                     </div>
@@ -381,13 +386,11 @@ export default function InsightsPage() {
                     <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
                       style={{
                         width: `${(r.collected_paise / barMax) * 100}%`,
-                        backgroundColor: TEAL_PALETTE[i % TEAL_PALETTE.length],
+                        backgroundColor: CHART_PALETTE[i % CHART_PALETTE.length],
                       }} />
                   </div>
                   <div className="flex justify-end mt-1">
-                    <span className="text-[11px] font-medium" style={{
-                      color: pctCollected >= 80 ? "var(--accent)" : pctCollected >= 50 ? "var(--warning)" : "var(--danger)",
-                    }}>
+                    <span className="text-[11px] font-medium" style={{ color: "var(--text-secondary)" }}>
                       {pctCollected}% collected
                     </span>
                   </div>
@@ -413,7 +416,7 @@ export default function InsightsPage() {
                     onClick={() => setCountryFilter(countryFilter === r.country ? null : r.country)}>
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: TEAL_PALETTE[i % TEAL_PALETTE.length] }} />
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: CHART_PALETTE[i % CHART_PALETTE.length] }} />
                         <span className="text-sm font-medium hover:underline" style={{
                           color: countryFilter === r.country ? "var(--accent)" : "var(--text)",
                         }}>{r.country}</span>
@@ -425,7 +428,7 @@ export default function InsightsPage() {
                       <div className="h-full rounded-full transition-all duration-500"
                         style={{
                           width: `${(r.collected_paise / maxCountry) * 100}%`,
-                          backgroundColor: TEAL_PALETTE[i % TEAL_PALETTE.length],
+                          backgroundColor: CHART_PALETTE[i % CHART_PALETTE.length],
                         }} />
                     </div>
                   </button>
@@ -442,9 +445,9 @@ export default function InsightsPage() {
                 <div key={r.city}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs"
                   style={{ borderColor: "var(--border)" }}>
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: TEAL_PALETTE[i % TEAL_PALETTE.length] }} />
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: CHART_PALETTE[i % CHART_PALETTE.length] }} />
                   <span className="font-medium" style={{ color: "var(--text)" }}>{r.city}</span>
-                  <span style={{ color: "var(--text-tertiary)" }}>{r.students} students</span>
+                  <span style={{ color: "var(--text-tertiary)" }}>{r.students}</span>
                   <span className="font-semibold" style={{ color: "var(--text-secondary)" }}>{formatMoneyCompact(r.collected_paise, "INR")}</span>
                 </div>
               ))}
@@ -521,7 +524,7 @@ export default function InsightsPage() {
                       <span className="font-semibold" style={{ color: "var(--text)" }}>{label}</span>
                       <div className="text-[11px] mt-0.5" style={{ color: "var(--text-tertiary)" }}>{desc}</div>
                     </div>
-                    <span className="text-lg font-bold" style={{ color: TEAL_PALETTE[i] }}>
+                    <span className="text-lg font-bold" style={{ color: "var(--text)" }}>
                       {formatMoneyCompact(r.collected_paise, "INR")}
                     </span>
                   </div>
@@ -529,14 +532,12 @@ export default function InsightsPage() {
                     <div className="h-full rounded-full transition-all duration-500"
                       style={{
                         width: `${pctCollected}%`,
-                        backgroundColor: TEAL_PALETTE[i],
+                        backgroundColor: CHART_PALETTE[i % CHART_PALETTE.length],
                       }} />
                   </div>
                   <div className="flex justify-between text-xs" style={{ color: "var(--text-secondary)" }}>
                     <span>{r.students} students · {r.enrollments} enrollments</span>
-                    <span className="font-medium" style={{
-                      color: pctCollected >= 80 ? "var(--accent)" : pctCollected >= 50 ? "var(--warning)" : "var(--danger)",
-                    }}>{pctCollected}% collected</span>
+                    <span className="font-medium" style={{ color: "var(--text-secondary)" }}>{pctCollected}% collected</span>
                   </div>
                 </div>
               );
