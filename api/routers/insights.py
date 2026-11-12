@@ -159,6 +159,15 @@ def insights(conn=Depends(get_conn), user: User = Depends(current_user)):
     ).fetchone()[0]
     total_installments = conn.execute("SELECT COUNT(*) FROM installment").fetchone()[0]
 
+    # Previous-month collection rate for MoM comparison
+    prev_month_rate = None
+    if len(by_month) >= 2:
+        last_two = by_month[-2:]  # already sorted by month ASC
+        prev_collected = last_two[0]["collected_paise"] or 0
+        curr_collected = last_two[1]["collected_paise"] or 0
+        if prev_collected > 0:
+            prev_month_rate = round((curr_collected - prev_collected) / prev_collected, 3)
+
     country_rows = _merge_rows(
         [dict(r) for r in by_country], "country", _norm_country,
         sum_fields=["collected_paise", "total_fee_paise"], count_fields=["students"],
@@ -181,5 +190,6 @@ def insights(conn=Depends(get_conn), user: User = Depends(current_user)):
             "collection_rate": round(total_collected / total_due, 3) if total_due > 0 else 0,
             "overdue_installments": overdue_count,
             "total_installments": total_installments,
+            "mom_change": prev_month_rate,
         },
     }

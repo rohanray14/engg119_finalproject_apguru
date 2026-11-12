@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useMemo } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatMoneyCompact } from "@/lib/format";
@@ -14,7 +16,11 @@ interface CityRow { city: string; students: number; collected_paise: number }
 interface FeeModelRow { fee_model: string; students: number; enrollments: number; total_fee_paise: number; collected_paise: number }
 interface MethodRow { pay_method: string; payments: number; collected_paise: number }
 interface MonthRow { month: string; payments: number; collected_paise: number }
-interface Collection { total_due_paise: number; total_collected_paise: number; collection_rate: number; overdue_installments: number; total_installments: number }
+interface Collection {
+  total_due_paise: number; total_collected_paise: number; collection_rate: number;
+  overdue_installments: number; total_installments: number;
+  mom_change: number | null;
+}
 
 interface InsightsData {
   by_program: ProgramRow[];
@@ -76,14 +82,28 @@ function RingGauge({ rate, size = 120 }: { rate: number; size?: number }) {
   );
 }
 
+type TimeRange = "all" | "6m" | "3m";
+
 export default function InsightsPage() {
   const { data, isLoading } = useSWR<InsightsData>("/insights", fetcher);
+  const [programFilter, setProgramFilter] = useState<string | null>(null);
+  const [countryFilter, setCountryFilter] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState<TimeRange>("all");
+
+  // Filter month data by time range
+  const filteredMonths = useMemo(() => {
+    if (!data) return [];
+    const months = data.by_month;
+    if (timeRange === "all") return months;
+    const cutoff = timeRange === "6m" ? 6 : 3;
+    return months.slice(-cutoff);
+  }, [data, timeRange]);
 
   if (isLoading || !data) {
     return (
       <div className="p-8">
         <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Insights</h1>
-        <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Business overview across programs, geography, and collection health.</p>
+        <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Where your revenue comes from and how collection is tracking.</p>
         <div className="animate-pulse space-y-4">
           {[1, 2, 3].map((i) => <div key={i} className="h-48 rounded-lg" style={{ backgroundColor: "var(--surface)" }} />)}
         </div>
@@ -91,7 +111,7 @@ export default function InsightsPage() {
     );
   }
 
-  const { by_program, by_country, by_city, by_fee_model, by_method, by_month, collection } = data;
+  const { by_program, by_country, by_city, by_fee_model, by_method, collection } = data;
 
   // Derived data
   const totalStudents = by_country.reduce((s, r) => s + r.students, 0);
@@ -100,8 +120,21 @@ export default function InsightsPage() {
   const duePaise = collection.total_due_paise;
   const outstandingPaise = duePaise - collectedPaise;
 
+  // Filtered program data
+  const filteredPrograms = programFilter
+    ? by_program.filter((r) => r.program === programFilter)
+    : by_program;
+
+  // Filtered country/city data
+  const filteredCountries = countryFilter
+    ? by_country.filter((r) => r.country === countryFilter)
+    : by_country;
+  const filteredCities = countryFilter
+    ? by_city // API doesn't link city to country, so show all cities when filtering
+    : by_city;
+
   // Chart data
-  const monthData = by_month.map((r) => ({
+  const monthData = filteredMonths.map((r) => ({
     month: monthLabel(r.month),
     amount: r.collected_paise / 100,
     payments: r.payments,
@@ -116,17 +149,119 @@ export default function InsightsPage() {
   }));
   const totalMethodPaise = by_method.reduce((s, r) => s + r.collected_paise, 0);
 
+  const hasActiveFilters = !!programFilter || !!countryFilter;
+
+  // Export as CSV
+  function exportCSV() {
+    const rows = [
+      ["Section", "Name", "Students", "Collected (INR)", "Total Fee (INR)", "% Collected"],
+      ...by_program.map((r) => [
+        "Program", r.program, String(r.students),
+        String(r.collected_paise / 100), String(r.total_fee_paise / 100),
+        r.total_fee_paise > 0 ? `${Math.round((r.collected_paise / r.total_fee_paise) * 100)}%` : "0%",
+      ]),
+      ...by_country.map((r) => [
+        "Country", r.country, String(r.students),
+        String(r.collected_paise / 100), String(r.total_fee_paise / 100),
+        r.total_fee_paise > 0 ? `${Math.round((r.collected_paise / r.total_fee_paise) * 100)}%` : "0%",
+      ]),
+      ...by_city.map((r) => [
+        "City", r.city, String(r.students), String(r.collected_paise / 100), "", "",
+      ]),
+      ...filteredMonths.map((r) => [
+        "Month", monthLabel(r.month), "", String(r.collected_paise / 100), "", "",
+      ]),
+    ];
+    const csv = rows.map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "insights.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Insights</h1>
-        <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Business overview across programs, geography, and collection health.</p>
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Insights</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Where your revenue comes from and how collection is tracking.</p>
+        </div>
+        <button onClick={exportCSV}
+          className="text-xs px-3 py-1.5 rounded-md font-medium shrink-0 mt-1"
+          style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+          Export CSV
+        </button>
       </div>
+
+      {/* Filter chips */}
+      {(by_program.length > 1 || by_country.length > 1) && (
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          {by_program.length > 1 && (
+            <>
+              <span className="text-[10px] uppercase tracking-wider font-semibold mr-1" style={{ color: "var(--text-tertiary)" }}>Program:</span>
+              <button onClick={() => setProgramFilter(null)}
+                className="text-xs px-2.5 py-1 rounded-full font-medium transition-colors"
+                style={!programFilter
+                  ? { backgroundColor: "var(--text)", color: "var(--bg)" }
+                  : { backgroundColor: "var(--bg)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                All
+              </button>
+              {by_program.map((r) => (
+                <button key={r.program}
+                  onClick={() => setProgramFilter(programFilter === r.program ? null : r.program)}
+                  className="text-xs px-2.5 py-1 rounded-full font-medium transition-colors"
+                  style={programFilter === r.program
+                    ? { backgroundColor: "var(--text)", color: "var(--bg)" }
+                    : { backgroundColor: "var(--bg)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                  {r.program}
+                </button>
+              ))}
+            </>
+          )}
+          {by_program.length > 1 && by_country.length > 1 && (
+            <span className="w-px h-4 mx-1" style={{ backgroundColor: "var(--border)" }} />
+          )}
+          {by_country.length > 1 && (
+            <>
+              <span className="text-[10px] uppercase tracking-wider font-semibold mr-1" style={{ color: "var(--text-tertiary)" }}>Country:</span>
+              <button onClick={() => setCountryFilter(null)}
+                className="text-xs px-2.5 py-1 rounded-full font-medium transition-colors"
+                style={!countryFilter
+                  ? { backgroundColor: "var(--text)", color: "var(--bg)" }
+                  : { backgroundColor: "var(--bg)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                All
+              </button>
+              {by_country.map((r) => (
+                <button key={r.country}
+                  onClick={() => setCountryFilter(countryFilter === r.country ? null : r.country)}
+                  className="text-xs px-2.5 py-1 rounded-full font-medium transition-colors"
+                  style={countryFilter === r.country
+                    ? { backgroundColor: "var(--text)", color: "var(--bg)" }
+                    : { backgroundColor: "var(--bg)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                  {r.country}
+                </button>
+              ))}
+            </>
+          )}
+          {hasActiveFilters && (
+            <button onClick={() => { setProgramFilter(null); setCountryFilter(null); }}
+              className="text-xs px-2 py-1 rounded-md ml-2 underline"
+              style={{ color: "var(--accent)" }}>
+              Clear filters
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Hero metrics row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-        <div className="rounded-xl border p-6 flex items-center gap-6"
+        {/* Collection health — links to risk */}
+        <Link href="/risk"
+          className="rounded-xl border p-6 flex items-center gap-6 transition-colors"
           style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <RingGauge rate={collection.collection_rate} size={110} />
           <div>
@@ -138,8 +273,13 @@ export default function InsightsPage() {
                 {formatMoneyCompact(outstandingPaise, "INR")} outstanding
               </div>
             )}
+            {collection.mom_change !== null && (
+              <div className="text-xs mt-1 font-medium" style={{ color: collection.mom_change >= 0 ? "var(--accent)" : "var(--danger)" }}>
+                {collection.mom_change >= 0 ? "+" : ""}{Math.round(collection.mom_change * 100)}% vs last month
+              </div>
+            )}
           </div>
-        </div>
+        </Link>
 
         <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <div className="text-xs uppercase tracking-wider font-medium mb-3" style={{ color: "var(--text-tertiary)" }}>Students & programs</div>
@@ -151,7 +291,9 @@ export default function InsightsPage() {
             <span>{totalPrograms} programs</span>
             <span>{collection.total_installments} installments</span>
             {collection.overdue_installments > 0 && (
-              <span style={{ color: "var(--danger)" }}>{collection.overdue_installments} overdue</span>
+              <Link href="/reminders?type=overdue" className="font-medium hover:underline" style={{ color: "var(--danger)" }}>
+                {collection.overdue_installments} overdue
+              </Link>
             )}
           </div>
         </div>
@@ -177,8 +319,17 @@ export default function InsightsPage() {
             <h3 className="font-bold" style={{ color: "var(--text)" }}>Monthly collections</h3>
             <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Revenue received per month (matched payments only)</p>
           </div>
-          <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
-            {by_month.length} months · {by_month.reduce((s, r) => s + r.payments, 0)} payments
+          <div className="flex items-center gap-2">
+            {(["all", "6m", "3m"] as const).map((range) => (
+              <button key={range}
+                onClick={() => setTimeRange(range)}
+                className="text-xs px-2.5 py-1 rounded-md font-medium transition-colors"
+                style={timeRange === range
+                  ? { backgroundColor: "var(--text)", color: "var(--bg)" }
+                  : { color: "var(--text-tertiary)", border: "1px solid var(--border)" }}>
+                {range === "all" ? "All" : range === "6m" ? "6 months" : "3 months"}
+              </button>
+            ))}
           </div>
         </div>
         <ResponsiveContainer width="100%" height={240}>
@@ -207,13 +358,16 @@ export default function InsightsPage() {
           <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Revenue by program</h3>
           <p className="text-xs mb-5" style={{ color: "var(--text-secondary)" }}>Fee collection across all programs</p>
           <div className="space-y-4">
-            {by_program.map((r, i) => {
+            {filteredPrograms.map((r, i) => {
               const pctCollected = r.total_fee_paise > 0 ? Math.round((r.collected_paise / r.total_fee_paise) * 100) : 0;
               const barMax = Math.max(...by_program.map((p) => p.total_fee_paise), 1);
               return (
-                <div key={r.program}>
+                <button key={r.program} className="w-full text-left"
+                  onClick={() => setProgramFilter(programFilter === r.program ? null : r.program)}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{r.program}</span>
+                    <span className="text-sm font-medium hover:underline" style={{
+                      color: programFilter === r.program ? "var(--accent)" : "var(--text)",
+                    }}>{r.program}</span>
                     <div className="flex items-center gap-3">
                       <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{r.students} students</span>
                       <span className="text-sm font-semibold" style={{ color: "var(--accent)" }}>
@@ -222,27 +376,22 @@ export default function InsightsPage() {
                     </div>
                   </div>
                   <div className="relative h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--surface-hover)" }}>
-                    {/* Total billed (background) */}
                     <div className="absolute inset-y-0 left-0 rounded-full"
                       style={{ width: `${(r.total_fee_paise / barMax) * 100}%`, backgroundColor: "var(--border)" }} />
-                    {/* Collected (foreground) */}
                     <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
                       style={{
                         width: `${(r.collected_paise / barMax) * 100}%`,
                         backgroundColor: TEAL_PALETTE[i % TEAL_PALETTE.length],
                       }} />
                   </div>
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>
-                      {formatMoneyCompact(r.collected_paise, "INR")} of {formatMoneyCompact(r.total_fee_paise, "INR")}
-                    </span>
+                  <div className="flex justify-end mt-1">
                     <span className="text-[11px] font-medium" style={{
                       color: pctCollected >= 80 ? "var(--accent)" : pctCollected >= 50 ? "var(--warning)" : "var(--danger)",
                     }}>
                       {pctCollected}% collected
                     </span>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -257,15 +406,18 @@ export default function InsightsPage() {
           <div className="mb-6">
             <div className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-tertiary)" }}>By country</div>
             <div className="space-y-3">
-              {by_country.map((r, i) => {
+              {filteredCountries.map((r, i) => {
                 const maxCountry = Math.max(...by_country.map((c) => c.collected_paise), 1);
                 return (
-                  <div key={r.country}>
+                  <button key={r.country} className="w-full text-left"
+                    onClick={() => setCountryFilter(countryFilter === r.country ? null : r.country)}>
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: TEAL_PALETTE[i % TEAL_PALETTE.length] }} />
-                        <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{r.country}</span>
-                        <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{r.students}</span>
+                        <span className="text-sm font-medium hover:underline" style={{
+                          color: countryFilter === r.country ? "var(--accent)" : "var(--text)",
+                        }}>{r.country}</span>
+                        <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{r.students} students</span>
                       </div>
                       <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>{formatMoneyCompact(r.collected_paise, "INR")}</span>
                     </div>
@@ -276,7 +428,7 @@ export default function InsightsPage() {
                           backgroundColor: TEAL_PALETTE[i % TEAL_PALETTE.length],
                         }} />
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -286,13 +438,13 @@ export default function InsightsPage() {
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-tertiary)" }}>Top cities</div>
             <div className="flex flex-wrap gap-2">
-              {by_city.slice(0, 10).map((r, i) => (
+              {filteredCities.slice(0, 10).map((r, i) => (
                 <div key={r.city}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs"
                   style={{ borderColor: "var(--border)" }}>
                   <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: TEAL_PALETTE[i % TEAL_PALETTE.length] }} />
                   <span className="font-medium" style={{ color: "var(--text)" }}>{r.city}</span>
-                  <span style={{ color: "var(--text-tertiary)" }}>{r.students}</span>
+                  <span style={{ color: "var(--text-tertiary)" }}>{r.students} students</span>
                   <span className="font-semibold" style={{ color: "var(--text-secondary)" }}>{formatMoneyCompact(r.collected_paise, "INR")}</span>
                 </div>
               ))}
@@ -302,12 +454,12 @@ export default function InsightsPage() {
       </div>
 
       {/* Bottom row: Payment methods + Fee model */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* How families pay -- donut */}
-        <div className="lg:col-span-3 rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+        <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>How families pay</h3>
-          <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>Payment method breakdown</p>
-          <div className="flex items-center gap-8">
+          <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>Payment method breakdown by amount collected</p>
+          <div className="flex flex-col sm:flex-row items-center gap-6">
             <div className="shrink-0">
               <PieChart width={180} height={180}>
                 <Pie
@@ -328,7 +480,7 @@ export default function InsightsPage() {
                 />
               </PieChart>
             </div>
-            <div className="flex-1 space-y-2.5">
+            <div className="flex-1 w-full space-y-2.5">
               {methodData.map((r) => (
                 <div key={r.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -336,8 +488,11 @@ export default function InsightsPage() {
                     <span className="text-sm" style={{ color: "var(--text)" }}>{r.name}</span>
                   </div>
                   <div className="flex items-center gap-3">
+                    <span className="text-xs font-medium" style={{ color: "var(--text)" }}>
+                      {formatMoneyCompact(r.value, "INR")}
+                    </span>
                     <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{r.payments} txn</span>
-                    <span className="text-sm font-medium w-16 text-right" style={{ color: "var(--text)" }}>
+                    <span className="text-xs font-medium w-10 text-right" style={{ color: "var(--text-secondary)" }}>
                       {totalMethodPaise > 0 ? `${Math.round((r.value / totalMethodPaise) * 100)}%` : "—"}
                     </span>
                   </div>
@@ -348,23 +503,29 @@ export default function InsightsPage() {
         </div>
 
         {/* Fee model comparison */}
-        <div className="lg:col-span-2 rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+        <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <h3 className="font-bold mb-1" style={{ color: "var(--text)" }}>Fee model</h3>
-          <p className="text-xs mb-5" style={{ color: "var(--text-secondary)" }}>Package vs hourly comparison</p>
+          <p className="text-xs mb-5" style={{ color: "var(--text-secondary)" }}>
+            Package (fixed total) vs hourly (pay-as-you-go) comparison
+          </p>
           <div className="space-y-5">
             {by_fee_model.map((r, i) => {
               const label = r.fee_model === "package" ? "Package" : "Hourly";
+              const desc = r.fee_model === "package" ? "Fixed total fee, paid in installments" : "Billed per session attended";
               const pctCollected = r.total_fee_paise > 0
                 ? Math.round((r.collected_paise / r.total_fee_paise) * 100) : 0;
               return (
                 <div key={r.fee_model} className="p-4 rounded-lg" style={{ backgroundColor: "var(--surface-hover)" }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold" style={{ color: "var(--text)" }}>{label}</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <div>
+                      <span className="font-semibold" style={{ color: "var(--text)" }}>{label}</span>
+                      <div className="text-[11px] mt-0.5" style={{ color: "var(--text-tertiary)" }}>{desc}</div>
+                    </div>
                     <span className="text-lg font-bold" style={{ color: TEAL_PALETTE[i] }}>
                       {formatMoneyCompact(r.collected_paise, "INR")}
                     </span>
                   </div>
-                  <div className="h-2 rounded-full overflow-hidden mb-2" style={{ backgroundColor: "var(--border)" }}>
+                  <div className="h-2 rounded-full overflow-hidden mb-2 mt-3" style={{ backgroundColor: "var(--border)" }}>
                     <div className="h-full rounded-full transition-all duration-500"
                       style={{
                         width: `${pctCollected}%`,
