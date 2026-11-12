@@ -21,12 +21,11 @@ export default function ReviewPage() {
   );
 }
 
-type FilterKey = "all" | "high" | "medium" | "low";
+type FilterKey = "all" | "high" | "low";
 
 const FILTER_OPTIONS: { value: FilterKey; label: string }[] = [
-  { value: "all", label: "All items" },
-  { value: "high", label: "Strong match" },
-  { value: "medium", label: "Weak match" },
+  { value: "all", label: "All" },
+  { value: "high", label: "Has suggestion" },
   { value: "low", label: "No suggestion" },
 ];
 
@@ -60,15 +59,18 @@ function ReviewContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  const items = queue?.items ?? [];
+  // Sort: no-match first (need most attention), then by confidence ascending
+  const items = [...(queue?.items ?? [])].sort((a, b) => {
+    if (a.has_suggestion !== b.has_suggestion) return a.has_suggestion ? 1 : -1;
+    return a.confidence - b.confidence;
+  });
 
   // Filter items
   const searchLower = listSearch.toLowerCase();
   const filteredItems = items.filter((item) => {
     // Category filter
     switch (filter) {
-      case "high": if (!(item.has_suggestion && item.confidence >= 0.85)) return false; break;
-      case "medium": if (!(item.has_suggestion && item.confidence < 0.85)) return false; break;
+      case "high": if (!item.has_suggestion) return false; break;
       case "low": if (item.has_suggestion) return false; break;
     }
     // Name search
@@ -148,8 +150,8 @@ function ReviewContent() {
         <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Match review</h1>
         <div className="flex items-center gap-3 mt-1">
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Payments the matching agent wasn&apos;t sure about.
-            {queue && ` ${queue.auto_matched_count} others were matched automatically.`}
+            {items.length} payments need review.
+            {queue && queue.auto_matched_count > 0 && ` ${queue.auto_matched_count} others were matched automatically.`}
           </p>
           {reviewedCount > 0 && (
             <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: "rgba(0, 220, 130, 0.15)", color: "var(--accent)" }}>
@@ -157,20 +159,6 @@ function ReviewContent() {
             </span>
           )}
         </div>
-        {queue && queue.auto_matched_count > 0 && items.length > 0 && (
-          <div className="mt-3">
-            <div className="flex items-center justify-between text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
-              <span>{queue.auto_matched_count} auto-matched</span>
-              <span>{items.length} need review</span>
-            </div>
-            <div className="w-full rounded-full h-2" style={{ backgroundColor: "var(--surface)" }}>
-              <div className="h-2 rounded-full" style={{
-                width: `${Math.round((queue.auto_matched_count / (queue.auto_matched_count + items.length)) * 100)}%`,
-                backgroundColor: "var(--accent)",
-              }} />
-            </div>
-          </div>
-        )}
       </div>
 
 

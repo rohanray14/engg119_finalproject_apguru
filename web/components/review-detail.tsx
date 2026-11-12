@@ -185,7 +185,7 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
             {formatMoney(p.amount_paid_paise, p.currency)}
           </div>
           <div className="text-right text-sm" style={{ color: "var(--text-secondary)" }}>
-            <div>{formatDate(p.date)} · {p.method || p.source}</div>
+            <div>{formatDate(p.date)}</div>
           </div>
         </div>
         {p.payer_name ? (
