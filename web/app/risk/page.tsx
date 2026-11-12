@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate } from "@/lib/format";
@@ -18,20 +18,17 @@ interface RiskData {
 
 function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
-// Parse entity string into type + ids
 function parseEntity(entity: string): { type: string; ids: number[] } {
   const [type, rest] = entity.split(":");
   if (!rest) return { type, ids: [] };
   return { type, ids: rest.split(",").map(Number).filter((n) => !isNaN(n)) };
 }
 
-// Extract student name from overdue explanation
 function studentName(explanation: string): string {
   const match = explanation.match(/^(.+?)'s installment/);
   return match ? match[1] : "Unknown";
 }
 
-// Group overdue installments by student
 interface OverdueGroup {
   student: string;
   flags: RiskFlag[];
@@ -56,7 +53,6 @@ function groupOverdue(flags: RiskFlag[]): OverdueGroup[] {
   return [...map.values()].sort((a, b) => b.totalPaise - a.totalPaise);
 }
 
-// Build action link per category, using entity IDs for context
 function actionForFlag(flag: RiskFlag): { label: string; href: string } {
   const { type, ids } = parseEntity(flag.entity);
   const id = ids[0];
@@ -78,215 +74,382 @@ function actionForFlag(flag: RiskFlag): { label: string; href: string } {
   }
 }
 
-const sevStyle: Record<string, { dot: string; text: string }> = {
-  high: { dot: "var(--danger)", text: "var(--text)" },
-  medium: { dot: "var(--warning)", text: "var(--text)" },
-  low: { dot: "var(--info)", text: "var(--text-secondary)" },
+const sevColors: Record<string, { dot: string; bg: string; border: string }> = {
+  high: { dot: "var(--danger)", bg: "rgba(255, 77, 77, 0.08)", border: "rgba(255, 77, 77, 0.25)" },
+  medium: { dot: "var(--warning)", bg: "rgba(255, 176, 32, 0.08)", border: "rgba(255, 176, 32, 0.25)" },
+  low: { dot: "var(--info)", bg: "rgba(77, 158, 255, 0.06)", border: "rgba(77, 158, 255, 0.2)" },
 };
 
-export default function RiskPage() {
-  const router = useRouter();
-  const [severity, setSeverity] = useState("");
-  const params = severity ? `?severity=${severity}` : "";
-  const { data, isLoading } = useSWR<RiskData>(`/risk${params}`, fetcher);
+const categoryLabels: Record<string, string> = {
+  overdue_installment: "Overdue installments",
+  unmatched_old: "Unmatched payments",
+  duplicate_payment: "Possible duplicates",
+  unconfirmed_large: "Unverified large payments",
+  suspicious_payer: "Suspicious payer names",
+  oversized_payment: "Unusually large payments",
+};
 
+type SortMode = "amount" | "age" | "default";
+const COLLAPSED_LIMIT = 8;
+
+export default function RiskPage() {
+  // Fetch all flags (no server-side severity filter)
+  const { data, isLoading } = useSWR<RiskData>("/risk", fetcher);
+
+  const [severity, setSeverity] = useState("");
+  const [category, setCategory] = useState("");
+  const [sortMode, setSortMode] = useState<SortMode>("default");
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+
+  function dismiss(key: string) {
+    setDismissed((prev) => new Set(prev).add(key));
+  }
+
+  function flagKey(f: RiskFlag, i: number): string {
+    return `${f.category}:${f.entity}:${i}`;
+  }
+
+  function toggleExpand(section: string) {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(section)) next.delete(section);
+      else next.add(section);
+      return next;
+    });
+  }
+
+  // Client-side filtering
   const activeItems = useMemo(() => {
     if (!data) return [];
-    return data.items;
-  }, [data]);
+    let items = data.items;
+    if (severity) items = items.filter((f) => f.severity === severity);
+    if (category) items = items.filter((f) => f.category === category);
+    return items;
+  }, [data, severity, category]);
 
-  // Compute action summary
-  const actionSummary = useMemo(() => {
-    const overdue = activeItems.filter((f) => f.category === "overdue_installment");
-    const unmatched = activeItems.filter((f) => f.category === "unmatched_old");
-    const duplicates = activeItems.filter((f) => f.category === "duplicate_payment");
-    const suspicious = activeItems.filter((f) =>
-      f.category === "unconfirmed_large" || f.category === "suspicious_payer"
-    );
+  // Remove dismissed
+  const visibleItems = useMemo(() => {
+    return activeItems.filter((f, i) => !dismissed.has(flagKey(f, i)));
+  }, [activeItems, dismissed]);
+
+  // Sort helper
+  function sortFlags(flags: RiskFlag[]): RiskFlag[] {
+    if (sortMode === "amount") {
+      return [...flags].sort((a, b) => (b.amount_paise ?? 0) - (a.amount_paise ?? 0));
+    }
+    if (sortMode === "age") {
+      const getDays = (f: RiskFlag) => {
+        const m = f.explanation.match(/(\d+) days/);
+        return m ? Number(m[1]) : 0;
+      };
+      return [...flags].sort((a, b) => getDays(b) - getDays(a));
+    }
+    return flags;
+  }
+
+  // Compute groups
+  const overdueGroups = useMemo(() => {
+    const overdue = visibleItems.filter((f) => f.category === "overdue_installment");
     const groups = groupOverdue(overdue);
-    return { overdue, unmatched, duplicates, suspicious, overdueGroups: groups };
-  }, [activeItems]);
+    if (sortMode === "age") return [...groups].sort((a, b) => b.maxDays - a.maxDays);
+    return groups; // default: by amount (already sorted)
+  }, [visibleItems, sortMode]);
 
   const nonOverdueFlags = useMemo(() => {
-    return activeItems.filter((f) => f.category !== "overdue_installment");
-  }, [activeItems]);
+    return sortFlags(visibleItems.filter((f) => f.category !== "overdue_installment"));
+  }, [visibleItems, sortMode]);
+
+  // Total exposure
+  const totalExposure = useMemo(() => {
+    if (!data) return 0;
+    return data.items.reduce((sum, f) => sum + (f.amount_paise ?? 0), 0);
+  }, [data]);
+
+  // Available categories for filter
+  const availableCategories = useMemo(() => {
+    if (!data) return [];
+    const set = new Set(data.items.map((f) => f.category));
+    return [...set];
+  }, [data]);
+
+  const activeFilters = [severity, category].filter(Boolean).length;
+  const dismissedCount = dismissed.size;
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Risk flags</h1>
-      <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>Issues detected automatically — each with a next step.</p>
+      <div className="flex items-center justify-between mb-1">
+        <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Risk flags</h1>
+        {dismissedCount > 0 && (
+          <button onClick={() => setDismissed(new Set())}
+            className="text-xs underline" style={{ color: "var(--text-secondary)" }}>
+            Restore {dismissedCount} dismissed
+          </button>
+        )}
+      </div>
+      <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
+        Issues detected automatically — each with a next step.
+        {data && <span className="ml-1" style={{ color: "var(--text-tertiary)" }}>As of {formatDate(data.as_of)}</span>}
+      </p>
 
-      {/* Severity counts */}
+      {/* KPI cards */}
       {data && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
           <div className="rounded-xl border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
             <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Total flags</div>
-            <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data.counts.high + data.counts.medium + data.counts.low}</div>
+            <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>
+              {data.counts.high + data.counts.medium + data.counts.low}
+            </div>
           </div>
-          <div className="rounded-xl border p-4 cursor-pointer"
-            style={{ backgroundColor: "var(--surface)", borderColor: severity === "high" ? "var(--text)" : "var(--border)" }}
-            onClick={() => setSeverity(severity === "high" ? "" : "high")}>
-            <div className="text-sm" style={{ color: "var(--text-secondary)" }}>High</div>
-            <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data.counts.high}</div>
-            <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>&gt;90 days overdue, duplicates, suspicious</div>
+          <div className="rounded-xl border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+            <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Total exposure</div>
+            <div className="text-2xl font-bold" style={{ color: "var(--danger)" }}>
+              {formatMoney(totalExposure, "INR")}
+            </div>
           </div>
-          <div className="rounded-xl border p-4 cursor-pointer"
-            style={{ backgroundColor: "var(--surface)", borderColor: severity === "medium" ? "var(--text)" : "var(--border)" }}
-            onClick={() => setSeverity(severity === "medium" ? "" : "medium")}>
-            <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Medium</div>
-            <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data.counts.medium}</div>
-            <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>30–90 days, unmatched, oversized</div>
-          </div>
-          <div className="rounded-xl border p-4 cursor-pointer"
-            style={{ backgroundColor: "var(--surface)", borderColor: severity === "low" ? "var(--text)" : "var(--border)" }}
-            onClick={() => setSeverity(severity === "low" ? "" : "low")}>
-            <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Low</div>
-            <div className="text-2xl font-bold" style={{ color: "var(--text-tertiary)" }}>{data.counts.low}</div>
-            <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>Data quality, minor issues</div>
-          </div>
+          <button
+            className="text-left rounded-xl border p-4 transition-colors"
+            style={{
+              backgroundColor: severity === "high" ? "rgba(255, 77, 77, 0.12)" : "rgba(255, 77, 77, 0.06)",
+              borderColor: severity === "high" ? "rgba(255, 77, 77, 0.5)" : "rgba(255, 77, 77, 0.2)",
+            }}
+            onClick={() => { setSeverity(severity === "high" ? "" : "high"); setCategory(""); }}
+          >
+            <div className="text-sm" style={{ color: "var(--danger)" }}>High</div>
+            <div className="text-2xl font-bold" style={{ color: "var(--danger)" }}>{data.counts.high}</div>
+          </button>
+          <button
+            className="text-left rounded-xl border p-4 transition-colors"
+            style={{
+              backgroundColor: severity === "medium" ? "rgba(255, 176, 32, 0.12)" : "rgba(255, 176, 32, 0.06)",
+              borderColor: severity === "medium" ? "rgba(255, 176, 32, 0.5)" : "rgba(255, 176, 32, 0.2)",
+            }}
+            onClick={() => { setSeverity(severity === "medium" ? "" : "medium"); setCategory(""); }}
+          >
+            <div className="text-sm" style={{ color: "var(--warning)" }}>Medium</div>
+            <div className="text-2xl font-bold" style={{ color: "var(--warning)" }}>{data.counts.medium}</div>
+          </button>
+          <button
+            className="text-left rounded-xl border p-4 transition-colors"
+            style={{
+              backgroundColor: severity === "low" ? "rgba(77, 158, 255, 0.12)" : "rgba(77, 158, 255, 0.06)",
+              borderColor: severity === "low" ? "rgba(77, 158, 255, 0.5)" : "rgba(77, 158, 255, 0.2)",
+            }}
+            onClick={() => { setSeverity(severity === "low" ? "" : "low"); setCategory(""); }}
+          >
+            <div className="text-sm" style={{ color: "var(--info)" }}>Low</div>
+            <div className="text-2xl font-bold" style={{ color: "var(--info)" }}>{data.counts.low}</div>
+          </button>
         </div>
       )}
 
-      {severity && (
-        <div className="flex items-center gap-2 mb-6">
-          <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Showing: <span className="font-medium capitalize" style={{ color: "var(--text)" }}>{severity}</span></span>
-          <button onClick={() => setSeverity("")} className="text-xs underline" style={{ color: "var(--text-secondary)" }}>Clear</button>
+      {/* Filters + sort */}
+      <div className="rounded-xl border p-4 mb-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Filter &amp; sort</span>
+          {(activeFilters > 0 || sortMode !== "default") && (
+            <button onClick={() => { setSeverity(""); setCategory(""); setSortMode("default"); }}
+              className="text-xs underline" style={{ color: "var(--text-secondary)" }}>
+              Reset
+            </button>
+          )}
         </div>
-      )}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Severity</label>
+            <select value={severity} onChange={(e) => setSeverity(e.target.value)}
+              className="w-full text-sm rounded-md px-3 py-2"
+              style={{ backgroundColor: "var(--surface-hover)", border: "1px solid var(--border)", color: "var(--text)" }}>
+              <option value="">All severities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Category</label>
+            <select value={category} onChange={(e) => setCategory(e.target.value)}
+              className="w-full text-sm rounded-md px-3 py-2"
+              style={{ backgroundColor: "var(--surface-hover)", border: "1px solid var(--border)", color: "var(--text)" }}>
+              <option value="">All categories</option>
+              {availableCategories.map((c) => (
+                <option key={c} value={c}>{categoryLabels[c] ?? c.replace(/_/g, " ")}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs mb-1" style={{ color: "var(--text-secondary)" }}>Sort by</label>
+            <select value={sortMode} onChange={(e) => setSortMode(e.target.value as SortMode)}
+              className="w-full text-sm rounded-md px-3 py-2"
+              style={{ backgroundColor: "var(--surface-hover)", border: "1px solid var(--border)", color: "var(--text)" }}>
+              <option value="default">Default (severity)</option>
+              <option value="amount">Largest amount first</option>
+              <option value="age">Oldest first</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
       {isLoading ? (
         <div className="animate-pulse space-y-3">
           {[1, 2, 3].map((i) => <div key={i} className="h-16 rounded" style={{ backgroundColor: "var(--surface)" }} />)}
         </div>
-      ) : activeItems.length === 0 ? (
-        <div className="rounded-xl border p-8 text-center" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <p style={{ color: "var(--text-secondary)" }}>No risk flags.</p>
+      ) : visibleItems.length === 0 ? (
+        <div className="rounded-xl border p-12 text-center" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3"
+            style={{ backgroundColor: "rgba(0, 220, 130, 0.15)" }}>
+            <svg className="w-6 h-6" style={{ color: "var(--accent)" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p className="font-medium" style={{ color: "var(--text)" }}>All clear</p>
+          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+            No {activeFilters > 0 ? "matching " : ""}risk flags detected
+            {data ? ` as of ${formatDate(data.as_of)}` : ""}.
+            {dismissedCount > 0 && ` (${dismissedCount} dismissed)`}
+          </p>
         </div>
       ) : (
         <div className="space-y-6">
           {/* Overdue: grouped by student */}
-          {actionSummary && actionSummary.overdueGroups.length > 0 && (
+          {overdueGroups.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-secondary)" }}>
-                Overdue installments — {actionSummary.overdueGroups.length} students
+                Overdue installments — {overdueGroups.length} student{overdueGroups.length !== 1 ? "s" : ""}
               </h3>
               <div className="space-y-2">
-                {actionSummary.overdueGroups.map((g) => (
-                  <div key={g.student} className="rounded-xl border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: g.maxDays > 90 ? "var(--danger)" : "var(--warning)" }} />
-                        <div>
-                          <span className="font-medium" style={{ color: "var(--text)" }}>{g.student}</span>
-                          <span className="ml-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-                            {g.flags.length} installment{g.flags.length > 1 ? "s" : ""} · {formatMoney(g.totalPaise, g.currency)}
-                          </span>
+                {(expandedSections.has("overdue") ? overdueGroups : overdueGroups.slice(0, COLLAPSED_LIMIT)).map((g) => {
+                  const sev = g.maxDays > 90 ? sevColors.high : sevColors.medium;
+                  return (
+                    <div key={g.student} className="rounded-xl border p-4"
+                      style={{ backgroundColor: sev.bg, borderColor: sev.border }}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: sev.dot }} />
+                          <div className="min-w-0">
+                            <Link href={`/students?search=${encodeURIComponent(g.student)}`}
+                              className="font-medium hover:underline" style={{ color: "var(--accent)" }}>
+                              {g.student}
+                            </Link>
+                            <span className="ml-2 text-sm" style={{ color: "var(--text-secondary)" }}>
+                              {g.flags.length} installment{g.flags.length > 1 ? "s" : ""} · {formatMoney(g.totalPaise, g.currency)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 ml-3">
+                          <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{g.maxDays}d overdue</span>
+                          <Link href={`/reminders?student=${encodeURIComponent(g.student)}`}
+                            className="px-4 py-1.5 text-xs font-medium rounded-md transition-colors"
+                            style={{
+                              backgroundColor: g.maxDays > 90 ? "var(--danger)" : "var(--warning)",
+                              color: "var(--bg)",
+                            }}>
+                            Send reminder
+                          </Link>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{g.maxDays}d overdue</span>
-                        <button
-                          onClick={() => router.push(`/reminders?student=${encodeURIComponent(g.student)}`)}
-                          className="px-3 py-1 text-xs font-medium rounded-md transition"
-                          style={{ border: "1px solid var(--border)", color: "var(--text)" }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}
-                        >
-                          Send reminder
-                        </button>
-                        <button
-                          onClick={() => router.push(`/students?search=${encodeURIComponent(g.student)}`)}
-                          className="px-3 py-1 text-xs font-medium rounded-md transition"
-                          style={{ border: "1px solid var(--border)", color: "var(--text)" }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}
-                        >
-                          View student
-                        </button>
+                      {/* Always show detail lines */}
+                      <div className="mt-2 space-y-1 pl-5">
+                        {g.flags.map((f, i) => (
+                          <div key={i} className="text-sm flex items-center justify-between" style={{ color: "var(--text-secondary)" }}>
+                            <span>{f.explanation}</span>
+                            {f.amount_paise != null && (
+                              <span className="text-xs ml-2 shrink-0" style={{ color: "var(--text-tertiary)" }}>
+                                {formatMoney(f.amount_paise, f.currency)}
+                              </span>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    {g.flags.length > 1 && (
-                      <details className="mt-2">
-                        <summary className="text-xs cursor-pointer" style={{ color: "var(--text-tertiary)" }}>
-                          {g.flags.length} installments
-                        </summary>
-                        <div className="mt-2 space-y-1 pl-5">
-                          {g.flags.map((f, i) => {
-                            const { ids } = parseEntity(f.entity);
-                            return (
-                              <div key={i} className="text-sm flex items-center justify-between" style={{ color: "var(--text-secondary)" }}>
-                                <span>{f.explanation}</span>
-                                {f.amount_paise != null && (
-                                  <span className="text-xs ml-2 shrink-0" style={{ color: "var(--text-tertiary)" }}>
-                                    {formatMoney(f.amount_paise, f.currency)}
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </details>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
+                {overdueGroups.length > COLLAPSED_LIMIT && (
+                  <button onClick={() => toggleExpand("overdue")}
+                    className="w-full text-center py-2 text-xs font-medium rounded-lg transition-colors"
+                    style={{ color: "var(--text-secondary)", backgroundColor: "var(--surface)" }}>
+                    {expandedSections.has("overdue")
+                      ? "Show less"
+                      : `Show all ${overdueGroups.length} students`}
+                  </button>
+                )}
               </div>
             </div>
           )}
 
           {/* Non-overdue flags by category */}
           {(() => {
-            const byCategory = new Map<string, RiskFlag[]>();
-            for (const f of nonOverdueFlags) {
+            const byCategory = new Map<string, { flag: RiskFlag; idx: number }[]>();
+            for (let i = 0; i < nonOverdueFlags.length; i++) {
+              const f = nonOverdueFlags[i];
               const list = byCategory.get(f.category) ?? [];
-              list.push(f);
+              // Find original index in activeItems for dismiss key
+              const origIdx = activeItems.indexOf(f);
+              list.push({ flag: f, idx: origIdx });
               byCategory.set(f.category, list);
             }
-            const categoryLabels: Record<string, string> = {
-              unmatched_old: "Unmatched payments",
-              duplicate_payment: "Possible duplicates",
-              unconfirmed_large: "Unverified large payments",
-              suspicious_payer: "Suspicious payer names",
-              oversized_payment: "Unusually large payments",
-            };
-            return [...byCategory.entries()].map(([cat, flags]) => (
-              <div key={cat}>
-                <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-secondary)" }}>
-                  {categoryLabels[cat] ?? cat.replace(/_/g, " ")} — {flags.length} flag{flags.length > 1 ? "s" : ""}
-                </h3>
-                <div className="space-y-2">
-                  {flags.map((f, i) => {
-                    const sev = sevStyle[f.severity] ?? sevStyle.low;
-                    const action = actionForFlag(f);
-                    return (
-                      <div key={i} className="rounded-xl border p-4 flex items-center justify-between" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: sev.dot }} />
-                          <div className="min-w-0">
-                            <div className="text-sm" style={{ color: sev.text }}>{f.explanation}</div>
-                            {f.amount_paise != null && (
-                              <div className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
-                                {formatMoney(f.amount_paise, f.currency)}
-                              </div>
-                            )}
+            return [...byCategory.entries()].map(([cat, entries]) => {
+              const expanded = expandedSections.has(cat);
+              const visible = expanded ? entries : entries.slice(0, COLLAPSED_LIMIT);
+              return (
+                <div key={cat}>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text-secondary)" }}>
+                    {categoryLabels[cat] ?? cat.replace(/_/g, " ")} — {entries.length} flag{entries.length !== 1 ? "s" : ""}
+                  </h3>
+                  <div className="space-y-2">
+                    {visible.map(({ flag: f, idx }) => {
+                      const sev = sevColors[f.severity] ?? sevColors.low;
+                      const action = actionForFlag(f);
+                      const isHigh = f.severity === "high";
+                      const key = flagKey(f, idx);
+                      return (
+                        <div key={key} className="rounded-xl border p-4 flex items-center justify-between"
+                          style={{ backgroundColor: sev.bg, borderColor: sev.border }}>
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: sev.dot }} />
+                            <div className="min-w-0">
+                              <div className="text-sm" style={{ color: "var(--text)" }}>{f.explanation}</div>
+                              {f.amount_paise != null && (
+                                <div className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+                                  {formatMoney(f.amount_paise, f.currency)}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0 ml-3">
+                            <button onClick={() => dismiss(key)}
+                              className="px-2 py-1 text-xs rounded-md transition-colors"
+                              style={{ color: "var(--text-tertiary)" }}
+                              title="Dismiss this flag">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                            <Link href={action.href}
+                              className="px-4 py-1.5 text-xs font-medium rounded-md transition-colors"
+                              style={isHigh
+                                ? { backgroundColor: "var(--danger)", color: "var(--bg)" }
+                                : { border: "1px solid var(--border)", color: "var(--text)" }
+                              }>
+                              {action.label}
+                            </Link>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0 ml-3">
-                          <button
-                            onClick={() => router.push(action.href)}
-                            className="px-3 py-1 text-xs font-medium rounded-md transition"
-                            style={{ border: "1px solid var(--border)", color: "var(--text)" }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}
-                          >
-                            {action.label}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                    {entries.length > COLLAPSED_LIMIT && (
+                      <button onClick={() => toggleExpand(cat)}
+                        className="w-full text-center py-2 text-xs font-medium rounded-lg transition-colors"
+                        style={{ color: "var(--text-secondary)", backgroundColor: "var(--surface)" }}>
+                        {expanded
+                          ? "Show less"
+                          : `Show all ${entries.length} flags`}
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ));
+              );
+            });
           })()}
         </div>
       )}

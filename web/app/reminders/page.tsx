@@ -231,12 +231,12 @@ function RemindersPage() {
         <div className="rounded-xl border overflow-x-auto" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <table className="w-full text-sm min-w-[780px]">
             <colgroup>
-              <col style={{ width: "22%" }} />
-              <col style={{ width: "13%" }} />
-              <col style={{ width: "13%" }} />
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "10%" }} />
+              <col style={{ width: "16%" }} />
               <col style={{ width: "10%" }} />
               <col style={{ width: "26%" }} />
-              <col style={{ width: "16%" }} />
+              <col style={{ width: "18%" }} />
             </colgroup>
             <thead>
               <tr className="text-left text-xs" style={{ color: "var(--text-secondary)", borderBottom: "2px solid var(--border)", backgroundColor: "var(--surface-hover)" }}>
