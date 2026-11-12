@@ -39,10 +39,11 @@ export default function ReviewList({ items, selectedId, onSelect, skippedIds }: 
               key={item.match_id}
               ref={active ? activeRef : undefined}
               onClick={() => onSelect(item.match_id)}
-              className="w-full text-left px-4 py-3 transition-colors border-l-2"
+              className="w-full text-left px-4 py-3 transition-colors border-l-3"
               style={{
-                backgroundColor: active ? "var(--surface-hover)" : undefined,
+                backgroundColor: active ? "rgba(0, 220, 130, 0.08)" : undefined,
                 borderLeftColor: active ? "var(--accent)" : "transparent",
+                boxShadow: active ? "inset 0 0 0 1px rgba(0, 220, 130, 0.2)" : undefined,
                 opacity: skipped ? 0.5 : 1,
               }}
             >
