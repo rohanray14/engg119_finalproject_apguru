@@ -374,7 +374,7 @@ export default function RiskPage() {
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: dot }} />
                           <Link href={`/students?search=${encodeURIComponent(g.student)}`}
-                            className="font-semibold text-sm hover:underline truncate" style={{ color: "var(--accent)" }}>
+                            className="font-semibold text-sm hover:underline truncate" style={{ color: "var(--text)" }}>
                             {g.student}
                           </Link>
                           <span className="text-sm font-semibold shrink-0" style={{ color: "var(--text)" }}>
