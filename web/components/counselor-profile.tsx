@@ -472,11 +472,11 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
 
         {/* Filter chips */}
         {counselor.students.length > 0 && (locations.length > 1 || programs.length > 1) && (
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="space-y-2 mb-4">
             {locations.length > 1 && (
-              <>
-                <span className="text-[10px] uppercase tracking-wider font-medium self-center mr-1" style={{ color: "var(--text-tertiary)" }}>
-                  Location:
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold mr-1" style={{ color: "var(--text)" }}>
+                  Location
                 </span>
                 <button
                   onClick={() => setLocationFilter(null)}
@@ -496,13 +496,12 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                     {loc}
                   </button>
                 ))}
-              </>
+              </div>
             )}
             {programs.length > 1 && (
-              <>
-                {locations.length > 1 && <span className="w-px h-4 self-center mx-1" style={{ backgroundColor: "var(--border)" }} />}
-                <span className="text-[10px] uppercase tracking-wider font-medium self-center mr-1" style={{ color: "var(--text-tertiary)" }}>
-                  Program:
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold mr-1" style={{ color: "var(--text)" }}>
+                  Program
                 </span>
                 <button
                   onClick={() => setProgramFilter(null)}
@@ -522,7 +521,7 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                     {prog}
                   </button>
                 ))}
-              </>
+              </div>
             )}
           </div>
         )}
