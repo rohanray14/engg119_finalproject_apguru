@@ -754,12 +754,27 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
           </div>
         ) : (
           <div className="rounded-lg border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
+            {/* Total paid out summary */}
+            <div className="flex items-center justify-between mb-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
+              <div>
+                <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-secondary)" }}>Total paid out</div>
+                <div className="text-xl font-bold" style={{ color: "var(--accent)" }}>{formatMoney(paidOut, "INR")}</div>
+              </div>
+              {payableINR && payableINR.net_paise > 0 && (
+                <div className="text-right">
+                  <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Still owed</div>
+                  <div className="text-lg font-bold" style={{ color: "var(--danger)" }}>{formatMoney(payableINR.net_paise, "INR")}</div>
+                </div>
+              )}
+            </div>
+
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
-                  <th className="pb-2 font-medium">Approved</th>
-                  <th className="pb-2 font-medium">By</th>
+                  <th className="pb-2 font-medium">Date</th>
+                  <th className="pb-2 font-medium">Approved by</th>
                   <th className="pb-2 font-medium text-right">Amount</th>
+                  {canApprove && <th className="pb-2 font-medium w-[80px]" />}
                 </tr>
               </thead>
               <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
@@ -768,6 +783,29 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                     <td className="py-2.5" style={{ color: "var(--text)" }}>{formatDate(p.approved_at)}</td>
                     <td className="py-2.5" style={{ color: "var(--text-secondary)" }}>{p.actor}</td>
                     <td className="py-2.5 text-right font-medium" style={{ color: "var(--text)" }}>{formatMoney(p.net_paise, p.currency)}</td>
+                    {canApprove && (
+                      <td className="py-2.5 text-right">
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Reverse payout of ${formatMoney(p.net_paise, p.currency)} to ${counselor.name}? This will mark it as unpaid.`)) return;
+                            setActing(true);
+                            setError(null);
+                            try {
+                              await apiFetch(`/commissions/counselors/${counselorId}/payout/${p.id}/reverse`, { method: "POST" });
+                              mutate();
+                            } catch (e: unknown) {
+                              setError(e instanceof Error ? e.message : "Failed to reverse");
+                            } finally {
+                              setActing(false);
+                            }
+                          }}
+                          disabled={acting}
+                          className="text-[11px] px-2 py-1 rounded hover:underline disabled:opacity-50"
+                          style={{ color: "var(--danger)" }}>
+                          Undo
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

@@ -412,6 +412,28 @@ def approve_counselor_payout(counselor_id: int, body: CounselorPayoutBody, conn=
             "counselor_name": c["name"]}
 
 
+@router.post("/commissions/counselors/{counselor_id}/payout/{payout_id}/reverse")
+def reverse_counselor_payout(counselor_id: int, payout_id: int, conn=Depends(get_conn),
+                              user: User = Depends(require_finance_lead)):
+    """Reverse (undo) a single payout approval."""
+    decision_lock(conn)
+    row = conn.execute(
+        "SELECT pa.id, pa.currency, pa.total_net_paise FROM payout_approval pa "
+        "JOIN payout_approval_line pal ON pal.payout_id = pa.id "
+        "WHERE pa.id = ? AND pal.counselor_id = ? LIMIT 1",
+        (payout_id, counselor_id)).fetchone()
+    if not row:
+        raise not_found("Payout not found for this counselor")
+    conn.execute("DELETE FROM payout_approval_line WHERE payout_id = ?", (payout_id,))
+    conn.execute("DELETE FROM payout_approval WHERE id = ?", (payout_id,))
+    log_audit(conn, user.audit_actor, "reverse_payout", f"counselor:{counselor_id}",
+              json.dumps({"payout_id": payout_id, "currency": row["currency"],
+                          "total_net_paise": row["total_net_paise"]}),
+              None, commit=False)
+    conn.commit()
+    return {"reversed": True, "payout_id": payout_id}
+
+
 class RuleBody(BaseModel):
     rate_bps: int = Field(..., gt=0, le=5000, description="Commission rate in basis points (1000 = 10%)")
     # Only "own_referrals" is applied by the commission calculation today.
