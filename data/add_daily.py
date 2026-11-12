@@ -3,7 +3,8 @@
 Run after seeding the base data. Adds a realistic trickle of daily activity:
 - 1-4 incoming payments
 - 0-2 outgoing payments
-- 0-1 new overdue installments marked
+- 0-2 new installments (due today or upcoming)
+- Bank statement entries
 
 Usage:
     python data/add_daily.py          # adds to data/ledger.db
@@ -13,15 +14,19 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import json
 import random
 import sqlite3
-from datetime import date, timedelta
-from pathlib import Path
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 METHODS = ["bank_transfer", "razorpay", "payglocal", "stripe", "cash", "screenshot"]
 CONFIRMATIONS = ["in_bank", "seen_by_gateway", "screenshot_only"]
 EXPENSE_CATEGORIES = ["faculty", "rent", "ads", "software", "tax", "other"]
+INSTALLMENT_STATUSES = ["open", "open", "open", "overdue", "partial"]
+
+
+def today_us_eastern() -> date:
+    return datetime.now(ZoneInfo("America/New_York")).date()
 
 
 def get_last_data_date(conn: sqlite3.Connection) -> date:
@@ -31,11 +36,16 @@ def get_last_data_date(conn: sqlite3.Connection) -> date:
     ).fetchone()
     if row and row[0]:
         return date.fromisoformat(row[0])
-    return date.today() - timedelta(days=1)
+    return today_us_eastern() - timedelta(days=1)
 
 
 def get_students(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute("SELECT id, name FROM student").fetchall()
+    return [dict(r) for r in rows]
+
+
+def get_enrollments(conn: sqlite3.Connection) -> list[dict]:
+    rows = conn.execute("SELECT id, student_id, currency FROM enrollment").fetchall()
     return [dict(r) for r in rows]
 
 
@@ -47,7 +57,8 @@ def get_next_id(conn: sqlite3.Connection, table: str) -> int:
 def add_day(conn: sqlite3.Connection, day: date, rng: random.Random):
     """Add random activity for a single day."""
     students = get_students(conn)
-    if not students:
+    enrollments = get_enrollments(conn)
+    if not students or not enrollments:
         return
 
     iso = day.isoformat()
@@ -59,7 +70,6 @@ def add_day(conn: sqlite3.Connection, day: date, rng: random.Random):
         student = rng.choice(students)
         method = rng.choice(METHODS)
         amount_paise = rng.choice([17700_00, 23600_00, 35400_00, 11800_00, 5900_00, 29500_00, 41300_00])
-        # Add some randomness to amount
         amount_paise = int(amount_paise * rng.uniform(0.8, 1.2))
         confirmation = rng.choice(CONFIRMATIONS)
 
@@ -76,6 +86,28 @@ def add_day(conn: sqlite3.Connection, day: date, rng: random.Random):
             (pid, "bank" if method == "bank_transfer" else "gateway",
              method, student["name"], iso, amount_paise,
              gateway_fee, gst_on_fee, in_bank, confirmation),
+        )
+
+    # --- Installments due today or upcoming ---
+    n_installments = rng.randint(0, 2)
+    for _ in range(n_installments):
+        iid = get_next_id(conn, "installment")
+        enrollment = rng.choice(enrollments)
+        amount_paise = rng.choice([11800_00, 17700_00, 23600_00, 35400_00])
+        # Due date: today, or a few days ahead
+        due_offset = rng.randint(0, 14)
+        due_date = (day + timedelta(days=due_offset)).isoformat()
+        status = rng.choice(INSTALLMENT_STATUSES)
+        # If due date is in the past relative to today, mark overdue
+        if due_offset == 0 and rng.random() < 0.3:
+            status = "overdue"
+
+        conn.execute(
+            """INSERT INTO installment
+               (id, enrollment_id, due_date, amount_due_paise, currency, status)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (iid, enrollment["id"], due_date, amount_paise,
+             enrollment["currency"], status),
         )
 
     # --- Outgoing payments ---
@@ -124,14 +156,13 @@ def main():
     conn.row_factory = sqlite3.Row
 
     last_date = get_last_data_date(conn)
-    today = date.today()
+    today = today_us_eastern()
 
     if last_date >= today:
         print(f"Data already covers {last_date}, nothing to add.")
         conn.close()
         return
 
-    # Use today's date as seed so same day = same data, but different days = different data
     days_to_add = []
     d = last_date + timedelta(days=1)
     while d <= today:
@@ -141,7 +172,6 @@ def main():
     print(f"Adding data for {len(days_to_add)} day(s): {days_to_add[0]} to {days_to_add[-1]}")
 
     for day in days_to_add:
-        # Seed per day so it's deterministic for the same day
         rng = random.Random(day.toordinal())
         add_day(conn, day, rng)
         print(f"  {day}: done")

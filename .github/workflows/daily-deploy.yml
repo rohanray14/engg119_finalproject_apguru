@@ -2,8 +2,8 @@ name: Daily deploy (fresh data)
 
 on:
   schedule:
-    # 5:30 AM IST every day (midnight UTC)
-    - cron: "0 0 * * *"
+    # 6:00 AM US Eastern every day (11:00 UTC, adjusts for DST)
+    - cron: "0 11 * * *"
   workflow_dispatch: # manual trigger
 
 jobs:

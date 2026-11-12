@@ -22,11 +22,11 @@ def data_date_range(conn) -> tuple[Optional[date], Optional[date]]:
     return lo, hi
 
 
-BUSINESS_TZ = ZoneInfo("Asia/Kolkata")
+BUSINESS_TZ = ZoneInfo("America/New_York")
 
 
 def today_in_india() -> date:
-    """Cloud Run runs in UTC; the business day is Indian time."""
+    """Return today in US Eastern time."""
     return datetime.now(BUSINESS_TZ).date()
 
 
