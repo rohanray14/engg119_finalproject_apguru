@@ -104,8 +104,8 @@ export default function Sidebar() {
                 onClick={() => toggle(section.heading!)}
                 className="w-full flex items-center justify-between px-3 mb-1 group"
               >
-                <span className="text-[11px] font-semibold uppercase tracking-wider"
-                  style={{ color: "var(--text-tertiary)" }}>
+                <span className="text-[11px] font-bold uppercase tracking-wider"
+                  style={{ color: "var(--text-secondary)" }}>
                   {section.heading}
                 </span>
                 <svg
@@ -129,7 +129,7 @@ export default function Sidebar() {
                   style={{
                     backgroundColor: active ? "var(--sidebar-active-bg)" : undefined,
                     color: active ? "var(--accent)" : "var(--sidebar-text)",
-                    fontWeight: active ? 500 : 400,
+                    fontWeight: active ? 600 : (section.heading ? 400 : 500),
                   }}
                 >
                   {item.label}
