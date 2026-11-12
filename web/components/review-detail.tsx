@@ -423,7 +423,12 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
                 const diff = (inst.amount_difference_paise ?? (inst.amount_due_paise - p.amount_paid_paise));
                 return (
                   <tr key={inst.installment_id}>
-                    <td className="py-2 font-medium" style={{ color: "var(--text)" }}>{inst.student_name}</td>
+                    <td className="py-2 font-medium">
+                      <Link href={`/students?id=${inst.student_id}`}
+                        className="hover:underline" style={{ color: "var(--accent)" }}>
+                        {inst.student_name}
+                      </Link>
+                    </td>
                     <td className="py-2" style={{ color: "var(--text-secondary)" }}>
                       {inst.program} · {formatMoney(inst.amount_due_paise, inst.currency)}
                     </td>
