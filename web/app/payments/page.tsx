@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { formatMoney, formatMoneyCompact, formatDate } from "@/lib/format";
+import { formatMoney, formatMoneyCompact, formatDate, displayPayer } from "@/lib/format";
 
 interface PaymentRow {
   id: number;
@@ -147,7 +147,7 @@ function exportCSV(items: PaymentRow[]) {
   const headers = ["Date", "Payer", "Amount", "Currency", "Gateway Fee", "GST on Fee", "TDS", "FX Diff", "Deductions", "In Bank (INR)", "Method", "Confirmation", "Match Status", "Matched Student"];
   const rows = items.map((r) => [
     r.date,
-    r.payer_name ?? "",
+    displayPayer(r.payer_name, r.matched_parent_name, "").name,
     (r.amount_paid_paise / 100).toFixed(0),
     r.currency,
     (r.gateway_fee_paise / 100).toFixed(0),
@@ -458,7 +458,14 @@ export default function PaymentsPage() {
               <tbody>
                 {pageItems.map((r) => {
                   const isScreenshot = r.confirmation === "screenshot_only";
-                  const isBlank = !r.payer_name;
+                  const payer = displayPayer(r.payer_name, r.matched_parent_name);
+                  const isBlank = !r.payer_name && !r.matched_parent_name;
+                  const payerLabel = (
+                    <>
+                      {payer.name}
+                      {payer.isParent && <span className="text-xs ml-1" style={{ color: "var(--text-tertiary)" }}>(parent)</span>}
+                    </>
+                  );
                   return (
                     <tr key={r.id}
                       style={{
@@ -470,33 +477,22 @@ export default function PaymentsPage() {
                     >
                       <td className="px-4 py-2.5 whitespace-nowrap">{formatDate(r.date)}</td>
                       <td className="px-4 py-2.5 font-medium max-w-[200px] truncate" style={{ color: "var(--text)" }}>
-                        {r.payer_name ? (
+                        {payer.name !== "Unknown payer" ? (
                           r.matched_student_id ? (
                             <Link href={`/students?id=${r.matched_student_id}`}
                               className="hover:underline" style={{ color: "var(--accent)" }}>
-                              {r.payer_name}
+                              {payerLabel}
                             </Link>
                           ) : r.match_id ? (
                             <Link href={`/review?id=${r.match_id}`}
                               className="hover:underline" style={{ color: "var(--text)" }}>
-                              {r.payer_name}
+                              {payerLabel}
                             </Link>
                           ) : (
                             <button onClick={() => sendToReview(r.id)}
                               className="hover:underline text-left" style={{ color: "var(--text)" }}>
-                              {r.payer_name}
+                              {payerLabel}
                             </button>
-                          )
-                        ) : r.matched_parent_name ? (
-                          r.matched_student_id ? (
-                            <Link href={`/students?id=${r.matched_student_id}`}
-                              className="hover:underline" style={{ color: "var(--accent)" }}>
-                              {r.matched_parent_name} <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>(parent)</span>
-                            </Link>
-                          ) : (
-                            <span style={{ color: "var(--text-secondary)" }}>
-                              {r.matched_parent_name} <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>(parent)</span>
-                            </span>
                           )
                         ) : <span style={{ color: "var(--warning)", fontWeight: "normal" }}>(no payer name)</span>}
                       </td>

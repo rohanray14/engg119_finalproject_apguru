@@ -61,14 +61,21 @@ def _match_row(conn, match_id: int):
 def _summary(row, conn=None) -> dict:
     allocs = parse_allocations(row["allocations"])
     suggested_student = None
+    parent_name = None
     if allocs and conn is not None:
         iid = int(allocs[0]["installment_id"])
         s = conn.execute(
-            "SELECT s.name FROM installment i JOIN enrollment e ON i.enrollment_id = e.id "
+            "SELECT s.name, s.parent_name FROM installment i JOIN enrollment e ON i.enrollment_id = e.id "
             "JOIN student s ON e.student_id = s.id WHERE i.id = ?", (iid,)
         ).fetchone()
         if s:
             suggested_student = s["name"]
+            parent_name = s["parent_name"] or None
+    payment = {k: row[k] for k in (
+        "payment_id", "payer_name", "amount_paid_paise", "currency", "date", "source", "method",
+        "gateway_fee_paise", "gst_on_fee_paise", "fx_diff_paise", "tds_paise",
+        "amount_in_bank_paise", "confirmation")}
+    payment["parent_name"] = parent_name
     return {
         "match_id": row["match_id"],
         "status": row["status"],
@@ -78,10 +85,7 @@ def _summary(row, conn=None) -> dict:
         "reason_text": format_match_reason(row["reason"] or ""),
         "has_suggestion": bool(allocs),
         "suggested_student": suggested_student,
-        "payment": {k: row[k] for k in (
-            "payment_id", "payer_name", "amount_paid_paise", "currency", "date", "source", "method",
-            "gateway_fee_paise", "gst_on_fee_paise", "fx_diff_paise", "tds_paise",
-            "amount_in_bank_paise", "confirmation")},
+        "payment": payment,
     }
 
 

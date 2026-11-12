@@ -80,6 +80,7 @@ export interface Dashboard {
 export interface Payment {
   payment_id: number;
   payer_name: string | null;
+  parent_name?: string | null;
   amount_paid_paise: number;
   currency: string;
   date: string;

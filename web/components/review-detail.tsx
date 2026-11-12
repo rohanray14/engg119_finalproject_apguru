@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import type { ReviewDetail as ReviewDetailType, Installment } from "@/lib/types";
-import { formatMoney, formatDate } from "@/lib/format";
+import { formatMoney, formatDate, displayPayer } from "@/lib/format";
 import { apiFetch } from "@/lib/api";
 
 interface Props {
@@ -188,15 +188,24 @@ export default function ReviewDetail({ detail, canApprove, onDecision, onSkip, q
             <div>{formatDate(p.date)}</div>
           </div>
         </div>
-        {p.payer_name ? (
-          <div className="mt-3 px-3 py-2 rounded text-sm font-mono" style={{ backgroundColor: "var(--surface-hover)", color: "var(--text)" }}>
-            {p.payer_name}
-          </div>
-        ) : (
-          <div className="mt-3 px-3 py-2 border rounded text-sm" style={{ backgroundColor: "rgba(255,176,32,0.1)", borderColor: "rgba(255,176,32,0.3)", color: "var(--warning)" }}>
-            No payer name on bank statement
-          </div>
-        )}
+        {(() => {
+          const payer = displayPayer(p.payer_name, p.parent_name, "");
+          if (p.payer_name) return (
+            <div className="mt-3 px-3 py-2 rounded text-sm font-mono" style={{ backgroundColor: "var(--surface-hover)", color: "var(--text)" }}>
+              {p.payer_name}
+            </div>
+          );
+          if (payer.isParent) return (
+            <div className="mt-3 px-3 py-2 rounded text-sm font-mono" style={{ backgroundColor: "var(--surface-hover)", color: "var(--text)" }}>
+              {payer.name} <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>(parent)</span>
+            </div>
+          );
+          return (
+            <div className="mt-3 px-3 py-2 border rounded text-sm" style={{ backgroundColor: "rgba(255,176,32,0.1)", borderColor: "rgba(255,176,32,0.3)", color: "var(--warning)" }}>
+              No payer name on bank statement
+            </div>
+          );
+        })()}
         {(p.gateway_fee_paise > 0 || p.tds_paise > 0) && (
           <div className="mt-3 flex gap-4 text-xs" style={{ color: "var(--text-secondary)" }}>
             {p.gateway_fee_paise > 0 && (

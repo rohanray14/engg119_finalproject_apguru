@@ -48,6 +48,21 @@ export function formatDateLong(iso: string): string {
   return `${day}, ${rest}`;
 }
 
+/**
+ * Resolve display name for a payer.
+ * Falls back to parent name (with label) when payer_name is blank,
+ * then to a fallback string.
+ */
+export function displayPayer(
+  payerName: string | null | undefined,
+  parentName?: string | null,
+  fallback = "Unknown payer",
+): { name: string; isParent: boolean } {
+  if (payerName) return { name: payerName, isParent: false };
+  if (parentName) return { name: parentName, isParent: true };
+  return { name: fallback, isParent: false };
+}
+
 /** Confidence as percentage string */
 export function formatConfidence(c: number): string {
   return `${Math.round(c * 100)}%`;
