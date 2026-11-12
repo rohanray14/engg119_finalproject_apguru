@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { ReviewItem } from "@/lib/types";
-import { formatMoney, formatDate } from "@/lib/format";
+import { formatMoney, formatDate, displayPayer } from "@/lib/format";
 
 interface Props {
   items: ReviewItem[];
@@ -32,7 +32,8 @@ export default function ReviewList({ items, selectedId, onSelect, skippedIds }: 
       <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
         {items.map((item) => {
           const active = item.match_id === selectedId;
-          const noPayer = !item.payment.payer_name;
+          const payer = displayPayer(item.payment.payer_name, item.payment.parent_name);
+          const noPayer = !item.payment.payer_name && !item.payment.parent_name;
           const skipped = skippedIds?.has(item.match_id);
           return (
             <button
@@ -51,8 +52,14 @@ export default function ReviewList({ items, selectedId, onSelect, skippedIds }: 
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="font-medium text-sm truncate" style={{ color: "var(--text)" }}>
-                      {item.payment.payer_name || "Unknown payer"}
+                      {payer.name}
                     </span>
+                    {payer.isParent && (
+                      <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded font-medium"
+                        style={{ color: "var(--text-tertiary)" }}>
+                        parent
+                      </span>
+                    )}
                     {noPayer && (
                       <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded border font-medium"
                         style={{ backgroundColor: "rgba(255,176,32,0.1)", color: "var(--warning)", borderColor: "rgba(255,176,32,0.3)" }}>
@@ -67,8 +74,11 @@ export default function ReviewList({ items, selectedId, onSelect, skippedIds }: 
                     )}
                   </div>
                   {item.suggested_student && (
-                    <div className="text-xs mt-0.5" style={{ color: "var(--accent)" }}>
-                      → {item.suggested_student}
+                    <div className="text-xs mt-0.5 flex items-center gap-1" style={{ color: "var(--accent)" }}>
+                      <span style={{ color: "var(--text-tertiary)" }}>→</span>
+                      <span className="font-medium underline decoration-dotted underline-offset-2">
+                        {item.suggested_student}
+                      </span>
                     </div>
                   )}
                   <div className="flex items-center gap-1.5 mt-1 text-xs" style={{ color: "var(--text-secondary)" }}>
