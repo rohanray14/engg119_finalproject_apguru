@@ -26,6 +26,7 @@ interface PaymentRow {
   deductions_paise: number;
   matched_student_id: number | null;
   matched_student_name: string | null;
+  matched_parent_name: string | null;
 }
 
 interface SummaryStats {
@@ -485,6 +486,17 @@ export default function PaymentsPage() {
                               className="hover:underline text-left" style={{ color: "var(--text)" }}>
                               {r.payer_name}
                             </button>
+                          )
+                        ) : r.matched_parent_name ? (
+                          r.matched_student_id ? (
+                            <Link href={`/students?id=${r.matched_student_id}`}
+                              className="hover:underline" style={{ color: "var(--accent)" }}>
+                              {r.matched_parent_name} <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>(parent)</span>
+                            </Link>
+                          ) : (
+                            <span style={{ color: "var(--text-secondary)" }}>
+                              {r.matched_parent_name} <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>(parent)</span>
+                            </span>
                           )
                         ) : <span style={{ color: "var(--warning)", fontWeight: "normal" }}>(no payer name)</span>}
                       </td>

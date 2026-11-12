@@ -73,17 +73,17 @@ def list_payments(
             all_allocs[r["match_id"]] = iids
             all_inst_ids.update(iids)
 
-    # Batch lookup: installment_id -> (student_id, student_name)
-    inst_to_student: dict[int, tuple[int, str]] = {}
+    # Batch lookup: installment_id -> (student_id, student_name, parent_name)
+    inst_to_student: dict[int, tuple[int, str, str | None]] = {}
     if all_inst_ids:
         marks = ",".join("?" * len(all_inst_ids))
         for r2 in conn.execute(
-            "SELECT i.id AS inst_id, s.id AS student_id, s.name AS student_name "
+            "SELECT i.id AS inst_id, s.id AS student_id, s.name AS student_name, s.parent_name "
             "FROM installment i JOIN enrollment e ON i.enrollment_id = e.id "
             f"JOIN student s ON e.student_id = s.id WHERE i.id IN ({marks})",
             list(all_inst_ids),
         ).fetchall():
-            inst_to_student[r2["inst_id"]] = (r2["student_id"], r2["student_name"])
+            inst_to_student[r2["inst_id"]] = (r2["student_id"], r2["student_name"], r2["parent_name"])
 
     items = []
     for r in rows:
@@ -95,11 +95,13 @@ def list_payments(
         # Attach matched student info
         d["matched_student_id"] = None
         d["matched_student_name"] = None
+        d["matched_parent_name"] = None
         if r["match_id"] in all_allocs:
             for iid in all_allocs[r["match_id"]]:
                 if iid in inst_to_student:
                     d["matched_student_id"] = inst_to_student[iid][0]
                     d["matched_student_name"] = inst_to_student[iid][1]
+                    d["matched_parent_name"] = inst_to_student[iid][2]
                     break
         items.append(d)
 
