@@ -65,7 +65,8 @@ def parse_terms(terms_text: str) -> ParsedRule:
     - "15% split 50/50 with X"
     - "10% commission"
     """
-    text = terms_text.lower().strip()
+    original = terms_text.strip()
+    text = original.lower()
     if not text:
         return ParsedRule(rate=0.0, scope="own_referrals", notes="no terms provided")
 
@@ -73,25 +74,30 @@ def parse_terms(terms_text: str) -> ParsedRule:
     rate_match = re.search(r"(\d+(?:\.\d+)?)\s*%", text)
     rate = float(rate_match.group(1)) / 100 if rate_match else 0.0
 
-    # Detect scope
+    # Detect scope and city.
+    # We search the original (mixed-case) text so capitalized city names
+    # like "Abu Dhabi" can be captured with multi-word patterns.
     scope = "own_referrals"
     city = None
 
     city_patterns = [
-        (r"(?:on|for)\s+(\w+)\s+students", "city"),
-        (r"(\w+)\s+(?:city|region|area)", "city"),
+        r"(?:from|in)\s+([A-Z][\w]+(?: [A-Z][\w]+)*)",        # "from Abu Dhabi"
+        r"(?:[Oo]n|[Ff]or)\s+(?:all|every)\s+([A-Z][\w]+(?: [A-Z][\w]+)*)\s+(?:students|enrollment)",
+        r"(?:[Oo]n|[Ff]or)\s+([A-Z][\w]+(?: [A-Z][\w]+)*)\s+(?:students|enrollment)",
     ]
-    skip_words = {"all", "my", "own", "the", "new", "each", "every"}
-    for pattern, _ in city_patterns:
-        m = re.search(pattern, text)
-        if m and m.group(1).lower() not in skip_words:
+    skip_words = {"All", "My", "Own", "The", "New", "Each", "Every", "Students", "Referrals"}
+    for pattern in city_patterns:
+        m = re.search(pattern, original)
+        if m and m.group(1) not in skip_words:
             scope = "city"
-            city = m.group(1).title()
+            city = m.group(1)
             break
 
-    if "all referrals" in text or "all students" in text:
+    # "all referrals" or "own referrals" without a city = own_referrals
+    if not city and ("referrals" in text or "own students" in text):
         scope = "own_referrals"
-    if "city" in text and city:
+    # "regardless of referrer" with a city = city scope
+    if city and "regardless" in text:
         scope = "city"
 
     # Detect split

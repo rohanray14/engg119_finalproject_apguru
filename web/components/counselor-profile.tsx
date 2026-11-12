@@ -39,10 +39,11 @@ function fetcher<T>(path: string) { return apiFetch<T>(path); }
 
 function ruleText(rule: CounselorData["rule"]): string {
   if (rule.rate <= 0) return rule.source === "none" ? "No terms provided" : "Rate not stated";
-  let text = `${(rule.rate * 100).toFixed(0)}% on fees`;
-  if (rule.scope === "city" && rule.city) text += ` from ${rule.city} students`;
-  else if (rule.scope === "own_referrals") text += " from referred students";
-  if (rule.split) text += `, split ${(rule.split * 100).toFixed(0)}/${((1 - rule.split) * 100).toFixed(0)}`;
+  let text = `${(rule.rate * 100).toFixed(0)}% commission`;
+  if (rule.scope === "city" && rule.city) text += ` on all ${rule.city} students`;
+  else if (rule.scope === "own_referrals") text += " on own referrals only";
+  else text += " on all students";
+  if (rule.split) text += ` (${(rule.split * 100).toFixed(0)}/${((1 - rule.split) * 100).toFixed(0)} co-referral split)`;
   return text;
 }
 
@@ -103,17 +104,19 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
     }
   }
 
-  // Check for students with no matched payments
-  const studentsWithPayments = new Set(counselor.commission_lines.map((l) => l.payer_name));
-  const studentsNoPayment = counselor.students.filter(
-    (s) => s.enrollments.length > 0 && !counselor.commission_lines.some((l) => l.payment_id)
+  // Check for referred students with no commission lines (per-student check)
+  const studentIdsWithCommission = new Set(
+    counselor.commission_lines.map((l) => l.payment_id)
   );
-  if (studentsNoPayment.length > 0 && counselor.students.length > 0) {
-    const pct = Math.round((1 - counselor.commission_lines.length / counselor.students.length) * 100);
-    if (pct > 50) {
+  const studentsWithEnrollments = counselor.students.filter((s) => s.enrollments.length > 0);
+  // A student has "generated commission" if any commission line exists for this counselor
+  // We can't map payment→student directly, so use count-based heuristic
+  if (studentsWithEnrollments.length > 0 && counselor.commission_lines.length < studentsWithEnrollments.length) {
+    const gap = studentsWithEnrollments.length - counselor.commission_lines.length;
+    if (gap > 0) {
       actionItems.push({
         severity: "medium",
-        text: `Only ${counselor.commission_lines.length} of ${counselor.students.length} referred students have matched payments. ${pct}% of referrals haven't generated commission yet.`,
+        text: `${counselor.commission_lines.length} commission lines for ${studentsWithEnrollments.length} enrolled students. Some referrals may not have matched payments yet.`,
       });
     }
   }
@@ -125,6 +128,17 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
       text: "No commission rate set. Set the rate on the Commissions page before payouts can be calculated.",
     });
   }
+
+  // Commission line totals
+  const lineTotals = counselor.commission_lines.reduce(
+    (acc, l) => ({
+      base_paise: acc.base_paise + l.base_paise,
+      commission_paise: acc.commission_paise + l.commission_paise,
+      tds_paise: acc.tds_paise + l.tds_paise,
+      net_paise: acc.net_paise + l.net_paise,
+    }),
+    { base_paise: 0, commission_paise: 0, tds_paise: 0, net_paise: 0 }
+  );
 
   return (
     <div>
@@ -167,17 +181,15 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                 ? { backgroundColor: "rgba(255,176,32,0.08)", borderColor: "rgba(255,176,32,0.3)", color: "var(--warning)" }
                 : { backgroundColor: "rgba(77,158,255,0.08)", borderColor: "rgba(77,158,255,0.3)", color: "var(--info)" }
             }>
-              <span className="font-bold shrink-0">
-                {item.severity === "high" ? "!" : item.severity === "medium" ? "!" : "i"}
-              </span>
+              <span className="font-bold shrink-0">!</span>
               <span>{item.text}</span>
             </div>
           ))}
         </div>
       )}
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      {/* Summary cards — responsive */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="rounded-lg border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
           <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-secondary)" }}>Students referred</div>
           <div className="text-xl font-bold mt-1" style={{ color: "var(--text)" }}>{counselor.students.length}</div>
@@ -226,7 +238,8 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
         {counselor.students.length === 0 ? (
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>No students linked to this counselor.</p>
         ) : (
-          <table className="w-full text-sm table-fixed">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm table-fixed min-w-[600px]">
             <thead>
               <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
                 <th className="pb-2 font-medium w-[18%]">Student</th>
@@ -279,6 +292,7 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
@@ -290,7 +304,8 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
         {counselor.commission_lines.length === 0 ? (
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>No commissions calculated yet.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
                 <th className="pb-2 font-medium">Date</th>
@@ -315,7 +330,19 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                 </tr>
               ))}
             </tbody>
+            {/* Totals row */}
+            <tfoot>
+              <tr className="border-t-2" style={{ borderColor: "var(--border)" }}>
+                <td className="py-2.5 font-bold" style={{ color: "var(--text)" }} colSpan={2}>Total</td>
+                <td className="py-2.5 text-right font-bold" style={{ color: "var(--text)" }}>{formatMoney(lineTotals.base_paise, "INR")}</td>
+                <td className="py-2.5" />
+                <td className="py-2.5 text-right font-bold" style={{ color: "var(--text)" }}>{formatMoney(lineTotals.commission_paise, "INR")}</td>
+                <td className="py-2.5 text-right font-bold" style={{ color: "var(--text-secondary)" }}>{formatMoney(lineTotals.tds_paise, "INR")}</td>
+                <td className="py-2.5 text-right font-bold" style={{ color: "var(--accent)" }}>{formatMoney(lineTotals.net_paise, "INR")}</td>
+              </tr>
+            </tfoot>
           </table>
+          </div>
         )}
       </div>
 
