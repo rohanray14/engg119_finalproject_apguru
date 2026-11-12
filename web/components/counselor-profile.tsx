@@ -544,36 +544,47 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
               : "No students match the selected filters."}
           </p>
         ) : filteredStudents.length > 0 ? (
-          <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[600px]">
+          <div className="overflow-x-auto rounded-lg border" style={{ borderColor: "var(--border)" }}>
+          <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
+            <colgroup>
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "18%" }} />
+              <col style={{ width: "18%" }} />
+              <col style={{ width: "10%" }} />
+              <col style={{ width: "16%" }} />
+              <col style={{ width: "12%" }} />
+              {canApprove && <col style={{ width: "6%" }} />}
+            </colgroup>
             <thead>
-              <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
-                <th className="pb-2 font-medium">Student</th>
-                <th className="pb-2 font-medium">Location</th>
-                <th className="pb-2 font-medium">Program</th>
-                <th className="pb-2 font-medium">Type</th>
-                <th className="pb-2 font-medium text-right">Total fee</th>
-                <th className="pb-2 font-medium pl-4">Enrolled</th>
-                {canApprove && <th className="pb-2 font-medium w-[60px]" />}
+              <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)", backgroundColor: "var(--surface-hover)" }}>
+                <th className="px-4 py-3 font-medium">Student</th>
+                <th className="px-4 py-3 font-medium">Location</th>
+                <th className="px-4 py-3 font-medium">Program</th>
+                <th className="px-4 py-3 font-medium">Type</th>
+                <th className="px-4 py-3 font-medium text-right">Total fee</th>
+                <th className="px-4 py-3 font-medium">Enrolled</th>
+                {canApprove && <th className="px-4 py-3 font-medium" />}
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+            <tbody>
               {filteredStudents.map((s) => {
                 const location = displayLocation(s.city, s.country);
                 if (s.enrollments.length === 0) {
                   return (
-                    <tr key={s.id}>
-                      <td className="py-2.5 font-medium hover:underline" style={{ color: "var(--accent)" }}>
-                        <Link href={`/students?id=${s.id}`}>{s.name}</Link>
+                    <tr key={s.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}>
+                      <td className="px-4 py-3 font-medium truncate">
+                        <Link href={`/students?id=${s.id}`} className="hover:underline" style={{ color: "var(--accent)" }}>{s.name}</Link>
                       </td>
-                      <td className="py-2.5" style={{ color: "var(--text-secondary)" }}>{location}</td>
-                      <td className="py-2.5" style={{ color: "var(--text-tertiary)" }} colSpan={3}>No enrollments</td>
-                      <td className="py-2.5" />
+                      <td className="px-4 py-3 truncate" style={{ color: "var(--text-secondary)" }}>{location}</td>
+                      <td className="px-4 py-3" style={{ color: "var(--text-tertiary)" }} colSpan={3}>No enrollments</td>
+                      <td className="px-4 py-3" />
                       {canApprove && (
-                        <td className="py-2.5 text-right">
+                        <td className="px-4 py-3 text-right">
                           <button onClick={() => unlinkStudent(s.id)} disabled={acting}
-                            className="text-[10px] px-1.5 py-0.5 rounded hover:underline disabled:opacity-50"
-                            style={{ color: "var(--text-tertiary)" }}>
+                            className="text-[11px] px-1.5 py-0.5 rounded disabled:opacity-50"
+                            style={{ color: "var(--danger)" }}>
                             Unlink
                           </button>
                         </td>
@@ -582,18 +593,20 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                   );
                 }
                 return s.enrollments.map((e, ei) => (
-                  <tr key={`${s.id}-${ei}`}>
+                  <tr key={`${s.id}-${ei}`}
+                    style={{ borderBottom: "1px solid var(--border-subtle)" }}
+                    onMouseEnter={(ev) => ev.currentTarget.style.backgroundColor = "var(--surface-hover)"}
+                    onMouseLeave={(ev) => ev.currentTarget.style.backgroundColor = ""}>
                     {ei === 0 ? (
                       <>
-                        <td className="py-2.5 font-medium hover:underline" style={{ color: "var(--accent)" }}
-                          rowSpan={s.enrollments.length}>
-                          <Link href={`/students?id=${s.id}`}>{s.name}</Link>
+                        <td className="px-4 py-3 font-medium truncate" rowSpan={s.enrollments.length}>
+                          <Link href={`/students?id=${s.id}`} className="hover:underline" style={{ color: "var(--accent)" }}>{s.name}</Link>
                         </td>
-                        <td className="py-2.5" style={{ color: "var(--text-secondary)" }} rowSpan={s.enrollments.length}>{location}</td>
+                        <td className="px-4 py-3 truncate" style={{ color: "var(--text-secondary)" }} rowSpan={s.enrollments.length}>{location}</td>
                       </>
                     ) : null}
-                    <td className="py-2.5" style={{ color: "var(--text)" }}>{e.program}</td>
-                    <td className="py-2.5">
+                    <td className="px-4 py-3 truncate" style={{ color: "var(--text)" }}>{e.program}</td>
+                    <td className="px-4 py-3">
                       <span className="px-2 py-0.5 rounded text-xs font-medium" style={
                         e.fee_model === "package"
                           ? { backgroundColor: "rgba(77,158,255,0.15)", color: "var(--info)" }
@@ -602,13 +615,13 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                         {e.fee_model === "package" ? "Package" : "Hourly"}
                       </span>
                     </td>
-                    <td className="py-2.5 text-right font-medium" style={{ color: "var(--text)" }}>{formatMoney(e.total_fee_paise, e.currency)}</td>
-                    <td className="py-2.5 pl-4" style={{ color: "var(--text-secondary)" }}>{e.enrolled_around ? formatDate(e.enrolled_around) : "—"}</td>
+                    <td className="px-4 py-3 text-right font-medium whitespace-nowrap" style={{ color: "var(--text)" }}>{formatMoney(e.total_fee_paise, e.currency)}</td>
+                    <td className="px-4 py-3 whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>{e.enrolled_around ? formatDate(e.enrolled_around) : "—"}</td>
                     {ei === 0 && canApprove && (
-                      <td className="py-2.5 text-right" rowSpan={s.enrollments.length}>
+                      <td className="px-4 py-3 text-right" rowSpan={s.enrollments.length}>
                         <button onClick={() => unlinkStudent(s.id)} disabled={acting}
-                          className="text-[10px] px-1.5 py-0.5 rounded hover:underline disabled:opacity-50"
-                          style={{ color: "var(--text-tertiary)" }}>
+                          className="text-[11px] px-1.5 py-0.5 rounded disabled:opacity-50"
+                          style={{ color: "var(--danger)" }}>
                           Unlink
                         </button>
                       </td>
