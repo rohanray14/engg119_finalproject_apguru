@@ -11,11 +11,6 @@ interface Props {
   skippedIds?: Set<number>;
 }
 
-function confidenceLabel(item: ReviewItem): { text: string; color: string } | null {
-  if (!item.has_suggestion) return null;
-  return { text: `${Math.round(item.confidence * 100)}%`, color: "var(--text-secondary)" };
-}
-
 export default function ReviewList({ items, selectedId, onSelect, skippedIds }: Props) {
   const activeRef = useRef<HTMLButtonElement>(null);
   const prevSelectedRef = useRef<number | null>(null);
@@ -39,7 +34,6 @@ export default function ReviewList({ items, selectedId, onSelect, skippedIds }: 
           const active = item.match_id === selectedId;
           const noPayer = !item.payment.payer_name;
           const skipped = skippedIds?.has(item.match_id);
-          const conf = confidenceLabel(item);
           return (
             <button
               key={item.match_id}
@@ -80,26 +74,14 @@ export default function ReviewList({ items, selectedId, onSelect, skippedIds }: 
                     <span>{formatDate(item.payment.date)}</span>
                     <span>·</span>
                     <span>{formatMoney(item.payment.amount_paid_paise, item.payment.currency)}</span>
-                    {conf ? (
-                      <>
-                        <span>·</span>
-                        <span style={{ color: conf.color }}>{conf.text}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>·</span>
-                        <span style={{ color: "var(--text-tertiary)" }}>no match</span>
-                      </>
-                    )}
                   </div>
                 </div>
-                <span className="shrink-0 px-3 py-1.5 rounded-md text-xs font-semibold"
-                  style={{
-                    backgroundColor: active ? "var(--accent)" : "rgba(0,220,130,0.15)",
-                    color: active ? "var(--bg)" : "var(--accent)",
-                  }}>
-                  Review
-                </span>
+                {!item.has_suggestion && (
+                  <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded font-medium"
+                    style={{ backgroundColor: "rgba(255,176,32,0.1)", color: "var(--warning)" }}>
+                    no match
+                  </span>
+                )}
               </div>
             </button>
           );

@@ -297,6 +297,44 @@ export default function PaymentsPage() {
         Every incoming payment with amount paid, deductions, and confirmation level.
       </p>
 
+      {/* Summary cards */}
+      {summary && (
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+          <div className="rounded-xl border px-4 py-3" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+            <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Total received</div>
+            <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{formatMoneyCompact(summary.total_received, "INR")}</div>
+          </div>
+          <div className="rounded-xl border px-4 py-3" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+            <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Payments</div>
+            <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{summary.total_payments}</div>
+          </div>
+          {summary.review_count > 0 && (
+            <Link href="/review"
+              className="rounded-xl border px-4 py-3 transition-colors block"
+              style={{ backgroundColor: "rgba(255, 176, 32, 0.1)", borderColor: "rgba(255, 176, 32, 0.3)" }}>
+              <div className="text-xs" style={{ color: "var(--warning)" }}>Needs review</div>
+              <div className="text-lg font-bold" style={{ color: "var(--warning)" }}>{summary.review_count}</div>
+            </Link>
+          )}
+          {summary.unmatched_count > 0 && (
+            <button onClick={() => { setMatch(match === "unmatched" ? "" : "unmatched"); setPage(0); }}
+              className={`text-left rounded-xl border px-4 py-3 transition-colors ${match === "unmatched" ? "ring-2 ring-white/30" : ""}`}
+              style={{ borderColor: "var(--border)" }}>
+              <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Unmatched</div>
+              <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{summary.unmatched_count}</div>
+            </button>
+          )}
+          {summary.screenshot_count > 0 && (
+            <button onClick={() => { setConfirmation(confirmation === "screenshot_only" ? "" : "screenshot_only"); setPage(0); }}
+              className={`text-left rounded-xl border px-4 py-3 transition-colors ${confirmation === "screenshot_only" ? "ring-2 ring-red-400/40" : ""}`}
+              style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", borderColor: "rgba(255, 77, 77, 0.3)" }}>
+              <div className="text-xs" style={{ color: "var(--danger)" }}>Unverified</div>
+              <div className="text-lg font-bold" style={{ color: "var(--danger)" }}>{summary.screenshot_count}</div>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Filters */}
       <div className="rounded-xl border p-4 mb-6"
         style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
@@ -376,42 +414,6 @@ export default function PaymentsPage() {
         </div>
       ) : (
         <>
-          {/* Summary bar */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-            <div className="rounded-xl border px-4 py-3" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-              <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Total received</div>
-              <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{formatMoneyCompact(summary?.total_received ?? 0, "INR")}</div>
-            </div>
-            <div className="rounded-xl border px-4 py-3" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-              <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Payments</div>
-              <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{summary?.total_payments ?? 0}</div>
-            </div>
-            {(summary?.review_count ?? 0) > 0 && (
-              <Link href="/review"
-                className="rounded-xl border px-4 py-3 transition-colors block"
-                style={{ backgroundColor: "rgba(255, 176, 32, 0.1)", borderColor: "rgba(255, 176, 32, 0.3)" }}>
-                <div className="text-xs" style={{ color: "var(--warning)" }}>Needs review</div>
-                <div className="text-lg font-bold" style={{ color: "var(--warning)" }}>{summary?.review_count ?? 0}</div>
-              </Link>
-            )}
-            {(summary?.unmatched_count ?? 0) > 0 && (
-              <button onClick={() => { setMatch(match === "unmatched" ? "" : "unmatched"); setPage(0); }}
-                className={`text-left rounded-xl border px-4 py-3 transition-colors ${match === "unmatched" ? "ring-2 ring-white/30" : ""}`}
-                style={{ borderColor: "var(--border)" }}>
-                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Unmatched</div>
-                <div className="text-lg font-bold" style={{ color: "var(--text)" }}>{summary?.unmatched_count ?? 0}</div>
-              </button>
-            )}
-            {(summary?.screenshot_count ?? 0) > 0 && (
-              <button onClick={() => { setConfirmation(confirmation === "screenshot_only" ? "" : "screenshot_only"); setPage(0); }}
-                className={`text-left rounded-xl border px-4 py-3 transition-colors ${confirmation === "screenshot_only" ? "ring-2 ring-red-400/40" : ""}`}
-                style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", borderColor: "rgba(255, 77, 77, 0.3)" }}>
-                <div className="text-xs" style={{ color: "var(--danger)" }}>Unverified</div>
-                <div className="text-lg font-bold" style={{ color: "var(--danger)" }}>{summary?.screenshot_count ?? 0}</div>
-              </button>
-            )}
-          </div>
-
           {/* Pagination top + export */}
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
