@@ -109,7 +109,9 @@ def ask(conn: sqlite3.Connection, question: str) -> CopilotAnswer:
     if not HAS_ANTHROPIC:
         return _fallback_regex(conn, question)
 
-    client = anthropic.Anthropic()
+    import os
+    api_key = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
+    client = anthropic.Anthropic(api_key=api_key)
 
     # Step 1: Generate SQL
     sql_query = _generate_sql(client, question)
