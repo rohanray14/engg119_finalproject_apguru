@@ -229,26 +229,27 @@ function RemindersPage() {
         </div>
       ) : (
         <div className="rounded-xl border overflow-x-auto" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
+          <table className="w-full text-sm min-w-[780px]">
             <colgroup>
-              <col style={{ width: "20%" }} />
-              <col style={{ width: "12%" }} />
-              <col style={{ width: "14%" }} />
+              <col style={{ width: "22%" }} />
+              <col style={{ width: "13%" }} />
+              <col style={{ width: "13%" }} />
               <col style={{ width: "10%" }} />
-              <col style={{ width: "28%" }} />
+              <col style={{ width: "26%" }} />
               <col style={{ width: "16%" }} />
             </colgroup>
             <thead>
-              <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)", backgroundColor: "var(--surface-hover)" }}>
+              <tr className="text-left text-xs" style={{ color: "var(--text-secondary)", borderBottom: "2px solid var(--border)", backgroundColor: "var(--surface-hover)" }}>
                 {([
                   { label: "Student", field: "student_name" as SortKey },
                   { label: "Amount", field: "amount_due_paise" as SortKey, align: "right" },
-                  { label: "Due", field: "due_date" as SortKey },
+                  { label: "Due date", field: "due_date" as SortKey },
                 ] as const).map((col) => {
                   const active = sortKey === col.field;
                   return (
                     <th key={col.label}
-                      className={`px-4 py-3 font-medium cursor-pointer select-none ${"align" in col && col.align === "right" ? "text-right" : ""}`}
+                      className={`px-4 py-3 font-semibold cursor-pointer select-none tracking-wide uppercase ${"align" in col && col.align === "right" ? "text-right" : ""}`}
+                      style={{ fontSize: "10px", letterSpacing: "0.06em" }}
                       onClick={() => toggleSort(col.field)}>
                       {col.label}
                       {active
@@ -257,9 +258,9 @@ function RemindersPage() {
                     </th>
                   );
                 })}
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Send via</th>
-                <th className="px-4 py-3 font-medium text-center">Status</th>
+                <th className="px-4 py-3 font-semibold tracking-wide uppercase" style={{ fontSize: "10px", letterSpacing: "0.06em" }}>Type</th>
+                <th className="px-4 py-3 font-semibold tracking-wide uppercase" style={{ fontSize: "10px", letterSpacing: "0.06em" }}>Actions</th>
+                <th className="px-4 py-3 font-semibold tracking-wide uppercase text-center" style={{ fontSize: "10px", letterSpacing: "0.06em" }}>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -297,37 +298,37 @@ function RemindersPage() {
                     <tr style={{ borderBottom: "1px solid var(--border-subtle)" }}
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5">
                         <Link href={`/students?id=${r.student_id}`}
                           className="font-medium hover:underline truncate block" style={{ color: "var(--accent)" }}>
                           {r.student_name}
                         </Link>
-                        <div className="text-xs truncate" style={{ color: "var(--text-tertiary)" }}>{r.enrollment_program}</div>
+                        <div className="text-xs truncate mt-0.5" style={{ color: "var(--text-tertiary)" }}>{r.enrollment_program}</div>
                       </td>
-                      <td className="px-4 py-3 text-right font-medium whitespace-nowrap">
+                      <td className="px-4 py-3.5 text-right font-semibold whitespace-nowrap" style={{ color: "var(--text)" }}>
                         {formatMoney(r.amount_due_paise, r.currency)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap" style={{ color: isOverdue ? "var(--danger)" : "var(--text)" }}>
+                      <td className="px-4 py-3.5 whitespace-nowrap" style={{ color: isOverdue ? "var(--danger)" : "var(--text)" }}>
                         {formatDate(r.due_date)}
                         {isOverdue && (
-                          <div className="text-[10px] font-medium" style={{ color: "var(--danger)" }}>
+                          <div className="text-[10px] font-semibold mt-0.5" style={{ color: "var(--danger)" }}>
                             {daysOver < 30 ? `${daysOver}d overdue` : `${Math.floor(daysOver / 30)}mo overdue`}
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap"
+                      <td className="px-4 py-3.5">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap uppercase tracking-wide"
                           style={{ backgroundColor: badge.bg, color: badge.text }}>
                           {badge.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5">
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-2">
                           {r.parent_phone && (
                             <a href={`https://wa.me/${r.parent_phone.replace(/[^+\d]/g, "")}?text=${encodeURIComponent(r.message)}`}
                               target="_blank" rel="noopener noreferrer"
                               onClick={() => { if (!r.approved) markSent(); }}
-                              className="text-xs px-2.5 py-1 rounded-md transition-colors whitespace-nowrap font-medium"
+                              className="text-xs px-2.5 py-1.5 rounded-md transition-colors whitespace-nowrap font-medium"
                               style={{ backgroundColor: "rgba(0, 220, 130, 0.12)", color: "var(--accent)" }}>
                               WhatsApp
                             </a>
@@ -335,22 +336,23 @@ function RemindersPage() {
                           {r.parent_email && (
                             <a href={`mailto:${r.parent_email}?subject=Payment reminder — ${r.enrollment_program}&body=${encodeURIComponent(r.message)}`}
                               onClick={() => { if (!r.approved) markSent(); }}
-                              className="text-xs px-2.5 py-1 rounded-md transition-colors whitespace-nowrap font-medium"
+                              className="text-xs px-2.5 py-1.5 rounded-md transition-colors whitespace-nowrap font-medium"
                               style={{ backgroundColor: "rgba(77, 158, 255, 0.12)", color: "var(--info)" }}>
                               Email
                             </a>
                           )}
                           <button onClick={() => toggleExpand(key)}
-                            className="text-[11px] px-2 py-1 rounded-md ml-auto whitespace-nowrap transition-colors"
+                            className="text-[11px] px-2 py-1.5 rounded-md ml-auto whitespace-nowrap transition-colors"
                             style={{
-                              backgroundColor: isExpanded ? "var(--surface-hover)" : "transparent",
-                              color: isExpanded ? "var(--text)" : "var(--text-tertiary)",
+                              backgroundColor: isExpanded ? "var(--text)" : "transparent",
+                              color: isExpanded ? "var(--bg)" : "var(--text-tertiary)",
+                              border: isExpanded ? "none" : "1px solid var(--border)",
                             }}>
-                            {isExpanded ? "Hide msg" : "View msg"}
+                            {isExpanded ? "Hide" : "Preview"}
                           </button>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-4 py-3.5 text-center">
                         {r.approved ? (
                           <button onClick={unmarkSent}
                             className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-md transition-all"
@@ -378,8 +380,9 @@ function RemindersPage() {
                     </tr>
                     {isExpanded && (
                       <tr>
-                        <td colSpan={6} className="px-4 py-3" style={{ backgroundColor: "var(--surface-hover)" }}>
-                          <pre className="text-sm whitespace-pre-wrap p-4 rounded-lg leading-relaxed" style={{ color: "var(--text-secondary)", backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>{r.message}</pre>
+                        <td colSpan={6} className="px-4 pb-4 pt-0" style={{ backgroundColor: "var(--surface-hover)" }}>
+                          <div className="text-[10px] uppercase tracking-wider font-semibold mb-1.5" style={{ color: "var(--text-tertiary)" }}>Message preview</div>
+                          <pre className="text-sm whitespace-pre-wrap p-4 rounded-lg leading-relaxed" style={{ color: "var(--text)", backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>{r.message}</pre>
                         </td>
                       </tr>
                     )}
