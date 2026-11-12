@@ -163,6 +163,81 @@ def add_counselor(body: AddCounselorBody, conn=Depends(get_conn),
     return {"counselor_id": counselor_id, "name": body.name.strip(), "commission_lines": n}
 
 
+@router.get("/counselors/{counselor_id}/search-students")
+def search_students_for_counselor(counselor_id: int, q: str = "", conn=Depends(get_conn),
+                                   user: User = Depends(current_user)):
+    """Search for students to link to a counselor."""
+    c = conn.execute("SELECT id FROM counselor WHERE id = ?", (counselor_id,)).fetchone()
+    if c is None:
+        raise not_found("Counselor")
+    if not q or len(q) < 2:
+        return {"results": []}
+    rows = conn.execute(
+        "SELECT id, name, city, country, counselor_ids FROM student WHERE name LIKE ? ORDER BY name LIMIT 20",
+        (f"%{q}%",),
+    ).fetchall()
+    results = []
+    for r in rows:
+        cids = json.loads(r["counselor_ids"]) if r["counselor_ids"] else []
+        already_linked = counselor_id in [int(x) for x in cids]
+        results.append({
+            "id": r["id"], "name": r["name"], "city": r["city"], "country": r["country"],
+            "already_linked": already_linked,
+        })
+    return {"results": results}
+
+
+class LinkStudentBody(BaseModel):
+    student_id: int
+
+
+@router.post("/counselors/{counselor_id}/link-student")
+def link_student(counselor_id: int, body: LinkStudentBody, conn=Depends(get_conn),
+                 user: User = Depends(require_finance_lead)):
+    """Link a student to a counselor (add counselor to student's counselor_ids)."""
+    decision_lock(conn)
+    c = conn.execute("SELECT id FROM counselor WHERE id = ?", (counselor_id,)).fetchone()
+    if c is None:
+        raise not_found("Counselor")
+    s = conn.execute("SELECT id, name, counselor_ids FROM student WHERE id = ?", (body.student_id,)).fetchone()
+    if s is None:
+        raise not_found("Student")
+    cids = json.loads(s["counselor_ids"]) if s["counselor_ids"] else []
+    if counselor_id in [int(x) for x in cids]:
+        raise conflict(f"{s['name']} is already linked to this counselor.")
+    cids.append(counselor_id)
+    conn.execute("UPDATE student SET counselor_ids = ? WHERE id = ?", (json.dumps(cids), body.student_id))
+    log_audit(conn, user.audit_actor, "link_student_counselor", f"student:{body.student_id}",
+              s["counselor_ids"], json.dumps(cids), commit=False)
+    n = recompute_commissions(conn, actor=user.audit_actor)
+    conn.commit()
+    return {"student_id": body.student_id, "counselor_id": counselor_id, "commission_lines": n}
+
+
+@router.post("/counselors/{counselor_id}/unlink-student")
+def unlink_student(counselor_id: int, body: LinkStudentBody, conn=Depends(get_conn),
+                   user: User = Depends(require_finance_lead)):
+    """Unlink a student from a counselor."""
+    decision_lock(conn)
+    c = conn.execute("SELECT id FROM counselor WHERE id = ?", (counselor_id,)).fetchone()
+    if c is None:
+        raise not_found("Counselor")
+    s = conn.execute("SELECT id, name, counselor_ids FROM student WHERE id = ?", (body.student_id,)).fetchone()
+    if s is None:
+        raise not_found("Student")
+    cids = json.loads(s["counselor_ids"]) if s["counselor_ids"] else []
+    int_cids = [int(x) for x in cids]
+    if counselor_id not in int_cids:
+        raise conflict(f"{s['name']} is not linked to this counselor.")
+    int_cids.remove(counselor_id)
+    conn.execute("UPDATE student SET counselor_ids = ? WHERE id = ?", (json.dumps(int_cids), body.student_id))
+    log_audit(conn, user.audit_actor, "unlink_student_counselor", f"student:{body.student_id}",
+              s["counselor_ids"], json.dumps(int_cids), commit=False)
+    n = recompute_commissions(conn, actor=user.audit_actor)
+    conn.commit()
+    return {"student_id": body.student_id, "counselor_id": counselor_id, "commission_lines": n}
+
+
 @router.get("/commissions/counselors/{counselor_id}/statement")
 def statement(counselor_id: int, conn=Depends(get_conn), user: User = Depends(current_user)):
     c = conn.execute("SELECT id, name FROM counselor WHERE id = ?", (counselor_id,)).fetchone()

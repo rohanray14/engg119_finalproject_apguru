@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useState, useEffect, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate } from "@/lib/format";
@@ -39,12 +39,22 @@ function CommissionsContent() {
   const { user } = useAppUser();
   const canApprove = user?.can_approve ?? false;
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { data, mutate, isLoading } = useSWR<CommissionsData>("/commissions", fetcher);
   const [acting, setActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rateEdit, setRateEdit] = useState<number | null>(null);
   const [rateValue, setRateValue] = useState(1000);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  const selectCounselor = useCallback((id: number | null) => {
+    setSelectedId(id);
+    if (id !== null) {
+      window.history.pushState(null, "", `/commissions?id=${id}`);
+    } else {
+      window.history.pushState(null, "", "/commissions");
+    }
+  }, []);
   const [payoutConfirm, setPayoutConfirm] = useState<{ currency: string; payable: number } | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState("");
@@ -58,7 +68,19 @@ function CommissionsContent() {
   useEffect(() => {
     const id = searchParams.get("id");
     if (id) setSelectedId(Number(id));
+    else setSelectedId(null);
   }, [searchParams]);
+
+  // Handle browser back/forward
+  useEffect(() => {
+    function onPop() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+      setSelectedId(id ? Number(id) : null);
+    }
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   // Sort helper
   function toggleSort(key: SortKey) {
@@ -101,7 +123,7 @@ function CommissionsContent() {
   if (selectedId !== null) {
     return (
       <div className="p-8">
-        <CounselorProfile counselorId={selectedId} onBack={() => setSelectedId(null)} />
+        <CounselorProfile counselorId={selectedId} onBack={() => selectCounselor(null)} />
       </div>
     );
   }
@@ -397,7 +419,7 @@ function CommissionsContent() {
                 return (
                   <tr key={c.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                     <td className="py-3 pr-4 font-medium cursor-pointer hover:underline" style={{ color: "var(--accent)" }}
-                      onClick={() => setSelectedId(c.id)}>
+                      onClick={() => selectCounselor(c.id)}>
                       {c.name}
                     </td>
                     <td className="py-3 pr-4" style={{ color: "var(--text)" }}>

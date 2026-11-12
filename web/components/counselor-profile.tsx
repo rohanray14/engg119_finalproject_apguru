@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { formatMoney, formatDate, displayLocation } from "@/lib/format";
+import { useAppUser } from "@/app/providers";
 
 interface StudentEnrollment {
   program: string; fee_model: string; total_fee_paise: number; currency: string;
@@ -52,9 +53,72 @@ interface Props {
   onBack: () => void;
 }
 
+interface SearchResult {
+  id: number; name: string; city: string | null; country: string | null; already_linked: boolean;
+}
+
 export default function CounselorProfile({ counselorId, onBack }: Props) {
-  const { data: counselor, isLoading } = useSWR<CounselorData>(`/counselors/${counselorId}`, fetcher);
+  const { user } = useAppUser();
+  const canApprove = user?.can_approve ?? false;
+  const { data: counselor, isLoading, mutate } = useSWR<CounselorData>(`/counselors/${counselorId}`, fetcher);
   const [tab, setTab] = useState<"students" | "commissions" | "payouts">("students");
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [acting, setActing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Debounced student search
+  useEffect(() => {
+    if (!searchQuery || searchQuery.length < 2) { setSearchResults([]); return; }
+    const t = setTimeout(async () => {
+      try {
+        const res = await apiFetch<{ results: SearchResult[] }>(
+          `/counselors/${counselorId}/search-students?q=${encodeURIComponent(searchQuery)}`
+        );
+        setSearchResults(res.results);
+      } catch { setSearchResults([]); }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchQuery, counselorId]);
+
+  // Focus search input when shown
+  useEffect(() => {
+    if (showSearch) searchRef.current?.focus();
+  }, [showSearch]);
+
+  async function linkStudent(studentId: number) {
+    setActing(true);
+    setError(null);
+    try {
+      await apiFetch(`/counselors/${counselorId}/link-student`, {
+        method: "POST", body: { student_id: studentId },
+      });
+      setSearchQuery("");
+      setSearchResults([]);
+      mutate();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setActing(false);
+    }
+  }
+
+  async function unlinkStudent(studentId: number) {
+    setActing(true);
+    setError(null);
+    try {
+      await apiFetch(`/counselors/${counselorId}/unlink-student`, {
+        method: "POST", body: { student_id: studentId },
+      });
+      mutate();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setActing(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -232,22 +296,90 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
         ))}
       </div>
 
+      {error && (
+        <div className="rounded-lg p-3 mb-4 text-sm" style={{ backgroundColor: "rgba(255, 77, 77, 0.1)", border: "1px solid rgba(255, 77, 77, 0.3)", color: "var(--danger)" }}>{error}</div>
+      )}
+
       {/* Referred students */}
       {tab === "students" && (
       <div className="rounded-lg border p-5 mb-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--card-border)" }}>
-        {counselor.students.length === 0 ? (
+        {/* Link student search */}
+        {canApprove && (
+          <div className="mb-4">
+            {!showSearch ? (
+              <button onClick={() => setShowSearch(true)}
+                className="text-xs px-3 py-1.5 rounded-md font-medium"
+                style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+                + Link student
+              </button>
+            ) : (
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    ref={searchRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search students by name..."
+                    className="flex-1 text-sm rounded-md px-2.5 py-1.5"
+                    style={{ backgroundColor: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
+                  />
+                  <button onClick={() => { setShowSearch(false); setSearchQuery(""); setSearchResults([]); }}
+                    className="text-xs px-2 py-1.5 rounded-md"
+                    style={{ color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+                    Cancel
+                  </button>
+                </div>
+                {searchResults.length > 0 && (
+                  <div className="rounded-lg border overflow-hidden" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)" }}>
+                    {searchResults.map((r) => (
+                      <div key={r.id} className="flex items-center justify-between px-3 py-2 text-sm"
+                        style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+                        <div>
+                          <span className="font-medium" style={{ color: "var(--text)" }}>{r.name}</span>
+                          {(r.city || r.country) && (
+                            <span className="ml-2 text-xs" style={{ color: "var(--text-tertiary)" }}>
+                              {displayLocation(r.city, r.country)}
+                            </span>
+                          )}
+                        </div>
+                        {r.already_linked ? (
+                          <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: "rgba(0,220,130,0.1)", color: "var(--accent)" }}>
+                            Already linked
+                          </span>
+                        ) : (
+                          <button onClick={() => linkStudent(r.id)} disabled={acting}
+                            className="text-xs px-2 py-1 rounded font-medium disabled:opacity-50"
+                            style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+                            Link
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {searchQuery.length >= 2 && searchResults.length === 0 && (
+                  <div className="text-xs py-2" style={{ color: "var(--text-tertiary)" }}>No students found.</div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {counselor.students.length === 0 && !showSearch ? (
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>No students linked to this counselor.</p>
-        ) : (
+        ) : counselor.students.length > 0 ? (
           <div className="overflow-x-auto">
-          <table className="w-full text-sm table-fixed min-w-[600px]">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border)" }}>
-                <th className="pb-2 font-medium w-[18%]">Student</th>
-                <th className="pb-2 font-medium w-[18%]">Location</th>
-                <th className="pb-2 font-medium w-[16%]">Program</th>
-                <th className="pb-2 font-medium w-[10%]">Type</th>
-                <th className="pb-2 font-medium text-right w-[16%]">Total fee</th>
-                <th className="pb-2 font-medium w-[22%] pl-6">Enrolled around</th>
+                <th className="pb-2 font-medium">Student</th>
+                <th className="pb-2 font-medium">Location</th>
+                <th className="pb-2 font-medium">Program</th>
+                <th className="pb-2 font-medium">Type</th>
+                <th className="pb-2 font-medium text-right">Total fee</th>
+                <th className="pb-2 font-medium pl-4">Enrolled</th>
+                {canApprove && <th className="pb-2 font-medium w-[60px]" />}
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
@@ -260,7 +392,17 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                         <Link href={`/students?id=${s.id}`}>{s.name}</Link>
                       </td>
                       <td className="py-2.5" style={{ color: "var(--text-secondary)" }}>{location}</td>
-                      <td className="py-2.5" style={{ color: "var(--text-tertiary)" }} colSpan={4}>No enrollments</td>
+                      <td className="py-2.5" style={{ color: "var(--text-tertiary)" }} colSpan={3}>No enrollments</td>
+                      <td className="py-2.5" />
+                      {canApprove && (
+                        <td className="py-2.5 text-right">
+                          <button onClick={() => unlinkStudent(s.id)} disabled={acting}
+                            className="text-[10px] px-1.5 py-0.5 rounded hover:underline disabled:opacity-50"
+                            style={{ color: "var(--text-tertiary)" }}>
+                            Unlink
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   );
                 }
@@ -286,14 +428,23 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
                       </span>
                     </td>
                     <td className="py-2.5 text-right font-medium" style={{ color: "var(--text)" }}>{formatMoney(e.total_fee_paise, e.currency)}</td>
-                    <td className="py-2.5 pl-6" style={{ color: "var(--text-secondary)" }}>{e.enrolled_around ? formatDate(e.enrolled_around) : "—"}</td>
+                    <td className="py-2.5 pl-4" style={{ color: "var(--text-secondary)" }}>{e.enrolled_around ? formatDate(e.enrolled_around) : "—"}</td>
+                    {ei === 0 && canApprove && (
+                      <td className="py-2.5 text-right" rowSpan={s.enrollments.length}>
+                        <button onClick={() => unlinkStudent(s.id)} disabled={acting}
+                          className="text-[10px] px-1.5 py-0.5 rounded hover:underline disabled:opacity-50"
+                          style={{ color: "var(--text-tertiary)" }}>
+                          Unlink
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ));
               })}
             </tbody>
           </table>
           </div>
-        )}
+        ) : null}
       </div>
 
       )}
