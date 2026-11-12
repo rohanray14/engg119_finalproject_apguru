@@ -125,8 +125,8 @@ export default function InsightsPage() {
       </div>
 
       {/* Hero metrics row */}
-      <div className="grid grid-cols-5 gap-4 mb-8">
-        <div className="col-span-2 rounded-xl border p-6 flex items-center gap-6"
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        <div className="rounded-xl border p-6 flex items-center gap-6"
           style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <RingGauge rate={collection.collection_rate} size={110} />
           <div>
@@ -141,28 +141,32 @@ export default function InsightsPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border p-5 flex flex-col justify-between" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-tertiary)" }}>Students</div>
-          <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>{totalStudents}</div>
-          <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{totalPrograms} programs</div>
-        </div>
-
-        <div className="rounded-xl border p-5 flex flex-col justify-between" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-tertiary)" }}>Installments</div>
-          <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>{collection.total_installments}</div>
-          {collection.overdue_installments > 0 ? (
-            <div className="text-xs font-medium" style={{ color: "var(--danger)" }}>{collection.overdue_installments} overdue</div>
-          ) : (
-            <div className="text-xs font-medium" style={{ color: "var(--accent)" }}>All on track</div>
-          )}
-        </div>
-
-        <div className="rounded-xl border p-5 flex flex-col justify-between" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="text-xs uppercase tracking-wider font-medium" style={{ color: "var(--text-tertiary)" }}>Avg per student</div>
-          <div className="text-3xl font-bold" style={{ color: "var(--text)" }}>
-            {totalStudents > 0 ? formatMoneyCompact(Math.round(duePaise / totalStudents), "INR") : "—"}
+        <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-xs uppercase tracking-wider font-medium mb-3" style={{ color: "var(--text-tertiary)" }}>Students & programs</div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold" style={{ color: "var(--text)" }}>{totalStudents}</span>
+            <span className="text-sm" style={{ color: "var(--text-secondary)" }}>students</span>
           </div>
-          <div className="text-xs" style={{ color: "var(--text-secondary)" }}>total fee value</div>
+          <div className="flex items-center gap-4 mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+            <span>{totalPrograms} programs</span>
+            <span>{collection.total_installments} installments</span>
+            {collection.overdue_installments > 0 && (
+              <span style={{ color: "var(--danger)" }}>{collection.overdue_installments} overdue</span>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-xs uppercase tracking-wider font-medium mb-3" style={{ color: "var(--text-tertiary)" }}>Avg per student</div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold" style={{ color: "var(--text)" }}>
+              {totalStudents > 0 ? formatMoneyCompact(Math.round(duePaise / totalStudents), "INR") : "—"}
+            </span>
+            <span className="text-sm" style={{ color: "var(--text-secondary)" }}>total fee</span>
+          </div>
+          <div className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>
+            {totalStudents > 0 ? formatMoneyCompact(Math.round(collectedPaise / totalStudents), "INR") : "—"} collected per student
+          </div>
         </div>
       </div>
 
@@ -282,7 +286,7 @@ export default function InsightsPage() {
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--text-tertiary)" }}>Top cities</div>
             <div className="flex flex-wrap gap-2">
-              {by_city.map((r, i) => (
+              {by_city.slice(0, 10).map((r, i) => (
                 <div key={r.city}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs"
                   style={{ borderColor: "var(--border)" }}>

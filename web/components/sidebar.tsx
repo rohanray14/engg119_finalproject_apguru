@@ -152,7 +152,7 @@ export default function Sidebar() {
           <div>Bank statement</div>
           <div>PayGlocal, Stripe, Razorpay</div>
           <div>Fee tracker</div>
-          <div className="mt-1 text-[10px]">All synced on load</div>
+          <div className="mt-1 text-[10px]">Synced on page load</div>
         </div>
       </div>
     </aside>

@@ -93,34 +93,23 @@ function RemindersPage() {
 
       {data && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <button onClick={() => { setTypeFilter("pre_due"); setApprovalFilter(""); }}
-            className={`rounded-xl border p-4 text-left transition-colors ${typeFilter === "pre_due" ? "ring-2" : ""}`}
-            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-            <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Pre-due</div>
-            <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data.counts.pre_due}</div>
-            <div className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>3 days before due</div>
-          </button>
-          <button onClick={() => { setTypeFilter("on_due"); setApprovalFilter(""); }}
-            className={`rounded-xl border p-4 text-left transition-colors ${typeFilter === "on_due" ? "ring-2" : ""}`}
-            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-            <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Due today</div>
-            <div className="text-2xl font-bold" style={{ color: "var(--text)" }}>{data.counts.on_due}</div>
-            <div className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>Payment due now</div>
-          </button>
-          <button onClick={() => { setTypeFilter("overdue"); setApprovalFilter(""); }}
-            className={`rounded-xl border p-4 text-left transition-colors ${typeFilter === "overdue" ? "ring-2" : ""}`}
-            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-            <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Overdue</div>
-            <div className="text-2xl font-bold" style={{ color: "var(--danger)" }}>{data.counts.overdue}</div>
-            <div className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>7+ days past due</div>
-          </button>
-          <button onClick={() => { setTypeFilter(""); setApprovalFilter("needs_approval"); }}
-            className={`rounded-xl border p-4 text-left transition-colors ${approvalFilter === "needs_approval" ? "ring-2" : ""}`}
-            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-            <div className="text-sm" style={{ color: "var(--text-secondary)" }}>Needs approval</div>
-            <div className="text-2xl font-bold" style={{ color: "var(--warning)" }}>{data.counts.needs_approval}</div>
-            <div className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>3rd+ reminder, review first</div>
-          </button>
+          {([
+            { key: "pre_due", label: "Pre-due", count: data.counts.pre_due, sub: "3 days before due", color: "var(--text)", filter: () => { setTypeFilter(typeFilter === "pre_due" ? "" : "pre_due"); setApprovalFilter(""); }, active: typeFilter === "pre_due" },
+            { key: "on_due", label: "Due today", count: data.counts.on_due, sub: "Payment due now", color: "var(--text)", filter: () => { setTypeFilter(typeFilter === "on_due" ? "" : "on_due"); setApprovalFilter(""); }, active: typeFilter === "on_due" },
+            { key: "overdue", label: "Overdue", count: data.counts.overdue, sub: "7+ days past due", color: "var(--danger)", filter: () => { setTypeFilter(typeFilter === "overdue" ? "" : "overdue"); setApprovalFilter(""); }, active: typeFilter === "overdue" },
+            { key: "approval", label: "Needs approval", count: data.counts.needs_approval, sub: "3rd+ reminder, review first", color: "var(--warning)", filter: () => { setTypeFilter(""); setApprovalFilter(approvalFilter === "needs_approval" ? "" : "needs_approval"); }, active: approvalFilter === "needs_approval" },
+          ] as const).map((card) => (
+            <button key={card.key} onClick={card.filter}
+              className="rounded-xl border p-4 text-left transition-colors"
+              style={{
+                backgroundColor: card.active ? "var(--surface-hover)" : "var(--surface)",
+                borderColor: card.active ? "var(--accent)" : "var(--border)",
+              }}>
+              <div className="text-sm" style={{ color: "var(--text-secondary)" }}>{card.label}</div>
+              <div className="text-2xl font-bold" style={{ color: card.color }}>{card.count}</div>
+              <div className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>{card.sub}</div>
+            </button>
+          ))}
         </div>
       )}
 
