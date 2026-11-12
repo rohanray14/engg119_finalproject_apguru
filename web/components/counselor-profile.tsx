@@ -350,8 +350,8 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
           {canApprove && payableINR && payableINR.net_paise > 0 && !payConfirm && (
             <button
               onClick={() => setPayConfirm(true)}
-              className="mt-2 text-xs px-3 py-1.5 rounded-md font-medium w-full"
-              style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+              className="mt-2 text-xs px-3 py-1.5 rounded-md font-semibold w-full"
+              style={{ backgroundColor: "var(--text)", color: "var(--bg)" }}>
               Approve payout
             </button>
           )}
@@ -363,7 +363,7 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
               <div className="flex gap-2">
                 <button onClick={() => approvePayout("INR", payableINR.net_paise)} disabled={acting}
                   className="flex-1 text-xs px-2 py-1.5 rounded-md font-medium disabled:opacity-50"
-                  style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+                  style={{ backgroundColor: "var(--text)", color: "var(--bg)" }}>
                   {acting ? "..." : "Confirm"}
                 </button>
                 <button onClick={() => setPayConfirm(false)}
