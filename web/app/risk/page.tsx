@@ -74,10 +74,10 @@ function actionForFlag(flag: RiskFlag): { label: string; href: string } {
   }
 }
 
-const sevColors: Record<string, { dot: string; bg: string; border: string }> = {
-  high: { dot: "var(--danger)", bg: "rgba(255, 77, 77, 0.08)", border: "rgba(255, 77, 77, 0.25)" },
-  medium: { dot: "var(--warning)", bg: "rgba(255, 176, 32, 0.08)", border: "rgba(255, 176, 32, 0.25)" },
-  low: { dot: "var(--info)", bg: "rgba(77, 158, 255, 0.06)", border: "rgba(77, 158, 255, 0.2)" },
+const sevDot: Record<string, string> = {
+  high: "var(--danger)",
+  medium: "var(--warning)",
+  low: "var(--info)",
 };
 
 const categoryLabels: Record<string, string> = {
@@ -88,6 +88,11 @@ const categoryLabels: Record<string, string> = {
   suspicious_payer: "Suspicious payer names",
   oversized_payment: "Unusually large payments",
 };
+
+// Strip leading student name from overdue explanation for grouped display
+function stripName(explanation: string): string {
+  return explanation.replace(/^.+?'s installment of /, "").replace(/^(\S+)\s/, "$1 · ");
+}
 
 type SortMode = "amount" | "age" | "default";
 const COLLAPSED_LIMIT = 8;
@@ -319,13 +324,13 @@ export default function RiskPage() {
               </h3>
               <div className="space-y-2">
                 {(expandedSections.has("overdue") ? overdueGroups : overdueGroups.slice(0, COLLAPSED_LIMIT)).map((g) => {
-                  const sev = g.maxDays > 90 ? sevColors.high : sevColors.medium;
+                  const dot = g.maxDays > 90 ? sevDot.high : sevDot.medium;
                   return (
                     <div key={g.student} className="rounded-xl border p-4"
-                      style={{ backgroundColor: sev.bg, borderColor: sev.border }}>
+                      style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: sev.dot }} />
+                          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dot }} />
                           <div className="min-w-0">
                             <Link href={`/students?search=${encodeURIComponent(g.student)}`}
                               className="font-medium hover:underline" style={{ color: "var(--accent)" }}>
@@ -340,27 +345,37 @@ export default function RiskPage() {
                           <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>{g.maxDays}d overdue</span>
                           <Link href={`/reminders?student=${encodeURIComponent(g.student)}`}
                             className="px-4 py-1.5 text-xs font-medium rounded-md transition-colors"
-                            style={{
-                              backgroundColor: g.maxDays > 90 ? "var(--danger)" : "var(--warning)",
-                              color: "var(--bg)",
-                            }}>
+                            style={{ border: "1px solid var(--border)", color: "var(--text)" }}>
                             Send reminder
                           </Link>
                         </div>
                       </div>
-                      {/* Always show detail lines */}
-                      <div className="mt-2 space-y-1 pl-5">
-                        {g.flags.map((f, i) => (
-                          <div key={i} className="text-sm flex items-center justify-between" style={{ color: "var(--text-secondary)" }}>
-                            <span>{f.explanation}</span>
-                            {f.amount_paise != null && (
-                              <span className="text-xs ml-2 shrink-0" style={{ color: "var(--text-tertiary)" }}>
-                                {formatMoney(f.amount_paise, f.currency)}
-                              </span>
-                            )}
+                      {/* Expandable detail lines */}
+                      {g.flags.length > 0 && (
+                        <details className="mt-2">
+                          <summary className="text-xs cursor-pointer pl-5" style={{ color: "var(--text-tertiary)" }}>
+                            {g.flags.length} installment{g.flags.length > 1 ? "s" : ""} — click to expand
+                          </summary>
+                          <div className="mt-1.5 space-y-1 pl-5">
+                            {g.flags.map((f, i) => {
+                              const daysMatch = f.explanation.match(/is (\d+) days overdue/);
+                              const dueDateMatch = f.explanation.match(/\(due (.+?)\)/);
+                              return (
+                                <div key={i} className="text-sm flex items-center justify-between" style={{ color: "var(--text-secondary)" }}>
+                                  <span>
+                                    {formatMoney(f.amount_paise ?? 0, f.currency)}
+                                    <span className="mx-1.5" style={{ color: "var(--text-tertiary)" }}>·</span>
+                                    {daysMatch ? `${daysMatch[1]} days overdue` : "overdue"}
+                                    {dueDateMatch && (
+                                      <span style={{ color: "var(--text-tertiary)" }}> (due {dueDateMatch[1]})</span>
+                                    )}
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
-                        ))}
-                      </div>
+                        </details>
+                      )}
                     </div>
                   );
                 })}
@@ -398,15 +413,14 @@ export default function RiskPage() {
                   </h3>
                   <div className="space-y-2">
                     {visible.map(({ flag: f, idx }) => {
-                      const sev = sevColors[f.severity] ?? sevColors.low;
+                      const dot = sevDot[f.severity] ?? sevDot.low;
                       const action = actionForFlag(f);
-                      const isHigh = f.severity === "high";
                       const key = flagKey(f, idx);
                       return (
                         <div key={key} className="rounded-xl border p-4 flex items-center justify-between"
-                          style={{ backgroundColor: sev.bg, borderColor: sev.border }}>
+                          style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
                           <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: sev.dot }} />
+                            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dot }} />
                             <div className="min-w-0">
                               <div className="text-sm" style={{ color: "var(--text)" }}>{f.explanation}</div>
                               {f.amount_paise != null && (
@@ -427,10 +441,7 @@ export default function RiskPage() {
                             </button>
                             <Link href={action.href}
                               className="px-4 py-1.5 text-xs font-medium rounded-md transition-colors"
-                              style={isHigh
-                                ? { backgroundColor: "var(--danger)", color: "var(--bg)" }
-                                : { border: "1px solid var(--border)", color: "var(--text)" }
-                              }>
+                              style={{ border: "1px solid var(--border)", color: "var(--text)" }}>
                               {action.label}
                             </Link>
                           </div>
