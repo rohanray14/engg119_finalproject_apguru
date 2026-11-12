@@ -31,15 +31,10 @@ def today_in_india() -> date:
 
 
 def resolve_as_of(conn, as_of: Optional[date]) -> date:
-    """Explicit date wins; otherwise today, unless today falls outside the
-    data (demo data), in which case the middle of the data range."""
+    """Explicit date wins; otherwise always today (daily data keeps DB current)."""
     if as_of:
         return as_of
-    today = today_in_india()
-    lo, hi = data_date_range(conn)
-    if lo and hi and not (lo <= today <= hi):
-        return lo + (hi - lo) // 2
-    return today
+    return today_in_india()
 
 
 def parse_allocations(raw: Optional[str]) -> list[dict]:
