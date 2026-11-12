@@ -78,6 +78,19 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
   // Filter state for students tab
   const [locationFilter, setLocationFilter] = useState<string | null>(null);
   const [programFilter, setProgramFilter] = useState<string | null>(null);
+  type StudentSortKey = "name" | "location" | "fee" | null;
+  type StudentSortDir = "asc" | "desc";
+  const [studentSortKey, setStudentSortKey] = useState<StudentSortKey>(null);
+  const [studentSortDir, setStudentSortDir] = useState<StudentSortDir>("asc");
+  function toggleStudentSort(key: StudentSortKey) {
+    if (studentSortKey === key) {
+      if (studentSortDir === "asc") setStudentSortDir("desc");
+      else { setStudentSortKey(null); }
+    } else {
+      setStudentSortKey(key);
+      setStudentSortDir("asc");
+    }
+  }
 
   // Debounced student search
   useEffect(() => {
@@ -113,10 +126,10 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
     return { locations: Array.from(locs).sort(), programs: Array.from(progs).sort() };
   }, [counselor]);
 
-  // Filter students
+  // Filter and sort students
   const filteredStudents = useMemo(() => {
     if (!counselor) return [];
-    return counselor.students.filter((s) => {
+    let items = counselor.students.filter((s) => {
       if (locationFilter) {
         const loc = displayLocation(s.city, s.country);
         if (loc !== locationFilter) return false;
@@ -126,7 +139,24 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
       }
       return true;
     });
-  }, [counselor, locationFilter, programFilter]);
+    if (studentSortKey) {
+      items = [...items].sort((a, b) => {
+        let cmp = 0;
+        switch (studentSortKey) {
+          case "name": cmp = a.name.localeCompare(b.name); break;
+          case "location": cmp = (displayLocation(a.city, a.country) ?? "").localeCompare(displayLocation(b.city, b.country) ?? ""); break;
+          case "fee": {
+            const aFee = a.enrollments.reduce((s, e) => s + e.total_fee_paise, 0);
+            const bFee = b.enrollments.reduce((s, e) => s + e.total_fee_paise, 0);
+            cmp = aFee - bFee;
+            break;
+          }
+        }
+        return studentSortDir === "asc" ? cmp : -cmp;
+      });
+    }
+    return items;
+  }, [counselor, locationFilter, programFilter, studentSortKey, studentSortDir]);
 
   async function linkStudent(studentId: number) {
     setActing(true);
@@ -557,11 +587,30 @@ export default function CounselorProfile({ counselorId, onBack }: Props) {
             </colgroup>
             <thead>
               <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)", backgroundColor: "var(--surface-hover)" }}>
-                <th className="px-4 py-3 font-medium">Student</th>
-                <th className="px-4 py-3 font-medium">Location</th>
+                {([
+                  { label: "Student", field: "name" as StudentSortKey },
+                  { label: "Location", field: "location" as StudentSortKey },
+                ] as const).map((col) => {
+                  const active = studentSortKey === col.field;
+                  return (
+                    <th key={col.label} className="px-4 py-3 font-medium cursor-pointer select-none"
+                      onClick={() => toggleStudentSort(col.field)}>
+                      {col.label}
+                      {active
+                        ? <span className="ml-1" style={{ color: "var(--text)" }}>{studentSortDir === "asc" ? "\u2191" : "\u2193"}</span>
+                        : <span className="ml-1" style={{ color: "var(--text-tertiary)" }}>{"\u2195"}</span>}
+                    </th>
+                  );
+                })}
                 <th className="px-4 py-3 font-medium">Program</th>
                 <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium text-right">Total fee</th>
+                <th className="px-4 py-3 font-medium text-right cursor-pointer select-none"
+                  onClick={() => toggleStudentSort("fee")}>
+                  Total fee
+                  {studentSortKey === "fee"
+                    ? <span className="ml-1" style={{ color: "var(--text)" }}>{studentSortDir === "asc" ? "\u2191" : "\u2193"}</span>
+                    : <span className="ml-1" style={{ color: "var(--text-tertiary)" }}>{"\u2195"}</span>}
+                </th>
                 <th className="px-4 py-3 font-medium">Enrolled</th>
                 {canApprove && <th className="px-4 py-3 font-medium" />}
               </tr>
