@@ -56,23 +56,25 @@ function groupOverdue(flags: RiskFlag[]): OverdueGroup[] {
   return [...map.values()].sort((a, b) => b.totalPaise - a.totalPaise);
 }
 
-// Action config per category
-function actionForCategory(category: string): { label: string; page: string; icon: string } {
-  switch (category) {
+// Build action link per category, using entity IDs for context
+function actionForFlag(flag: RiskFlag): { label: string; href: string } {
+  const { type, ids } = parseEntity(flag.entity);
+  const id = ids[0];
+  switch (flag.category) {
     case "overdue_installment":
-      return { label: "Send reminder", page: "/reminders", icon: "Send" };
+      return { label: "Send reminder", href: "/reminders" };
     case "unmatched_old":
-      return { label: "Review match", page: "/match-review", icon: "Link" };
+      return { label: "Review match", href: id ? `/review?id=${id}` : "/review" };
     case "duplicate_payment":
-      return { label: "View payments", page: "/payments", icon: "Search" };
+      return { label: "View payments", href: id && type === "payment" ? `/payments?search=${id}` : "/payments" };
     case "unconfirmed_large":
-      return { label: "Verify payment", page: "/payments", icon: "Check" };
+      return { label: "Verify payment", href: `/payments?confirmation=screenshot_only` };
     case "suspicious_payer":
-      return { label: "Investigate", page: "/payments", icon: "Flag" };
+      return { label: "Investigate", href: id && type === "payment" ? `/payments?search=${id}` : "/payments" };
     case "oversized_payment":
-      return { label: "View payment", page: "/payments", icon: "Eye" };
+      return { label: "View payment", href: id && type === "payment" ? `/payments?search=${id}` : "/payments" };
     default:
-      return { label: "View", page: "/", icon: "Eye" };
+      return { label: "View", href: "/" };
   }
 }
 
@@ -254,7 +256,7 @@ export default function RiskPage() {
                 <div className="space-y-2">
                   {flags.map((f, i) => {
                     const sev = sevStyle[f.severity] ?? sevStyle.low;
-                    const action = actionForCategory(f.category);
+                    const action = actionForFlag(f);
                     return (
                       <div key={i} className="rounded-xl border p-4 flex items-center justify-between" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
                         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -263,14 +265,14 @@ export default function RiskPage() {
                             <div className="text-sm" style={{ color: sev.text }}>{f.explanation}</div>
                             {f.amount_paise != null && (
                               <div className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
-                                {f.entity} · {formatMoney(f.amount_paise, f.currency)}
+                                {formatMoney(f.amount_paise, f.currency)}
                               </div>
                             )}
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0 ml-3">
                           <button
-                            onClick={() => router.push(action.page)}
+                            onClick={() => router.push(action.href)}
                             className="px-3 py-1 text-xs font-medium rounded-md transition"
                             style={{ border: "1px solid var(--border)", color: "var(--text)" }}
                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--surface-hover)"}

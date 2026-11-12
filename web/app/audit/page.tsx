@@ -86,7 +86,6 @@ export default function AuditPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs border-b" style={{ color: "var(--text-secondary)", borderColor: "var(--border-subtle)", backgroundColor: "var(--surface-hover)" }}>
-                  <th className="px-4 py-3 font-medium">ID</th>
                   <th className="px-4 py-3 font-medium">When</th>
                   <th className="px-4 py-3 font-medium">Who</th>
                   <th className="px-4 py-3 font-medium">Action</th>
@@ -101,8 +100,10 @@ export default function AuditPage() {
                     style={{ borderBottom: "1px solid var(--border-subtle)" }}
                     onMouseEnter={(ev) => ev.currentTarget.style.backgroundColor = "var(--surface-hover)"}
                     onMouseLeave={(ev) => ev.currentTarget.style.backgroundColor = ""}>
-                    <td className="px-4 py-2.5" style={{ color: "var(--text-tertiary)" }}>{e.id}</td>
-                    <td className="px-4 py-2.5 whitespace-nowrap">{formatDate(e.timestamp)}</td>
+                    <td className="px-4 py-2.5 whitespace-nowrap text-xs">
+                      <div>{formatDate(e.timestamp)}</div>
+                      <div style={{ color: "var(--text-tertiary)" }}>{new Date(e.timestamp).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</div>
+                    </td>
                     <td className="px-4 py-2.5" style={{ color: "var(--text)" }}>{e.actor}</td>
                     <td className="px-4 py-2.5 font-medium">{e.action.replace(/_/g, " ")}</td>
                     <td className="px-4 py-2.5">{e.entity}</td>

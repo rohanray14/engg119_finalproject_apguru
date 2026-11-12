@@ -292,7 +292,16 @@ export default function PaymentsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Payments</h1>
+      <div className="flex items-center justify-between mb-1">
+        <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>Payments</h1>
+        {data && (
+          <button onClick={() => exportCSV(sorted)}
+            className="px-3 py-1.5 text-xs font-medium rounded-md"
+            style={{ border: "1px solid var(--border)", color: "var(--text)" }}>
+            Export CSV
+          </button>
+        )}
+      </div>
       <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
         Every incoming payment with amount paid, deductions, and confirmation level.
       </p>
@@ -414,36 +423,22 @@ export default function PaymentsPage() {
         </div>
       ) : (
         <>
-          {/* Pagination top + export */}
+          {/* Count + pagination */}
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               {sorted.length} payments{activeFilters > 0 ? " (filtered)" : ""}
               {totalPages > 1 && ` · page ${page + 1} of ${totalPages}`}
             </p>
-            <div className="flex items-center gap-3">
-              <button onClick={() => exportCSV(sorted)}
-                className="px-3 py-1.5 text-xs font-medium rounded-md"
-                style={{ border: "1px solid var(--border)", color: "var(--text)" }}>
-                Export CSV
-              </button>
-              {totalPages > 1 && (
-                <div className="flex items-center gap-1">
-                  <button onClick={() => setPage(0)} disabled={page === 0}
-                    className="px-2 py-1 text-xs rounded disabled:opacity-30"
-                    style={{ border: "1px solid var(--border)", color: "var(--text)" }}>First</button>
-                  <button onClick={() => setPage(page - 1)} disabled={page === 0}
-                    className="px-2 py-1 text-xs rounded disabled:opacity-30"
-                    style={{ border: "1px solid var(--border)", color: "var(--text)" }}>Prev</button>
-                  <span className="text-xs px-2" style={{ color: "var(--text-secondary)" }}>{page + 1} / {totalPages}</span>
-                  <button onClick={() => setPage(page + 1)} disabled={page >= totalPages - 1}
-                    className="px-2 py-1 text-xs rounded disabled:opacity-30"
-                    style={{ border: "1px solid var(--border)", color: "var(--text)" }}>Next</button>
-                  <button onClick={() => setPage(totalPages - 1)} disabled={page >= totalPages - 1}
-                    className="px-2 py-1 text-xs rounded disabled:opacity-30"
-                    style={{ border: "1px solid var(--border)", color: "var(--text)" }}>Last</button>
-                </div>
-              )}
-            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button onClick={() => setPage(page - 1)} disabled={page === 0}
+                  className="px-2 py-1 text-xs rounded disabled:opacity-30"
+                  style={{ border: "1px solid var(--border)", color: "var(--text)" }}>Prev</button>
+                <button onClick={() => setPage(page + 1)} disabled={page >= totalPages - 1}
+                  className="px-2 py-1 text-xs rounded disabled:opacity-30"
+                  style={{ border: "1px solid var(--border)", color: "var(--text)" }}>Next</button>
+              </div>
+            )}
           </div>
 
           <div className="rounded-xl border overflow-x-auto" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
@@ -550,41 +545,18 @@ export default function PaymentsPage() {
             </table>
           </div>
 
-          {/* Pagination bottom */}
+          {/* Bottom pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center mt-4 gap-1">
-              <button onClick={() => setPage(0)} disabled={page === 0}
-                className="px-2 py-1 text-xs rounded disabled:opacity-30"
-                style={{ border: "1px solid var(--border)", color: "var(--text)" }}>First</button>
+            <div className="flex items-center justify-center gap-1 mt-4">
               <button onClick={() => setPage(page - 1)} disabled={page === 0}
                 className="px-2 py-1 text-xs rounded disabled:opacity-30"
                 style={{ border: "1px solid var(--border)", color: "var(--text)" }}>Prev</button>
-              {Array.from({ length: Math.min(7, totalPages) }, (_, idx) => {
-                const i = Math.max(0, Math.min(page - 3, totalPages - 7)) + idx;
-                if (i >= totalPages) return null;
-                return (
-                  <button key={i} onClick={() => setPage(i)}
-                    className="px-2.5 py-1 text-xs rounded"
-                    style={i === page
-                      ? { backgroundColor: "var(--text)", color: "var(--bg)", border: "1px solid var(--text)" }
-                      : { border: "1px solid var(--border)", color: "var(--text)" }
-                    }>
-                    {i + 1}
-                  </button>
-                );
-              })}
+              <span className="text-xs px-2" style={{ color: "var(--text-secondary)" }}>{page + 1} / {totalPages}</span>
               <button onClick={() => setPage(page + 1)} disabled={page >= totalPages - 1}
                 className="px-2 py-1 text-xs rounded disabled:opacity-30"
                 style={{ border: "1px solid var(--border)", color: "var(--text)" }}>Next</button>
-              <button onClick={() => setPage(totalPages - 1)} disabled={page >= totalPages - 1}
-                className="px-2 py-1 text-xs rounded disabled:opacity-30"
-                style={{ border: "1px solid var(--border)", color: "var(--text)" }}>Last</button>
             </div>
           )}
-
-          <p className="text-xs mt-3" style={{ color: "var(--text-tertiary)" }}>
-            &ldquo;In Bank&rdquo; shows the amount received after gateway fees, GST, and FX conversion — always in INR (₹).
-          </p>
         </>
       )}
     </div>

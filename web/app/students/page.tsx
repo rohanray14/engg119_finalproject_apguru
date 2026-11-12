@@ -29,6 +29,7 @@ export default function StudentsPage() {
 function StudentsContent() {
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"" | "outstanding" | "paid_up">("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -59,7 +60,8 @@ function StudentsContent() {
   );
 
   const students = useMemo(() => {
-    const items = [...(data?.items ?? [])];
+    let items = [...(data?.items ?? [])];
+    if (statusFilter) items = items.filter((s) => s.status === statusFilter);
     if (!sortKey) return items;
     items.sort((a, b) => {
       let cmp = 0;
@@ -78,7 +80,7 @@ function StudentsContent() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return items;
-  }, [data, sortKey, sortDir]);
+  }, [data, sortKey, sortDir, statusFilter]);
 
   function SortHeader({ label, field, align }: { label: string; field: SortKey; align?: string }) {
     const active = sortKey === field;
@@ -108,12 +110,26 @@ function StudentsContent() {
       <h1 className="text-3xl font-bold mb-1" style={{ color: "var(--text)" }}>Students</h1>
       <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>{data?.total ?? "—"} students</p>
 
-      <input
-        type="text" placeholder="Search by name..." value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="mb-4 w-full max-w-md text-sm rounded-md px-3 py-2"
-        style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
-      />
+      <div className="flex items-center gap-3 mb-4">
+        <input
+          type="text" placeholder="Search by name..." value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full max-w-md text-sm rounded-md px-3 py-2"
+          style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
+        />
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+          className="text-sm rounded-md px-3 py-2"
+          style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}>
+          <option value="">All students</option>
+          <option value="outstanding">Outstanding</option>
+          <option value="paid_up">Paid up</option>
+        </select>
+        {students.length !== (data?.items.length ?? 0) && (
+          <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+            {students.length} of {data?.items.length ?? 0}
+          </span>
+        )}
+      </div>
 
       <div className="rounded-xl border overflow-x-auto" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
         <table className="w-full text-sm">

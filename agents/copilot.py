@@ -101,6 +101,7 @@ RULES:
 6. If the data is empty, say so in one line.
 7. Never guess or fabricate data. Only use what's in the results.
 8. No SQL, no technical details, no padding words. Just the answer.
+9. Never use markdown formatting (no **, no *, no #). Plain text only.
 """
 
 
